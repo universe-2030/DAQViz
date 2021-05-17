@@ -33,7 +33,6 @@ BEGIN_MESSAGE_MAP(DAQVizChildOpenGL2, CDialogEx)
 	ON_WM_PAINT()
 END_MESSAGE_MAP()
 
-
 // DAQVizChildOpenGL2 메시지 처리기
 
 BOOL DAQVizChildOpenGL2::OnInitDialog() {
@@ -110,19 +109,14 @@ void DAQVizChildOpenGL2::OnSize(UINT nType, int cx, int cy) {
 	VERIFY(wglMakeCurrent(NULL, NULL));
 }
 
-
-BOOL DAQVizChildOpenGL2::OnEraseBkgnd(CDC* pDC)
-{
+BOOL DAQVizChildOpenGL2::OnEraseBkgnd(CDC* pDC) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 
 	// return CDialogEx::OnEraseBkgnd(pDC);
 	return FALSE;
 }
 
-
-
-void DAQVizChildOpenGL2::OnPaint()
-{
+void DAQVizChildOpenGL2::OnPaint() {
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.

@@ -13,8 +13,7 @@
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
-class CAboutDlg : public CDialogEx
-{
+class CAboutDlg : public CDialogEx {
 public:
 	CAboutDlg();
 
@@ -207,8 +206,11 @@ void CDAQVizDlg::Initialize_Variable() {
 	sEMG_temp = new double[4];
 	sEMG_temp_abs = new double[4];
 
-	Flex_data_init = new float64[N_FLEX];
-	memset(Flex_data_init, 0.0, 2 * sizeof(Flex_data_init) * N_FLEX);
+	Flex_data_calib = new float64[N_FLEX];
+	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX);
+
+	sEMG_temp_16CH = new double[16];
+	memset(sEMG_temp_16CH, 0.0, 2 * sizeof(sEMG_temp_16CH) * 16);
 }
 
 void CDAQVizDlg::Initialize_NI() {
@@ -549,13 +551,32 @@ int CDAQVizDlg::MainStart() {
 			// DAQ Body
 			AI_Flex->ReadOneStep();
 			Flex_data = AI_Flex->Get_m_ReadValue();
-			
-			for (int i = 0; i < N_FLEX; i++) {
-				/*if (pShared_Data->count <= 1) {
-					Flex_data_init[i] = Flex_data[i];
-				}*/
-				Flex_data[i] = Flex_data[i] - Flex_data_init[i];
+
+			if (CALI_START <= pShared_Data->time && pShared_Data->time < CALI_END) {
+				if (pShared_Data->count == CALI_START * 1000) {
+					m_editStatusBar.SetWindowText(stat += "[USER] Calibration start \r\n");
+					m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+				}
+
+				// Calibration DAQ
+				cali_count++;
+				for (int i = 0; i < N_FLEX; i++)
+					Flex_data_calib[i] += Flex_data[i];
+
+				if (pShared_Data->count == CALI_END * 1000) {
+					m_editStatusBar.SetWindowText(stat += "[USER] Calibration end \r\n");
+					m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+					for (int i = 0; i < N_FLEX; i++)
+						Flex_data_calib[i] /= (double)cali_count;
+				}
+
 			}
+			else {
+				for (int i = 0; i < N_FLEX; i++) {
+					Flex_data[i] -= Flex_data_calib[i];
+				}
+			}	
 
 			// Toc
 			QueryPerformanceCounter(&Counter_DAQ_End);
@@ -567,6 +588,13 @@ int CDAQVizDlg::MainStart() {
 			QueryPerformanceCounter(&Counter_RTGraph_Start);
 
 			// RTGraph Body
+
+			// For test
+			for (int i = 0; i < 16; i++)
+				sEMG_temp_16CH[i] = (double) rand() / (double) RAND_MAX;
+			
+			p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_temp_16CH);
+
 			sEMG_temp[0] = 0.3 * sin(2 * PI * m_time);
 			sEMG_temp[1] = 0.5 * sin(2 * PI * 2 * m_time);
 			sEMG_temp[2] = 0.2 * sin(2 * PI * 3 * m_time);

@@ -236,3 +236,7 @@ COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_sEMG_MAV() {
 COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Flex() {
 	return rtGraph_Flex;
 }
+
+DAQVizChildOpenGL* DAQVizChildKSJ::Get_OpenGLPointer() {
+	return p_ChildOpenGL;
+}

@@ -8,6 +8,8 @@
 #define N_SEMG_CH 16
 #define PI 3.14159265358
 
+#define TIME_ELAPSE 20
+
 // DAQVizChildOpenGL 대화 상자
 
 class DAQVizChildOpenGL : public CDialogEx
@@ -32,16 +34,18 @@ protected:
 
 private:
 	CRect m_rectParentDlg;
+	GLfloat fAspect;
 	
 	int count = 0;
+
 	int N_sEMG_CH;
+	double* sEMG_data;
 
 	HGLRC	m_hRC;
 	CDC*	m_pDC;
 	HDC		m_hDC;
 
 public:
-
 	afx_msg void OnDestroy();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -52,4 +56,8 @@ public:
 	void GLResize(int cx, int cy);
 	void GLRenderScene();
 	afx_msg void OnPaint();
+
+	void initialize_Variable();
+
+	void Set_sEMG_data(double* _sEMG_input);
 };

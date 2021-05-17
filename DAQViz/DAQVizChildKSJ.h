@@ -15,8 +15,8 @@
 #define SEMG_MAV_MIN 0.0
 #define SEMG_MAV_MAX 1.2
 
-#define FLEX_SENSOR_MIN -3
-#define FLEX_SENSOR_MAX 3
+#define FLEX_SENSOR_MIN -1.5
+#define FLEX_SENSOR_MAX 1.5
 
 #define IMU_MIN -90
 #define IMU_MAX 90
@@ -84,6 +84,8 @@ public:
 	COScopeCtrl** Get_rtGraph_sEMG_raw();
 	COScopeCtrl** Get_rtGraph_sEMG_MAV();
 	COScopeCtrl** Get_rtGraph_Flex();
+
+	DAQVizChildOpenGL* Get_OpenGLPointer();
 
 	CStatic m_textsEMGPlot;
 	CStatic m_textMotionRendering;

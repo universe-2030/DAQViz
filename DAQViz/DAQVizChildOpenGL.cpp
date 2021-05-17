@@ -46,7 +46,9 @@ BOOL DAQVizChildOpenGL::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
-	SetTimer(1000, 10, NULL);
+	initialize_Variable();
+
+	SetTimer(1000, TIME_ELAPSE, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
@@ -157,8 +159,6 @@ void DAQVizChildOpenGL::OnPaint()
 
 void DAQVizChildOpenGL::GLResize(int cx, int cy) {
 	// TODO: 여기에 구현 코드 추가.
-	GLfloat fAspect;
-
 	if (cy == 0)
 		cy = 1;
 
@@ -203,11 +203,11 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < N_sEMG_CH; j++) {
 			glVertex3f(rad * cos(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
-					   rad * sin(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
+					   1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
 					   0);
 				
 		}
-		glVertex3f(rad * cos(PI / 2.0), rad * sin(PI / 2.0), 0);
+		glVertex3f(rad * cos(PI / 2.0), 1 / fAspect * rad * sin(PI / 2.0), 0);
 		glEnd();
 	}
 
@@ -217,10 +217,22 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 		glBegin(GL_LINE_STRIP);
 		glVertex3f(0, 0, 0);
 		glVertex3f(cos(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * i),
-				   sin(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * i),
+				   1 / fAspect * sin(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * i),
 				   0);
 		glEnd();
 	}
+
+	// Draw sEMG data
+	glLineWidth(5.0);
+	glBegin(GL_LINE_STRIP);
+	for (int j = 0; j < N_sEMG_CH; j++) {
+		glVertex3f(sEMG_data[j] * cos(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
+			1 / fAspect * sEMG_data[j] * sin(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
+			0);
+
+	}
+	glVertex3f(sEMG_data[0] * cos(PI / 2.0), 1 / fAspect * sEMG_data[0] * sin(PI / 2.0), 0);
+	glEnd();
 
 	//glTranslatef(0.0f, 0.0f, -5.0f);
 	//glRotatef(rot, 0.0f, 1.0f, 0.0f);
@@ -251,4 +263,14 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 
 	glPopMatrix();
 	glFlush();
+}
+
+void DAQVizChildOpenGL::initialize_Variable() {
+	sEMG_data = new double[N_sEMG_CH];
+	memset(sEMG_data, 0.0, 2 * sizeof(sEMG_data) * N_sEMG_CH);
+}
+
+void DAQVizChildOpenGL::Set_sEMG_data(double* _sEMG_input) {
+	for (int i = 0; i < N_sEMG_CH; i++)
+		sEMG_data[i] = _sEMG_input[i];
 }

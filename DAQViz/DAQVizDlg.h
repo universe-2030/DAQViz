@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <queue>
+#include <cstdlib>
 
 #include "DELSYSDAQ.h"
 #include "MatchDevice.h"
@@ -30,8 +31,8 @@
 
 #define N_FLEX 5
 
-#define CALI_START 0.300
-#define CALI_END 2.000
+#define CALI_START 0.100
+#define CALI_END 1.500
 
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
@@ -143,7 +144,12 @@ private:
 	double* sEMG_temp_abs;
 
 	float64* Flex_data;
-	float64* Flex_data_init;
+	float64* Flex_data_calib;
+
+	double* sEMG_temp_16CH;
+
+	// Calibration
+	int cali_count = 0;
 
 public:
 	// Thread functions
