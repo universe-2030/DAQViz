@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="MAIN" Id="{b11fa527-c230-4173-83ef-1c49d0cd0f36}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	flag:		DWORD:=0;	//flag for noticing timer tick
+	counter:	DWORD:=0;	//timer tick counter (1 = 100us = 0.1ms)
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF counter=9 THEN
+	IF flag=0 THEN
+		flag:=1;
+	ELSE
+		flag:=0;
+	END_IF
+	
+	counter:=0;
+ELSE
+	counter:=counter+1;
+END_IF
+	
+	]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="3" Count="11" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
