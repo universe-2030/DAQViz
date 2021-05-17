@@ -198,7 +198,6 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 			glLineWidth(1.0);
 
 		glColor3f(0.0f, 0.0f, 0.0f);
-		
 		double rad = 1 / (double)N_GRID_STEP * (i + 1);
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < N_sEMG_CH; j++) {
@@ -222,8 +221,9 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 		glEnd();
 	}
 
-	// Draw sEMG data
+	// Draw sEMG data (Not normalized)
 	glLineWidth(5.0);
+	glColor3f(1.0f, 0.0f, 0.0f);
 	glBegin(GL_LINE_STRIP);
 	for (int j = 0; j < N_sEMG_CH; j++) {
 		glVertex3f(sEMG_data[j] * cos(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
@@ -232,6 +232,19 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 
 	}
 	glVertex3f(sEMG_data[0] * cos(PI / 2.0), 1 / fAspect * sEMG_data[0] * sin(PI / 2.0), 0);
+	glEnd();
+
+	// Draw sEMG data (Normalized)
+	glLineWidth(5.0);
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glBegin(GL_LINE_STRIP);
+	for (int j = 0; j < N_sEMG_CH; j++) {
+		glVertex3f(sEMG_data_normalized[j] * cos(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
+			1 / fAspect * sEMG_data_normalized[j] * sin(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
+			0);
+
+	}
+	glVertex3f(sEMG_data_normalized[0] * cos(PI / 2.0), 1 / fAspect * sEMG_data_normalized[0] * sin(PI / 2.0), 0);
 	glEnd();
 
 	//glTranslatef(0.0f, 0.0f, -5.0f);
@@ -268,9 +281,19 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 void DAQVizChildOpenGL::initialize_Variable() {
 	sEMG_data = new double[N_sEMG_CH];
 	memset(sEMG_data, 0.0, 2 * sizeof(sEMG_data) * N_sEMG_CH);
+
+	sEMG_data_normalized = new double[N_sEMG_CH];
+	memset(sEMG_data_normalized, 0.0, 2 * sizeof(sEMG_data_normalized) * N_sEMG_CH);
 }
 
 void DAQVizChildOpenGL::Set_sEMG_data(double* _sEMG_input) {
 	for (int i = 0; i < N_sEMG_CH; i++)
 		sEMG_data[i] = _sEMG_input[i];
+
+	double sum_sEMG_data = 0.0;
+	for (int i = 0; i < N_sEMG_CH; i++)
+		sum_sEMG_data += abs(sEMG_data[i]);
+
+	for (int i = 0; i < N_sEMG_CH; i++)
+		sEMG_data_normalized[i] = sEMG_data[i] / sum_sEMG_data;
 }

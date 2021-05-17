@@ -117,8 +117,7 @@ BOOL DAQVizChildOpenGL2::OnEraseBkgnd(CDC* pDC) {
 }
 
 void DAQVizChildOpenGL2::OnPaint() {
-	if (IsIconic())
-	{
+	if (IsIconic()) {
 		CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);

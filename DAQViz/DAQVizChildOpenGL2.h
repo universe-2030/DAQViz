@@ -31,7 +31,7 @@ private:
 	int count = 0;
 
 	HGLRC	m_hRC;
-	CDC* m_pDC;
+	CDC*	m_pDC;
 	HDC		m_hDC;
 
 public:

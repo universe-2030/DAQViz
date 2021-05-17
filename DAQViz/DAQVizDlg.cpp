@@ -148,8 +148,6 @@ BOOL CDAQVizDlg::OnInitDialog()
 	Initialize_LogonU();
 	Initialize_RTOS();
 
-	SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
-
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -258,6 +256,13 @@ void CDAQVizDlg::Initialize_GUI() {
 	p_ChildDlg_KSJ->Create(IDD_DAQVIZ_DIALOG_CHILD_KSJ, this);
 	p_ChildDlg_KSJ->ShowWindow(SW_SHOW);
 	p_ChildDlg_KSJ->MoveWindow(rectofDialogArea);
+
+	p_OpenGLWin = new DAQVizOpenGLWindow();
+	p_OpenGLWin->Create(IDD_DAQVIZ_DIALOG_NEW_WINDOW, this);
+	p_OpenGLWin->ShowWindow(SW_SHOW);
+	p_OpenGLWin->SetWindowText(_T("OpenGL rendering window"));
+
+	SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
 }
 
 void CDAQVizDlg::Initialize_SaveFolder() {

@@ -16,6 +16,7 @@
 
 #include "DAQVizChildKSJ.h"
 #include "DAQVizChildOpenGL.h"
+#include "DAQVizOpenGLWindow.h"
 #include "NI_AI_AO_DO.h"
 
 #include "TrainedModel.h"
@@ -110,6 +111,7 @@ private:
 
 	// Child dialogs
 	DAQVizChildKSJ* p_ChildDlg_KSJ;
+	DAQVizOpenGLWindow* p_OpenGLWin;
 
 	// Saving folder
 	CString SaveFolderPath;
@@ -150,6 +152,9 @@ private:
 
 	// Calibration
 	int cali_count = 0;
+
+	// Training flag
+	bool bTrained = FALSE;
 
 public:
 	// Thread functions

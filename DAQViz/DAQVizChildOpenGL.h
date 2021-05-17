@@ -40,6 +40,7 @@ private:
 
 	int N_sEMG_CH;
 	double* sEMG_data;
+	double* sEMG_data_normalized;
 
 	HGLRC	m_hRC;
 	CDC*	m_pDC;

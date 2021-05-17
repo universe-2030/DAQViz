@@ -191,6 +191,7 @@
     <ClInclude Include="DAQVizChildOpenGL.h" />
     <ClInclude Include="DAQVizChildOpenGL2.h" />
     <ClInclude Include="DAQVizDlg.h" />
+    <ClInclude Include="DAQVizOpenGLWindow.h" />
     <ClInclude Include="DELSYSDAQ.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="LuMatchFdn.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="DAQVizChildOpenGL.cpp" />
     <ClCompile Include="DAQVizChildOpenGL2.cpp" />
     <ClCompile Include="DAQVizDlg.cpp" />
+    <ClCompile Include="DAQVizOpenGLWindow.cpp" />
     <ClCompile Include="DELSYSDAQ.cpp" />
     <ClCompile Include="MatchDevice.cpp" />
     <ClCompile Include="NI_AI_AO_DO.cpp" />
