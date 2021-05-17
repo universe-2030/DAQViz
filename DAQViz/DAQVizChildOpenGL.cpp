@@ -6,14 +6,18 @@
 #include "DAQVizChildOpenGL.h"
 #include "afxdialogex.h"
 
-
 // DAQVizChildOpenGL 대화 상자
 
 IMPLEMENT_DYNAMIC(DAQVizChildOpenGL, CDialogEx)
 
 DAQVizChildOpenGL::DAQVizChildOpenGL(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL, pParent) {
+	N_sEMG_CH = N_SEMG_CH;
+}
 
+DAQVizChildOpenGL::DAQVizChildOpenGL(int N_sEMG, CWnd* pParent /*=nullptr*/)
+	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL, pParent) {
+	N_sEMG_CH = N_sEMG;
 }
 
 DAQVizChildOpenGL::~DAQVizChildOpenGL() {
@@ -173,7 +177,7 @@ void DAQVizChildOpenGL::GLResize(int cx, int cy) {
 
 void DAQVizChildOpenGL::GLRenderScene(void) {
 	// TODO: 여기에 구현 코드 추가.
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
@@ -186,25 +190,37 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 
 	gluLookAt(0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-	glLineWidth(10.0);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glBegin(GL_LINE_STRIP);
-		glColor3f(1.0f, 0.0f, 0.0f);
-		glVertex3f(-1.0f + (double)count / 255.0, 0, 0);
-		glVertex3f(0, 1.0f, 0);
-		glVertex3f(1.0f, 0, 0);
-		glVertex3f(0, -1.0f, 0);
-		glVertex3f(-1.0f + (double)count / 255.0, 0, 0);
-	glEnd();
+	// Draw polygon frames
+	for (int i = 0; i < N_GRID_STEP; i++) {
+		if (i == N_GRID_STEP - 1)
+			glLineWidth(2.0);
+		else
+			glLineWidth(1.0);
 
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glBegin(GL_LINE_STRIP);
-		glVertex3f(-0.5f + 0.5 * (double)count / 255.0, 0, 0);
-		glVertex3f(0, 0.5f, 0);
-		glVertex3f(0.5f, 0, 0);
-		glVertex3f(0, -0.5f, 0);
-		glVertex3f(-0.5f + 0.5 * (double)count / 255.0, 0, 0);
-	glEnd();
+		glColor3f(0.0f, 0.0f, 0.0f);
+		
+		double rad = 1 / (double)N_GRID_STEP * (i + 1);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < N_sEMG_CH; j++) {
+			glVertex3f(rad * cos(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
+					   rad * sin(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
+					   0);
+				
+		}
+		glVertex3f(rad * cos(PI / 2.0), rad * sin(PI / 2.0), 0);
+		glEnd();
+	}
+
+	// Draw center - vertex lines
+	glLineWidth(0.1);
+	for (int i = 0; i < N_sEMG_CH; i++) {
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(0, 0, 0);
+		glVertex3f(cos(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * i),
+				   sin(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * i),
+				   0);
+		glEnd();
+	}
 
 	//glTranslatef(0.0f, 0.0f, -5.0f);
 	//glRotatef(rot, 0.0f, 1.0f, 0.0f);

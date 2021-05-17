@@ -4,6 +4,10 @@
 #include "GL/GL.h"
 #include "GL/GLU.h"
 
+#define N_GRID_STEP 3
+#define N_SEMG_CH 16
+#define PI 3.14159265358
+
 // DAQVizChildOpenGL 대화 상자
 
 class DAQVizChildOpenGL : public CDialogEx
@@ -12,6 +16,7 @@ class DAQVizChildOpenGL : public CDialogEx
 
 public:
 	DAQVizChildOpenGL(CWnd* pParent = nullptr);   // 표준 생성자입니다.
+	DAQVizChildOpenGL(int N_sEMG, CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~DAQVizChildOpenGL();
 
 // 대화 상자 데이터입니다.
@@ -29,6 +34,7 @@ private:
 	CRect m_rectParentDlg;
 	
 	int count = 0;
+	int N_sEMG_CH;
 
 	HGLRC	m_hRC;
 	CDC*	m_pDC;

@@ -4,6 +4,8 @@
 #include "GL/GL.h"
 #include "GL/GLU.h"
 
+#define PI 3.14159265358
+
 // DAQVizChildOpenGL2 대화 상자
 
 class DAQVizChildOpenGL2 : public CDialogEx

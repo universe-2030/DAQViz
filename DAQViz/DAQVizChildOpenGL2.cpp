@@ -11,20 +11,18 @@
 IMPLEMENT_DYNAMIC(DAQVizChildOpenGL2, CDialogEx)
 
 DAQVizChildOpenGL2::DAQVizChildOpenGL2(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent)
-{
+	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent) {
 
 }
 
-DAQVizChildOpenGL2::~DAQVizChildOpenGL2()
-{
+DAQVizChildOpenGL2::~DAQVizChildOpenGL2() {
+
 }
 
 void DAQVizChildOpenGL2::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 }
-
 
 BEGIN_MESSAGE_MAP(DAQVizChildOpenGL2, CDialogEx)
 	ON_WM_DESTROY()
@@ -174,7 +172,7 @@ void DAQVizChildOpenGL2::GLResize(int cx, int cy) {
 
 void DAQVizChildOpenGL2::GLRenderScene(void) {
 	// TODO: 여기에 구현 코드 추가.
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
@@ -187,24 +185,27 @@ void DAQVizChildOpenGL2::GLRenderScene(void) {
 
 	gluLookAt(0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-	glLineWidth(10.0);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glBegin(GL_LINE_STRIP);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glVertex3f(-1.0f + (double)count / 255.0, 0, 0);
-	glVertex3f(0, 1.0f, 0);
-	glVertex3f(1.0f, 0, 0);
-	glVertex3f(0, -1.0f, 0);
-	glVertex3f(-1.0f + (double)count / 255.0, 0, 0);
-	glEnd();
+	// Grid polygons
+	glLineWidth(3.0);
+	for (int i = 0; i < 5; i++) {
+		glBegin(GL_LINE_STRIP);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glVertex3f(-1.0f, 0, 0);
+		glVertex3f(0, 1.0f, 0);
+		glVertex3f(1.0f, 0, 0);
+		glVertex3f(0, -1.0f, 0);
+		glVertex3f(-1.0f, 0, 0);
+		glEnd();
+	}
 
-	glColor3f(0.0f, 0.0f, 1.0f);
+	
 	glBegin(GL_LINE_STRIP);
-	glVertex3f(-0.5f + 0.5 * (double)count / 255.0, 0, 0);
-	glVertex3f(0, 0.5f, 0);
-	glVertex3f(0.5f, 0, 0);
-	glVertex3f(0, -0.5f, 0);
-	glVertex3f(-0.5f + 0.5 * (double)count / 255.0, 0, 0);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glVertex3f(-0.5f, 0, 0);
+		glVertex3f(0, 0.5f, 0);
+		glVertex3f(0.5f, 0, 0);
+		glVertex3f(0, -0.5f, 0);
+		glVertex3f(-0.5f, 0, 0);
 	glEnd();
 
 	//glTranslatef(0.0f, 0.0f, -5.0f);
