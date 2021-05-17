@@ -27,7 +27,6 @@ protected:
 
 private:
 	int count = 0;
-	int count_2 = 0;
 
 	HGLRC	m_hRC;
 	CDC* m_pDC;
