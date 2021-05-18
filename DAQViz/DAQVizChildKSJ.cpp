@@ -58,12 +58,10 @@ BOOL DAQVizChildKSJ::OnInitDialog() {
 }
 
 void DAQVizChildKSJ::Initialize_Variable() {
-	rtGraph_sEMG_raw = new COScopeCtrl*[4];
 	rtGraph_sEMG_MAV = new COScopeCtrl*[4];
 	rtGraph_Flex = new COScopeCtrl*;
 	rtGraph_IMU = new COScopeCtrl*;
 
-	sEMG_raw = new double[N_sEMG];
 	sEMG_MAV = new double[N_sEMG];
 	Flex_data = new double[N_Flex];
 	IMU_data = new double[N_IMU];
@@ -73,11 +71,6 @@ void DAQVizChildKSJ::Initialize_GUI() {
 	CDAQVizDlg* pMainDlg = new CDAQVizDlg();
 	pMainDlg->Set_Font(m_textsEMGPlot, 20, 8);
 	pMainDlg->Set_Font(m_textMotionRendering, 20, 8);
-
-	rtGraph_sEMG_raw[0] = Initialize_graph(IDC_GRAPH_SEMG_RAW_1, 1, 4, rtGraph_sEMG_raw[0], SEMG_RAW);
-	rtGraph_sEMG_raw[1] = Initialize_graph(IDC_GRAPH_SEMG_RAW_2, 5, 8, rtGraph_sEMG_raw[1], SEMG_RAW);
-	rtGraph_sEMG_raw[2] = Initialize_graph(IDC_GRAPH_SEMG_RAW_3, 9, 12, rtGraph_sEMG_raw[2], SEMG_RAW);
-	rtGraph_sEMG_raw[3] = Initialize_graph(IDC_GRAPH_SEMG_RAW_4, 13, 16, rtGraph_sEMG_raw[3], SEMG_RAW);
 
 	rtGraph_sEMG_MAV[0] = Initialize_graph(IDC_GRAPH_SEMG_MAV_1, 1, 4, rtGraph_sEMG_MAV[0], SEMG_MAV);
 	rtGraph_sEMG_MAV[1] = Initialize_graph(IDC_GRAPH_SEMG_MAV_2, 5, 8, rtGraph_sEMG_MAV[1], SEMG_MAV);
@@ -120,28 +113,7 @@ COScopeCtrl* DAQVizChildKSJ::Initialize_graph (int ID, int idx_start, int idx_en
 
 	CString temp_str;
 	for (int _idx = idx_start; _idx <= idx_end; _idx++) {
-		if (_class == SEMG_RAW) {
-			temp_str.Format(_T("CH %d"), _idx);
-			rtGraph->SetRanges(SEMG_RAW_MIN, SEMG_RAW_MAX);
-			rtGraph->autofitYscale = true;
-			rtGraph->SetYUnits(_T("sEMG raw"));
-			rtGraph->SetXUnits(_T("Time"));
-
-			int _idx_rev = _idx - idx_start;
-			rtGraph->SetLegendLabel(temp_str, _idx_rev);
-
-			if (_idx_rev == 0)
-				rtGraph->SetPlotColor(RGB(255, 0, 0), _idx_rev);
-			else if (_idx_rev == 1)
-				rtGraph->SetPlotColor(RGB(0, 255, 0), _idx_rev);
-			else if (_idx_rev == 2)
-				rtGraph->SetPlotColor(RGB(0, 0, 255), _idx_rev);
-			else if (_idx_rev == 3)
-				rtGraph->SetPlotColor(RGB(255, 255, 0), _idx_rev);
-
-			rtGraph->InvalidateCtrl();
-		}
-		else if (_class == SEMG_MAV) {
+		if (_class == SEMG_MAV) {
 			temp_str.Format(_T("CH %d"), _idx);
 			rtGraph->SetRanges(SEMG_MAV_MIN, SEMG_MAV_MAX);
 			rtGraph->autofitYscale = true;
@@ -223,10 +195,6 @@ COScopeCtrl* DAQVizChildKSJ::Initialize_graph (int ID, int idx_start, int idx_en
 
 void DAQVizChildKSJ::Plot_graph(double* data, COScopeCtrl* rtGraph) {
 	rtGraph->AppendPoints(data);
-}
-
-COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_sEMG_raw() {
-	return rtGraph_sEMG_raw;
 }
 
 COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_sEMG_MAV() {

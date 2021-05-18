@@ -26,7 +26,6 @@
 #define N_IMU_CH 2
 
 enum Graph_class {
-	SEMG_RAW,
 	SEMG_MAV,
 	FLEX_SENSOR,
 	IMU
@@ -52,7 +51,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	COScopeCtrl** rtGraph_sEMG_raw;
 	COScopeCtrl** rtGraph_sEMG_MAV;
 	COScopeCtrl** rtGraph_Flex;
 	COScopeCtrl** rtGraph_IMU;
@@ -81,7 +79,6 @@ public:
 						  COScopeCtrl* rtGraph, Graph_class _class);
 	void Plot_graph(double* data, COScopeCtrl* rtGraph);
 
-	COScopeCtrl** Get_rtGraph_sEMG_raw();
 	COScopeCtrl** Get_rtGraph_sEMG_MAV();
 	COScopeCtrl** Get_rtGraph_Flex();
 

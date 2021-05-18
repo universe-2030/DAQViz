@@ -42,10 +42,6 @@
 #define IDC_RADIO_USE_FLEX_SENSOR_YES   1025
 #define IDC_RADIO_USE_FLEX_SENSOR_NO    1026
 #define IDC_EDIT_TEST                   1027
-#define IDC_GRAPH_SEMG_RAW_1            1028
-#define IDC_GRAPH_SEMG_RAW_2            1029
-#define IDC_GRAPH_SEMG_RAW_3            1030
-#define IDC_GRAPH_SEMG_RAW_4            1031
 #define IDC_GRAPH_SEMG_MAV_1            1032
 #define IDC_GRAPH_SEMG_MAV_2            1033
 #define IDC_GRAPH_SEMG_MAV_3            1034
