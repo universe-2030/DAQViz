@@ -42,6 +42,12 @@ void DAQVizChildKSJ::DoDataExchange(CDataExchange* pDX) {
 }
 
 BEGIN_MESSAGE_MAP(DAQVizChildKSJ, CDialogEx)
+	ON_STN_CLICKED(IDC_GRAPH_SEMG_MAV_1, &DAQVizChildKSJ::OnClickedGraphSemgMav1)
+	ON_STN_CLICKED(IDC_GRAPH_SEMG_MAV_2, &DAQVizChildKSJ::OnClickedGraphSemgMav2)
+	ON_STN_CLICKED(IDC_GRAPH_SEMG_MAV_3, &DAQVizChildKSJ::OnClickedGraphSemgMav3)
+	ON_STN_CLICKED(IDC_GRAPH_SEMG_MAV_4, &DAQVizChildKSJ::OnClickedGraphSemgMav4)
+	ON_STN_CLICKED(IDC_GRAPH_FLEX_SENSOR, &DAQVizChildKSJ::OnClickedGraphFlexSensor)
+	ON_STN_CLICKED(IDC_GRAPH_LOGONU_IMU, &DAQVizChildKSJ::OnClickedGraphLogonuImu)
 END_MESSAGE_MAP()
 
 // DAQVizChildKSJ 메시지 처리기
@@ -58,7 +64,10 @@ BOOL DAQVizChildKSJ::OnInitDialog() {
 }
 
 void DAQVizChildKSJ::Initialize_Variable() {
-	Graph_region = new CRect[N_GRAPH];
+	p_RectCtrl = new CRect[N_GRAPH];
+	p_RectPlot = new CRect[N_GRAPH];
+	p_RectPlot_fin = new CRect[N_GRAPH];
+	m_NumClicked = new UINT[N_GRAPH];
 
 	rtGraph_sEMG_MAV = new COScopeCtrl*[4];
 	rtGraph_Flex = new COScopeCtrl*;
@@ -70,19 +79,6 @@ void DAQVizChildKSJ::Initialize_Variable() {
 }
 
 void DAQVizChildKSJ::Initialize_GUI() {
-	for (int i = 0; i < N_GRAPH; i++) {
-		UINT ID_Ctrl = IDC_GRAPH_SEMG_MAV_1 + i;
-		GetDlgItem(ID_Ctrl)->GetWindowRect(Graph_region[i]);
-		ScreenToClient(Graph_region[i]);
-
-		// For check (temporary)
-		std::cout << "Left : " << Graph_region[i].left << std::endl;
-		std::cout << "Top : " << Graph_region[i].top << std::endl;
-		std::cout << "Right : " << Graph_region[i].right << std::endl;
-		std::cout << "Bottom : " << Graph_region[i].bottom << std::endl;
-		std::cout << std::endl;
-	}
-
 	CDAQVizDlg* pMainDlg = new CDAQVizDlg();
 	pMainDlg->Set_Font(m_textsEMGPlot, 20, 8);
 	pMainDlg->Set_Font(m_textMotionRendering, 20, 8);
@@ -95,6 +91,26 @@ void DAQVizChildKSJ::Initialize_GUI() {
 	rtGraph_Flex[0] = Initialize_graph(IDC_GRAPH_FLEX_SENSOR, 1, 5, rtGraph_Flex[0], FLEX_SENSOR);
 
 	rtGraph_IMU[0] = Initialize_graph(IDC_GRAPH_LOGONU_IMU, 1, 2, rtGraph_IMU[0], IMU);
+	
+	// Get m_rectPlot region with graph controls
+	for (int i = 0; i < N_GRAPH; i++) {
+		UINT ID_Ctrl = IDC_GRAPH_SEMG_MAV_1 + i;
+
+		GetDlgItem(ID_Ctrl)->GetWindowRect(p_RectCtrl[i]);
+		ScreenToClient(p_RectCtrl[i]);
+
+		if (0 <= i && i < 4)
+			p_RectPlot[i] = rtGraph_sEMG_MAV[i]->Get_m_rectPlot();
+		else if (i == 4)
+			p_RectPlot[i] = rtGraph_Flex[0]->Get_m_rectPlot();
+		else if (i == 5)
+			p_RectPlot[i] = rtGraph_IMU[0]->Get_m_rectPlot();
+
+		p_RectPlot_fin[i].left = p_RectCtrl[i].left + p_RectPlot[i].left;
+		p_RectPlot_fin[i].top = p_RectCtrl[i].top + p_RectPlot[i].top;
+		p_RectPlot_fin[i].right = p_RectCtrl[i].left + p_RectPlot[i].right;
+		p_RectPlot_fin[i].bottom = p_RectCtrl[i].top + p_RectPlot[i].bottom;
+	}
 
 	CRect rectofDialogArea;
 	GetDlgItem(IDC_PLOT_OPENGL)->GetWindowRect(&rectofDialogArea);
@@ -222,4 +238,34 @@ COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Flex() {
 
 DAQVizChildOpenGL* DAQVizChildKSJ::Get_OpenGLPointer() {
 	return p_ChildOpenGL;
+}
+
+void DAQVizChildKSJ::OnClickedGraphSemgMav1() {
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	
+}
+
+void DAQVizChildKSJ::OnClickedGraphSemgMav2() {
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	
+}
+
+void DAQVizChildKSJ::OnClickedGraphSemgMav3() {
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	
+}
+
+void DAQVizChildKSJ::OnClickedGraphSemgMav4() {
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	
+}
+
+void DAQVizChildKSJ::OnClickedGraphFlexSensor() {
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	
+}
+
+void DAQVizChildKSJ::OnClickedGraphLogonuImu() {
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	
 }

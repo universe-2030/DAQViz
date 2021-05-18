@@ -115,5 +115,6 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnSysColorChange();
 
+public:
 	CRect Get_m_rectPlot();
 };

@@ -53,7 +53,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	CRect* Graph_region;
+	CRect* p_RectCtrl; // Position of MFC picture control on client window
+	CRect* p_RectPlot; // Position of COscopeCtrl plot region on picture control
+	CRect* p_RectPlot_fin; // Position of COscopeCtrl plot region on client window
+	UINT* m_NumClicked;
 
 	COScopeCtrl** rtGraph_sEMG_MAV;
 	COScopeCtrl** rtGraph_Flex;
@@ -90,4 +93,11 @@ public:
 
 	CStatic m_textsEMGPlot;
 	CStatic m_textMotionRendering;
+
+	afx_msg void OnClickedGraphSemgMav1();
+	afx_msg void OnClickedGraphSemgMav2();
+	afx_msg void OnClickedGraphSemgMav3();
+	afx_msg void OnClickedGraphSemgMav4();
+	afx_msg void OnClickedGraphFlexSensor();
+	afx_msg void OnClickedGraphLogonuImu();
 };
