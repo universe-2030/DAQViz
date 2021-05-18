@@ -194,6 +194,7 @@
     <ClInclude Include="DELSYSDAQ.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="glm.h" />
+    <ClInclude Include="GraphClipping.h" />
     <ClInclude Include="Hand.h" />
     <ClInclude Include="LuMatchFdn.h" />
     <ClInclude Include="MatchDevice.h" />
@@ -215,6 +216,7 @@
     <ClCompile Include="DELSYSDAQ.cpp" />
     <ClCompile Include="glm.cpp" />
     <ClCompile Include="gltools.cpp" />
+    <ClCompile Include="GraphClipping.cpp" />
     <ClCompile Include="MatchDevice.cpp" />
     <ClCompile Include="math3d.cpp" />
     <ClCompile Include="NI_AI_AO_DO.cpp" />

@@ -6,6 +6,7 @@
 
 #include "DAQVizChildOpenGL.h"
 #include "DAQVizChildOpenGL2.h"
+#include "GraphClipping.h"
 
 // DAQVizChildKSJ 대화 상자
 
@@ -76,7 +77,15 @@ private:
 	double* Flex_data;
 	double* IMU_data;
 
+	UINT Pt_forth;
+	UINT Pt_back;
+
+	GraphClipping* Clip_window;
+
 public:
+	CStatic m_textsEMGPlot;
+	CStatic m_textMotionRendering;
+
 	virtual BOOL OnInitDialog();
 
 	void Initialize_Variable();
@@ -90,10 +99,8 @@ public:
 	COScopeCtrl** Get_rtGraph_Flex();
 
 	DAQVizChildOpenGL* Get_OpenGLPointer();
-
-	CStatic m_textsEMGPlot;
-	CStatic m_textMotionRendering;
-
+	
+	void Cursor_set(UINT graph_idx);
 	afx_msg void OnClickedGraphSemgMav1();
 	afx_msg void OnClickedGraphSemgMav2();
 	afx_msg void OnClickedGraphSemgMav3();

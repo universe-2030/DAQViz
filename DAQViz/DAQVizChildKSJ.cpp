@@ -242,89 +242,110 @@ DAQVizChildOpenGL* DAQVizChildKSJ::Get_OpenGLPointer() {
 }
 
 void DAQVizChildKSJ::OnClickedGraphSemgMav1() {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	if (m_NumClicked[0] == 0) {
-		m_NumClicked[0] += 1;
-	}
+	Cursor_set(0);
 }
 
 void DAQVizChildKSJ::OnClickedGraphSemgMav2() {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
-
-	if (m_NumClicked[1] == 0) {
-		CPoint point_cur;
-		::GetCursorPos(&point_cur);
-		ScreenToClient(&point_cur);
-
-		if (p_RectPlot_fin[1].left <= point_cur.x && point_cur.x <= p_RectPlot_fin[1].right &&
-			p_RectPlot_fin[1].top <= point_cur.y &&	point_cur.y <= p_RectPlot_fin[1].bottom) {
-			m_NumClicked[1] += 1;
-			MessageBox(_T("Please select another point."),
-				_T("Notice"),
-				MB_OKCANCEL | MB_ICONINFORMATION);
-
-			point_cur.x -= p_RectPlot_fin[1].left;
-			point_cur.y -= p_RectPlot_fin[1].top;
-
-			pMainDlg->Set_StartIdx((UINT)point_cur.x);
-		}
-		else {
-			MessageBox(_T("Please click the plot space."),
-				_T("Notice"),
-				MB_OKCANCEL | MB_ICONINFORMATION);
-		}
-	}
-	else if (m_NumClicked[1] == 1) {
-		CPoint point_cur;
-		::GetCursorPos(&point_cur);
-		ScreenToClient(&point_cur);
-
-		if (p_RectPlot_fin[1].left <= point_cur.x && point_cur.x <= p_RectPlot_fin[1].right &&
-			p_RectPlot_fin[1].top <= point_cur.y && point_cur.y <= p_RectPlot_fin[1].bottom) {
-			m_NumClicked[1] += 1;
-			MessageBox(_T("Selection is complete."),
-				_T("Notice"),
-				MB_OKCANCEL | MB_ICONINFORMATION);
-
-			point_cur.x -= p_RectPlot_fin[1].left;
-			point_cur.y -= p_RectPlot_fin[1].top;
-
-			pMainDlg->Set_EndIdx((UINT)point_cur.x);
-
-			// Generate analysis dialog
-
-			// 1. Ask whether to generate the analysis window or not
-
-
-			// 2. If YES, generate the analysis window
-
-			m_NumClicked[1] = 0;
-		}
-		else {
-			MessageBox(_T("Please click the plot space."),
-				_T("Notice"),
-				MB_OKCANCEL | MB_ICONINFORMATION);
-		}
-	}
+	Cursor_set(1);
 }
 
 void DAQVizChildKSJ::OnClickedGraphSemgMav3() {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	
+	Cursor_set(2);
 }
 
 void DAQVizChildKSJ::OnClickedGraphSemgMav4() {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	
+	Cursor_set(3);
 }
 
 void DAQVizChildKSJ::OnClickedGraphFlexSensor() {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	
+	Cursor_set(4);
 }
 
 void DAQVizChildKSJ::OnClickedGraphLogonuImu() {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	
+	Cursor_set(5);
+}
+
+void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
+	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
+
+	for (int i = 0; i < N_GRAPH; i++)
+		if (i != graph_idx)
+			if (m_NumClicked[i] > 0) {
+				MessageBox(_T("Please select another point in same picture control."),
+						   _T("Notice"), MB_OK | MB_ICONINFORMATION);
+				return;
+			}
+
+
+	if (m_NumClicked[graph_idx] == 0) {
+		CPoint point_cur;
+		::GetCursorPos(&point_cur);
+		ScreenToClient(&point_cur);
+
+		if (p_RectPlot_fin[graph_idx].left <= point_cur.x &&
+			point_cur.x <= p_RectPlot_fin[graph_idx].right &&
+			p_RectPlot_fin[graph_idx].top <= point_cur.y &&
+			point_cur.y <= p_RectPlot_fin[graph_idx].bottom) {
+			
+			point_cur.x -= p_RectPlot_fin[graph_idx].left;
+			point_cur.x *= N_GRAPH;
+			point_cur.x += graph_idx;
+			point_cur.y -= p_RectPlot_fin[graph_idx].top;
+
+			m_NumClicked[graph_idx] += 1;
+			Pt_forth = point_cur.x;
+			pMainDlg->Set_StartIdx(point_cur.x);
+		}
+		else {
+			MessageBox(_T("Please click the plot space."),
+					   _T("Notice"), MB_OKCANCEL | MB_ICONINFORMATION);
+		}
+	}
+	else if (m_NumClicked[graph_idx] == 1) {
+		CPoint point_cur;
+		::GetCursorPos(&point_cur);
+		ScreenToClient(&point_cur);
+
+		if (p_RectPlot_fin[graph_idx].left <= point_cur.x &&
+			point_cur.x <= p_RectPlot_fin[graph_idx].right &&
+			p_RectPlot_fin[graph_idx].top <= point_cur.y &&
+			point_cur.y <= p_RectPlot_fin[graph_idx].bottom) {
+			
+			UINT check = point_cur.x;
+			check -= p_RectPlot_fin[graph_idx].left;
+			check *= N_GRAPH;
+			check += graph_idx;
+			
+			if (Pt_forth >= check) {
+				MessageBox(_T("Select the point after the starting time."),
+						   _T("Notice"), MB_OK | MB_ICONINFORMATION);
+			}
+			else {
+				point_cur.x -= p_RectPlot_fin[graph_idx].left;
+				point_cur.x *= N_GRAPH;
+				point_cur.x += graph_idx;
+				point_cur.y -= p_RectPlot_fin[graph_idx].top;
+				pMainDlg->Set_EndIdx((UINT)point_cur.x);
+
+				// Generate analysis dialog
+				// 1. Ask whether to generate the analysis window or not
+				if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {
+					// 2. Generate new window
+					Clip_window = new GraphClipping();
+					Clip_window->Create(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, this);
+					Clip_window->ShowWindow(SW_SHOW);
+				}
+				else {
+					pMainDlg->Initialize_StartIdx();
+					pMainDlg->Initialize_EndIdx();
+				}
+				
+				m_NumClicked[graph_idx] = 0;
+			}
+		}
+		else {
+			MessageBox(_T("Please click the plot space."),
+					   _T("Notice"), MB_OKCANCEL | MB_ICONINFORMATION);
+		}
+	}
 }

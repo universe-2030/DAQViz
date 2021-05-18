@@ -788,3 +788,11 @@ void CDAQVizDlg::Set_EndIdx(UINT _idx) {
 	temp.Format(_T("%u"), _idx);
 	m_editEndIdx.SetWindowText(temp);
 }
+
+void CDAQVizDlg::Initialize_StartIdx() {
+	m_editStartIdx.SetWindowText(_T("Not selected"));
+}
+
+void CDAQVizDlg::Initialize_EndIdx() {
+	m_editEndIdx.SetWindowText(_T("Not selected"));
+}

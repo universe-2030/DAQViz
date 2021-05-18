@@ -184,6 +184,8 @@ public:
 
 	void Set_StartIdx(UINT _idx);
 	void Set_EndIdx(UINT _idx);
+	void Initialize_StartIdx();
+	void Initialize_EndIdx();
 
 	// Utilities
 	void Set_Font(CButton& Btn_, UINT Height_, UINT Width_);
