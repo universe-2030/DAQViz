@@ -62,7 +62,7 @@ BOOL DAQVizChildOpenGL2::OnInitDialog() {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glutInitWindowSize(500, 500);
-	glutInitWindowPosition(900, 700);
+	glutInitWindowPosition(0, 0);
 	glutCreateWindow("OpenGL 3D Model Demo");
 
 	SetupRC();
@@ -211,7 +211,8 @@ void DAQVizChildOpenGL2::SetupRC()
 
 	M3DVector3f up = { -0.614193, 0.690447, 0.382165 };
 	M3DVector3f origin = { 5.12, 7.09, -5.57 };
-	M3DVector3f look = { -0.51938, -0.71827, 0.4629628 };
+	// M3DVector3f look = { -0.51938, -0.71827, 0.4629628 }; // Original look
+	M3DVector3f look = { -1.5, -0.81827, 0.4629628 };
 	frameCamera.SetForwardVector(look);
 	frameCamera.SetOrigin(origin);
 	frameCamera.SetUpVector(up);
@@ -280,119 +281,119 @@ void DAQVizChildOpenGL2::RenderScene(void)
 
 #pragma region PolygonObject_Solid
 
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(.5, .5);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	// glEnable(GL_POLYGON_OFFSET_FILL);
+	// glPolygonOffset(.5, .5);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//Back
-	glColor3ub(0, 0, 0);
-	glBegin(GL_POLYGON);
-	glNormal3f(0, 0, -1);
-	glVertex3fv(vertices[0]);
-	glVertex3fv(vertices[1]);
-	glVertex3fv(vertices[2]);
-	glVertex3fv(vertices[3]);
-	glEnd();
+	//glColor3ub(0, 0, 0);
+	//glBegin(GL_POLYGON);
+	//glNormal3f(0, 0, -1);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[3]);
+	//glEnd();
 
-	//Front
-	glColor3ub(255, 0, 255);
-	glBegin(GL_POLYGON);
-	glNormal3f(0, 0, 1);
-	glVertex3fv(vertices[4]);
-	glVertex3fv(vertices[5]);
-	glVertex3fv(vertices[6]);
-	glVertex3fv(vertices[7]);
-	glEnd();
+	////Front
+	//glColor3ub(255, 0, 255);
+	//glBegin(GL_POLYGON);
+	//glNormal3f(0, 0, 1);
+	//glVertex3fv(vertices[4]);
+	//glVertex3fv(vertices[5]);
+	//glVertex3fv(vertices[6]);
+	//glVertex3fv(vertices[7]);
+	//glEnd();
 
-	//Top
-	glColor3ub(0, 0, 255);
-	glBegin(GL_POLYGON);
-	glNormal3f(0, 1, 0);
-	glVertex3fv(vertices[0]);
-	glVertex3fv(vertices[1]);
-	glVertex3fv(vertices[2]);
-	glVertex3fv(vertices[3]);
-	glEnd();
+	////Top
+	//glColor3ub(0, 0, 255);
+	//glBegin(GL_POLYGON);
+	//glNormal3f(0, 1, 0);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[3]);
+	//glEnd();
 
-	//Bottom
-	glColor3ub(255, 255, 255);
-	glBegin(GL_POLYGON);
-	glNormal3f(0, -1, 0);
-	glVertex3fv(vertices[1]);
-	glVertex3fv(vertices[0]);
-	glVertex3fv(vertices[4]);
-	glVertex3fv(vertices[5]);
-	glEnd();
+	////Bottom
+	//glColor3ub(255, 255, 255);
+	//glBegin(GL_POLYGON);
+	//glNormal3f(0, -1, 0);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[4]);
+	//glVertex3fv(vertices[5]);
+	//glEnd();
 
-	//Left
-	glColor3ub(0, 255, 0);
-	glBegin(GL_POLYGON);
-	glVertex3fv(vertices[0]);
-	glVertex3fv(vertices[3]);
-	glVertex3fv(vertices[7]);
-	glVertex3fv(vertices[4]);
-	glEnd();
+	////Left
+	//glColor3ub(0, 255, 0);
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[3]);
+	//glVertex3fv(vertices[7]);
+	//glVertex3fv(vertices[4]);
+	//glEnd();
 
-	//Right
-	glColor3ub(255, 0, 0);
-	glBegin(GL_POLYGON);
-	glVertex3fv(vertices[1]);
-	glVertex3fv(vertices[2]);
-	glVertex3fv(vertices[6]);
-	glVertex3fv(vertices[5]);
-	glEnd();
-	glDisable(GL_POLYGON_OFFSET_FILL);
+	////Right
+	//glColor3ub(255, 0, 0);
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[6]);
+	//glVertex3fv(vertices[5]);
+	//glEnd();
+	//glDisable(GL_POLYGON_OFFSET_FILL);
 #pragma endregion
 
 #pragma region PolygonObject_Wire
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glColor3ub(255, 255, 255);
-	glBegin(GL_POLYGON);
-	glVertex3fv(vertices[0]);
-	glVertex3fv(vertices[1]);
-	glVertex3fv(vertices[2]);
-	glVertex3fv(vertices[3]);
-	glEnd();
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glColor3ub(255, 255, 255);
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[3]);
+	//glEnd();
 
-	//Front
-	glBegin(GL_POLYGON);
-	glVertex3fv(vertices[4]);
-	glVertex3fv(vertices[5]);
-	glVertex3fv(vertices[6]);
-	glVertex3fv(vertices[7]);
-	glEnd();
+	////Front
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[4]);
+	//glVertex3fv(vertices[5]);
+	//glVertex3fv(vertices[6]);
+	//glVertex3fv(vertices[7]);
+	//glEnd();
 
-	//Top
-	glBegin(GL_POLYGON);
-	glVertex3fv(vertices[0]);
-	glVertex3fv(vertices[1]);
-	glVertex3fv(vertices[2]);
-	glVertex3fv(vertices[3]);
-	glEnd();
+	////Top
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[3]);
+	//glEnd();
 
-	//Bottom
-	glBegin(GL_POLYGON);
-	glVertex3fv(vertices[1]);
-	glVertex3fv(vertices[0]);
-	glVertex3fv(vertices[4]);
-	glVertex3fv(vertices[5]);
-	glEnd();
+	////Bottom
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[4]);
+	//glVertex3fv(vertices[5]);
+	//glEnd();
 
-	//Left
-	glBegin(GL_POLYGON);
-	glVertex3fv(vertices[0]);
-	glVertex3fv(vertices[3]);
-	glVertex3fv(vertices[7]);
-	glVertex3fv(vertices[4]);
-	glEnd();
+	////Left
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[3]);
+	//glVertex3fv(vertices[7]);
+	//glVertex3fv(vertices[4]);
+	//glEnd();
 
-	//Right
-	glBegin(GL_POLYGON);
-	glVertex3fv(vertices[1]);
-	glVertex3fv(vertices[2]);
-	glVertex3fv(vertices[6]);
-	glVertex3fv(vertices[5]);
-	glEnd();
+	////Right
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[6]);
+	//glVertex3fv(vertices[5]);
+	//glEnd();
 #pragma endregion
 
 	glPopMatrix();
