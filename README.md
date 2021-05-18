@@ -17,9 +17,18 @@ RNB - MARCH online sEMG processing & visualization program
 
 5. Setup tutorial is provided with manual.
 
+# Equipments
+
+  - NI board for DELSYS (If DELSYS is used. **NI PCIe-6351** is used on demonstration.)
+  - NI board for flex sensor (If flex sensor is used. **NI USB-6225** is used on demonstration.)
+  - DELSYS Trigno 16-CH sensor
+  - LogonU 8-CH sensor
+  - Flex sensor glove (customized)
+
 # Prerequisites
 
   - TwinCAT (Setup file can be downloaded from 'https://www.beckhoff.com/')
+  - NIDAQmx (Version 20.0 is tested.)
   - Visual Studio 2019 with MFC
   - EMGworks (Delsys sEMG acquisition program, license necessary)
   - OpenGL (Real-time visualization tool, expected)
