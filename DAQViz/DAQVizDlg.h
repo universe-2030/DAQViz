@@ -16,6 +16,8 @@
 
 #include "DAQVizChildKSJ.h"
 #include "DAQVizChildOpenGL.h"
+#include "BallControl.h"
+
 #include "NI_AI_AO_DO.h"
 
 #include "TrainedModel.h"
@@ -115,6 +117,7 @@ private:
 
 	// Child dialogs
 	DAQVizChildKSJ* p_ChildDlg_KSJ;
+	BallControl* p_BallControl;
 
 	// Saving folder
 	CString SaveFolderPath;

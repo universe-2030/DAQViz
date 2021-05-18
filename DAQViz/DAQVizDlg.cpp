@@ -155,8 +155,7 @@ BOOL CDAQVizDlg::OnInitDialog()
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
-void CDAQVizDlg::OnSysCommand(UINT nID, LPARAM lParam)
-{
+void CDAQVizDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
 	{
 		CAboutDlg dlgAbout;
@@ -172,10 +171,8 @@ void CDAQVizDlg::OnSysCommand(UINT nID, LPARAM lParam)
 //  아래 코드가 필요합니다.  문서/뷰 모델을 사용하는 MFC 애플리케이션의 경우에는
 //  프레임워크에서 이 작업을 자동으로 수행합니다.
 
-void CDAQVizDlg::OnPaint()
-{
-	if (IsIconic())
-	{
+void CDAQVizDlg::OnPaint() {
+	if (IsIconic()) {
 		CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
@@ -191,16 +188,14 @@ void CDAQVizDlg::OnPaint()
 		// 아이콘을 그립니다.
 		dc.DrawIcon(x, y, m_hIcon);
 	}
-	else
-	{
+	else {
 		CDialogEx::OnPaint();
 	}
 }
 
 // 사용자가 최소화된 창을 끄는 동안에 커서가 표시되도록 시스템에서
 //  이 함수를 호출합니다.
-HCURSOR CDAQVizDlg::OnQueryDragIcon()
-{
+HCURSOR CDAQVizDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
@@ -267,6 +262,10 @@ void CDAQVizDlg::Initialize_GUI() {
 	p_ChildDlg_KSJ->Create(IDD_DAQVIZ_DIALOG_CHILD_KSJ, this);
 	p_ChildDlg_KSJ->ShowWindow(SW_SHOW);
 	p_ChildDlg_KSJ->MoveWindow(rectofDialogArea);
+
+	p_BallControl = new BallControl();
+	p_BallControl->Create(IDD_DAQVIZ_DIALOG_BALL_CONTROL, this);
+	p_BallControl->ShowWindow(SW_SHOW);
 
 	SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
 }

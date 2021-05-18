@@ -75,6 +75,9 @@
     <ClInclude Include="GraphClipping.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="BallControl.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DAQViz.cpp">
@@ -126,6 +129,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="GraphClipping.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="BallControl.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

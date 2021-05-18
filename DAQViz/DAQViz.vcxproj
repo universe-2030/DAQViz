@@ -186,6 +186,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BallControl.h" />
     <ClInclude Include="DAQViz.h" />
     <ClInclude Include="DAQVizChildKSJ.h" />
     <ClInclude Include="DAQVizChildOpenGL.h" />
@@ -208,6 +209,7 @@
     <ClInclude Include="TrainedModel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BallControl.cpp" />
     <ClCompile Include="DAQViz.cpp" />
     <ClCompile Include="DAQVizChildKSJ.cpp" />
     <ClCompile Include="DAQVizChildOpenGL.cpp" />
