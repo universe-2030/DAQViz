@@ -58,6 +58,8 @@ BOOL DAQVizChildKSJ::OnInitDialog() {
 }
 
 void DAQVizChildKSJ::Initialize_Variable() {
+	Graph_region = new CRect[N_GRAPH];
+
 	rtGraph_sEMG_MAV = new COScopeCtrl*[4];
 	rtGraph_Flex = new COScopeCtrl*;
 	rtGraph_IMU = new COScopeCtrl*;
@@ -68,6 +70,19 @@ void DAQVizChildKSJ::Initialize_Variable() {
 }
 
 void DAQVizChildKSJ::Initialize_GUI() {
+	for (int i = 0; i < N_GRAPH; i++) {
+		UINT ID_Ctrl = IDC_GRAPH_SEMG_MAV_1 + i;
+		GetDlgItem(ID_Ctrl)->GetWindowRect(Graph_region[i]);
+		ScreenToClient(Graph_region[i]);
+
+		// For check (temporary)
+		std::cout << "Left : " << Graph_region[i].left << std::endl;
+		std::cout << "Top : " << Graph_region[i].top << std::endl;
+		std::cout << "Right : " << Graph_region[i].right << std::endl;
+		std::cout << "Bottom : " << Graph_region[i].bottom << std::endl;
+		std::cout << std::endl;
+	}
+
 	CDAQVizDlg* pMainDlg = new CDAQVizDlg();
 	pMainDlg->Set_Font(m_textsEMGPlot, 20, 8);
 	pMainDlg->Set_Font(m_textMotionRendering, 20, 8);

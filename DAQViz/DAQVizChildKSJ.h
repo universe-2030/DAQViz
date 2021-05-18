@@ -25,6 +25,8 @@
 #define N_FLEX_CH 5
 #define N_IMU_CH 2
 
+#define N_GRAPH 6
+
 enum Graph_class {
 	SEMG_MAV,
 	FLEX_SENSOR,
@@ -51,6 +53,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	CRect* Graph_region;
+
 	COScopeCtrl** rtGraph_sEMG_MAV;
 	COScopeCtrl** rtGraph_Flex;
 	COScopeCtrl** rtGraph_IMU;

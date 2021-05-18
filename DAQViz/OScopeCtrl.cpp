@@ -953,3 +953,7 @@ void COScopeCtrl::OnSysColorChange()
 	CWnd::OnSysColorChange();
 	InvalidateCtrl(false);
 }
+
+CRect COScopeCtrl::Get_m_rectPlot() {
+	return m_rectPlot;
+}

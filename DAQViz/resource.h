@@ -13,7 +13,9 @@
 #define IDD_DAQVIZ_DIALOG_CHILD_OPENGL  132
 #define IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2 134
 #define IDD_DAQVIZ_DIALOG_NEW_WINDOW    136
+#define IDD_DAQVIZ_DIALOG_ANIMATION     136
 #define IDD_DAQVIZ_DIALOG_BALL_CONTROL  138
+#define IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING 140
 #define IDC_BTN_SWITCH                  1000
 #define IDC_EDIT_SAVEFOLDERPATH         1001
 #define IDC_SLOT_CHILDDLG               1002
@@ -47,8 +49,8 @@
 #define IDC_GRAPH_SEMG_MAV_3            1034
 #define IDC_GRAPH_SEMG_MAV_4            1035
 #define IDC_GRAPH_FLEX_SENSOR           1036
-#define IDC_PLOT_OPENGL                 1037
-#define IDC_GRAPH_LOGONU_IMU            1038
+#define IDC_GRAPH_LOGONU_IMU            1037
+#define IDC_PLOT_OPENGL                 1038
 #define IDC_TEXT_CONTROL_TIME           1039
 #define IDC_EDIT_CONTROL_TIME           1040
 #define IDC_PLOT_MOTION                 1040
@@ -60,7 +62,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        140
+#define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1044
 #define _APS_NEXT_SYMED_VALUE           101
