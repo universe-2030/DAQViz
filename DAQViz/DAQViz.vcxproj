@@ -88,17 +88,17 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Users\universe2030\Desktop\DAQViz\DAQViz\include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./include;C:\Program Files (x86)\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>C:\Users\universe2030\Desktop\DAQViz\DAQViz\lib;C:\Program Files (x86)\National Instruments\Shared\ExternalCompilerSupport\C\lib32\msvc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>NIDAQmx.lib;glew32.lib;glew32s.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NIDAQmx.lib;opengl32.lib;glu32.lib;glew32.lib;glew32s.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -191,9 +191,10 @@
     <ClInclude Include="DAQVizChildOpenGL.h" />
     <ClInclude Include="DAQVizChildOpenGL2.h" />
     <ClInclude Include="DAQVizDlg.h" />
-    <ClInclude Include="DAQVizOpenGLWindow.h" />
     <ClInclude Include="DELSYSDAQ.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="glm.h" />
+    <ClInclude Include="Hand.h" />
     <ClInclude Include="LuMatchFdn.h" />
     <ClInclude Include="MatchDevice.h" />
     <ClInclude Include="NI_AI_AO_DO.h" />
@@ -211,9 +212,11 @@
     <ClCompile Include="DAQVizChildOpenGL.cpp" />
     <ClCompile Include="DAQVizChildOpenGL2.cpp" />
     <ClCompile Include="DAQVizDlg.cpp" />
-    <ClCompile Include="DAQVizOpenGLWindow.cpp" />
     <ClCompile Include="DELSYSDAQ.cpp" />
+    <ClCompile Include="glm.cpp" />
+    <ClCompile Include="gltools.cpp" />
     <ClCompile Include="MatchDevice.cpp" />
+    <ClCompile Include="math3d.cpp" />
     <ClCompile Include="NI_AI_AO_DO.cpp" />
     <ClCompile Include="OScopeCtrl.cpp" />
     <ClCompile Include="pch.cpp">

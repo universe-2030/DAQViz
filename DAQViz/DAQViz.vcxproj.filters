@@ -66,7 +66,10 @@
     <ClInclude Include="DAQVizChildOpenGL2.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="DAQVizOpenGLWindow.h">
+    <ClInclude Include="glm.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Hand.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -110,7 +113,13 @@
     <ClCompile Include="DAQVizChildOpenGL2.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="DAQVizOpenGLWindow.cpp">
+    <ClCompile Include="glm.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="gltools.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="math3d.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

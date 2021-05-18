@@ -257,11 +257,6 @@ void CDAQVizDlg::Initialize_GUI() {
 	p_ChildDlg_KSJ->ShowWindow(SW_SHOW);
 	p_ChildDlg_KSJ->MoveWindow(rectofDialogArea);
 
-	p_OpenGLWin = new DAQVizOpenGLWindow();
-	p_OpenGLWin->Create(IDD_DAQVIZ_DIALOG_NEW_WINDOW, this);
-	p_OpenGLWin->ShowWindow(SW_SHOW);
-	p_OpenGLWin->SetWindowText(_T("OpenGL rendering window"));
-
 	SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
 }
 

@@ -1,8 +1,14 @@
 ﻿#pragma once
 
+#include <iostream>
+#include <gltools.h>
+#include <glframe.h>
 #include "GL/glut.h"
 #include "GL/GL.h"
 #include "GL/GLU.h"
+#include "GL/glew.h"
+#include "glm.h"
+#include "Hand.h"
 
 #define PI 3.14159265358
 
@@ -28,21 +34,28 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	int count = 0;
-
 	HGLRC	m_hRC;
 	CDC*	m_pDC;
 	HDC		m_hDC;
 
 public:
+	virtual BOOL OnInitDialog();
+	afx_msg void OnPaint();
 	afx_msg void OnDestroy();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	virtual BOOL OnInitDialog();
 
-	void GLResize(int cx, int cy);
-	void GLRenderScene();
-	afx_msg void OnPaint();
+	void SetupRC();
+	void DrawGround();
+	void RenderScene();
+	void objectAnimate(int i);
+
+	void myKeys(unsigned char key, int x, int y);
+	void SpecialKeys(int key, int x, int y);
+	void mouseClicked(int button, int state, int x, int y);
+	void mouseMotion(int x, int y);
+	void mouseScroll(int button, int dir, int x, int y);
+	void ChangeSize(int w, int h);
 };
