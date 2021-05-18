@@ -68,6 +68,7 @@ void DAQVizChildKSJ::Initialize_Variable() {
 	p_RectPlot = new CRect[N_GRAPH];
 	p_RectPlot_fin = new CRect[N_GRAPH];
 	m_NumClicked = new UINT[N_GRAPH];
+	memset(m_NumClicked, 0, sizeof(m_NumClicked) * N_GRAPH);
 
 	rtGraph_sEMG_MAV = new COScopeCtrl*[4];
 	rtGraph_Flex = new COScopeCtrl*;
@@ -242,12 +243,70 @@ DAQVizChildOpenGL* DAQVizChildKSJ::Get_OpenGLPointer() {
 
 void DAQVizChildKSJ::OnClickedGraphSemgMav1() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	
+	if (m_NumClicked[0] == 0) {
+		m_NumClicked[0] += 1;
+	}
 }
 
 void DAQVizChildKSJ::OnClickedGraphSemgMav2() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	
+	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
+
+	if (m_NumClicked[1] == 0) {
+		CPoint point_cur;
+		::GetCursorPos(&point_cur);
+		ScreenToClient(&point_cur);
+
+		if (p_RectPlot_fin[1].left <= point_cur.x && point_cur.x <= p_RectPlot_fin[1].right &&
+			p_RectPlot_fin[1].top <= point_cur.y &&	point_cur.y <= p_RectPlot_fin[1].bottom) {
+			m_NumClicked[1] += 1;
+			MessageBox(_T("Please select another point."),
+				_T("Notice"),
+				MB_OKCANCEL | MB_ICONINFORMATION);
+
+			point_cur.x -= p_RectPlot_fin[1].left;
+			point_cur.y -= p_RectPlot_fin[1].top;
+
+			pMainDlg->Set_StartIdx((UINT)point_cur.x);
+		}
+		else {
+			MessageBox(_T("Please click the plot space."),
+				_T("Notice"),
+				MB_OKCANCEL | MB_ICONINFORMATION);
+		}
+	}
+	else if (m_NumClicked[1] == 1) {
+		CPoint point_cur;
+		::GetCursorPos(&point_cur);
+		ScreenToClient(&point_cur);
+
+		if (p_RectPlot_fin[1].left <= point_cur.x && point_cur.x <= p_RectPlot_fin[1].right &&
+			p_RectPlot_fin[1].top <= point_cur.y && point_cur.y <= p_RectPlot_fin[1].bottom) {
+			m_NumClicked[1] += 1;
+			MessageBox(_T("Selection is complete."),
+				_T("Notice"),
+				MB_OKCANCEL | MB_ICONINFORMATION);
+
+			point_cur.x -= p_RectPlot_fin[1].left;
+			point_cur.y -= p_RectPlot_fin[1].top;
+
+			pMainDlg->Set_EndIdx((UINT)point_cur.x);
+
+			// Generate analysis dialog
+
+			// 1. Ask whether to generate the analysis window or not
+
+
+			// 2. If YES, generate the analysis window
+
+			m_NumClicked[1] = 0;
+		}
+		else {
+			MessageBox(_T("Please click the plot space."),
+				_T("Notice"),
+				MB_OKCANCEL | MB_ICONINFORMATION);
+		}
+	}
 }
 
 void DAQVizChildKSJ::OnClickedGraphSemgMav3() {

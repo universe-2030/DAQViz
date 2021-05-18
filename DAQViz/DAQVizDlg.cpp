@@ -87,6 +87,10 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 
 	DDX_Control(pDX, IDC_TEXT_CONTROL_TIME, m_textControlTime);
 	DDX_Control(pDX, IDC_EDIT_CONTROL_TIME, m_editControlTime);
+	DDX_Control(pDX, IDC_TEXT_TIME_START_IDX, m_textStartIdx);
+	DDX_Control(pDX, IDC_TEXT_TIME_END_IDX, m_textEndIdx);
+	DDX_Control(pDX, IDC_EDIT_TIME_START_IDX, m_editStartIdx);
+	DDX_Control(pDX, IDC_EDIT_TIME_END_IDX, m_editEndIdx);
 }
 
 BEGIN_MESSAGE_MAP(CDAQVizDlg, CDialogEx)
@@ -235,6 +239,10 @@ void CDAQVizDlg::Initialize_GUI() {
 	Set_Font(m_textUseFlexSensor, 20, 8);
 	Set_Font(m_textControlTime, 20, 8);
 	Set_Font(m_editControlTime, 20, 8);
+	Set_Font(m_textStartIdx, 20, 8);
+	Set_Font(m_editStartIdx, 20, 8);
+	Set_Font(m_textEndIdx, 20, 8);
+	Set_Font(m_editEndIdx, 20, 8);
 
 	m_comboSelectDlg.AddString(_T("1. Sejin Kim"));
 	m_comboSelectDlg.AddString(_T("2. Another users"));
@@ -242,6 +250,9 @@ void CDAQVizDlg::Initialize_GUI() {
 	m_comboSelectDlg.SetCurSel(0);
 
 	m_editLoadName.SetWindowText(_T("Select file"));
+
+	m_editStartIdx.SetWindowText(_T("Not selected"));
+	m_editEndIdx.SetWindowText(_T("Not selected"));
 
 	if (m_radioStreamingMode == 0)
 		m_btnLoad.EnableWindow(FALSE);
@@ -643,7 +654,6 @@ int CDAQVizDlg::MainStart() {
 error:
 	CloseHandle(hMutex);
 	CloseHandle(hMemory);
-
 	m_editStatusBar.SetWindowText(stat += "[USER] System Closed");
 	m_editStatusBar.SetWindowText(stat += "\r\n");
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
@@ -752,9 +762,11 @@ void CDAQVizDlg::OnTimer(UINT_PTR nIDEvent) {
 
 	CString m_time_str;
 	switch (nIDEvent) {
-		case 1:
+		case TIMER_EDIT:
 			m_time_str.Format(_T("%.3f"), m_time);
 			m_editControlTime.SetWindowText(m_time_str);
+
+			break;
 	}
 }
 
@@ -763,4 +775,16 @@ void CDAQVizDlg::OnDestroy() {
 
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
 	KillTimer(TIMER_EDIT);
+}
+
+void CDAQVizDlg::Set_StartIdx(UINT _idx) {
+	CString temp;
+	temp.Format(_T("%u"), _idx);
+	m_editStartIdx.SetWindowText(temp);
+}
+
+void CDAQVizDlg::Set_EndIdx(UINT _idx) {
+	CString temp;
+	temp.Format(_T("%u"), _idx);
+	m_editEndIdx.SetWindowText(temp);
 }

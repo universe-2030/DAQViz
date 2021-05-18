@@ -7,6 +7,7 @@
  *
  */
 
+#include "pch.h"
 #include "gltools.h"
 #include "math3d.h"
 #include <stdio.h>

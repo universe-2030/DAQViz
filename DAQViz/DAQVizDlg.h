@@ -88,12 +88,17 @@ private:
 	UINT m_radioUseIMU;
 
 	CStatic m_textUseFlexSensor;
-	UINT m_radioUseFlexSensor;
+	UINT    m_radioUseFlexSensor;
 
 	CEdit m_editStatusBar;
 
 	CStatic m_textControlTime;
-	CEdit m_editControlTime;
+	CEdit   m_editControlTime;
+
+	CStatic		m_textStartIdx;
+	CEdit		m_editStartIdx;
+	CStatic		m_textEndIdx;
+	CEdit		m_editEndIdx;
 
 	// TwinCAT variables
 	HANDLE hMutex;
@@ -171,6 +176,14 @@ public:
 	// MFC Controls
 	afx_msg void RadioCtrl(UINT ID);
 	afx_msg void OnBnClickedBtnSwitch();
+	afx_msg void OnBnClickedBtnLoad();
+	afx_msg void OnCbnSelchangeComboDlgSelect();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnDestroy();
+
+	void Set_StartIdx(UINT _idx);
+	void Set_EndIdx(UINT _idx);
 
 	// Utilities
 	void Set_Font(CButton& Btn_, UINT Height_, UINT Width_);
@@ -180,11 +193,7 @@ public:
 	// Stack & Save
 	void StackData();
 	void SaveData();
-	afx_msg void OnBnClickedBtnLoad();
-	afx_msg void OnCbnSelchangeComboDlgSelect();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
 
 	bool bProcessEnd;
-	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg void OnDestroy();
+	
 };

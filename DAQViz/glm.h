@@ -17,7 +17,6 @@ coordinate generation (spheremap and planar projections) + more.
 #include <GL/gl.h>
 #include <GL/glut.h>
 
-
 #ifndef M_PI
 #define M_PI 3.14159265f
 #endif

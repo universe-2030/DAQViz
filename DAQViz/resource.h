@@ -57,6 +57,10 @@
 #define IDC_EDIT_LOAD_NAME              1041
 #define IDC_TEXT_SEMG_PLOT              1042
 #define IDC_TEXT_MOTION                 1043
+#define IDC_EDIT_TIME_START_IDX         1044
+#define IDC_EDIT_TIME_END_IDX           1045
+#define IDC_TEXT_TIME_START_IDX         1046
+#define IDC_TEXT_TIME_END_IDX           1047
 
 // Next default values for new objects
 // 
@@ -64,7 +68,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1044
+#define _APS_NEXT_CONTROL_VALUE         1048
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

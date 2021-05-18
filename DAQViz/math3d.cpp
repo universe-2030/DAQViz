@@ -3,6 +3,7 @@
 // Richard S. Wright Jr.
 
 // These are pretty portable
+#include "pch.h"
 #include <math.h>
 #include "math3d.h"
 
