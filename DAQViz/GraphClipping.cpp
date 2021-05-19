@@ -20,6 +20,7 @@ GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, double _m_time, CWnd*
 	: CDialogEx(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, pParent) {
 	m_StartIdx = start_idx;
 	m_EndIdx = end_idx;
+	m_NumIdx = m_EndIdx - m_StartIdx + 1;
 	m_time = _m_time;
 }
 
@@ -36,11 +37,13 @@ void GraphClipping::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_EDIT_CLIPPING_END_IDX, m_editEndIdx);
 	DDX_Control(pDX, IDC_BTN_REDRAW, m_btnRedraw);
 	DDX_Control(pDX, IDC_BTN_ANIMATION_RUN, m_btnRun);
+	DDX_Control(pDX, IDC_SCROLLBAR_ANIMATION, m_scrollBar);
 }
 
 BEGIN_MESSAGE_MAP(GraphClipping, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_REDRAW, &GraphClipping::OnBnClickedBtnRedraw)
 	ON_BN_CLICKED(IDC_BTN_ANIMATION_RUN, &GraphClipping::OnBnClickedBtnAnimationRun)
+	ON_WM_HSCROLL()
 END_MESSAGE_MAP()
 
 // GraphClipping 메시지 처리기
@@ -50,6 +53,7 @@ BOOL GraphClipping::OnInitDialog() {
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
 	Initialize_GUI();
+	Initialize_Variable();
 
 	SetWindowPos(NULL, 0, -1080, 0, 0, SWP_NOSIZE);
 
@@ -80,6 +84,13 @@ void GraphClipping::Initialize_GUI() {
 	p_ClippedGraph->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph->ShowWindow(SW_SHOW);
 	p_ClippedGraph->MoveWindow(rectofDialogArea);
+
+	m_scrollBar.SetScrollRange(0, m_NumIdx - 1);
+	m_scrollBar.SetScrollPos(0);
+}
+
+void GraphClipping::Initialize_Variable() {
+	m_Scroll = 0;
 }
 
 void GraphClipping::OnBnClickedBtnRedraw() {
@@ -91,4 +102,35 @@ void GraphClipping::OnBnClickedBtnRedraw() {
 void GraphClipping::OnBnClickedBtnAnimationRun() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
+}
+
+
+void GraphClipping::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	
+	SCROLLINFO scrInfo;
+	memset(&scrInfo, 0, sizeof(scrInfo));
+	if (FALSE != m_scrollBar.GetScrollInfo(&scrInfo)) {
+		switch (nSBCode) {
+		case SB_LINELEFT:
+			scrInfo.nPos -= 1;
+			break;
+		case SB_LINERIGHT:
+			scrInfo.nPos += 1;
+			break;
+		case SB_PAGELEFT:
+			scrInfo.nPos -= 30;
+			break;
+		case SB_PAGERIGHT:
+			scrInfo.nPos += 30;
+			break;
+		case SB_THUMBTRACK:
+			scrInfo.nPos = nPos;
+			break;
+		}
+		m_scrollBar.SetScrollInfo(&scrInfo);
+	}
+																																				   출처: https://3001ssw.tistory.com/117?category=939609 [C++, WinAPI, Android, OpenCV 정리 블로그]
+
+	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }

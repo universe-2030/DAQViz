@@ -26,7 +26,10 @@ private:
 
 	UINT m_StartIdx;
 	UINT m_EndIdx;
+	UINT m_NumIdx;
 	double m_time; // To check whether m_EndIdx exceeds m_time
+
+	int m_Scroll;
 
 public:
 	virtual BOOL OnInitDialog();
@@ -36,9 +39,13 @@ public:
 	CEdit m_editStartIdx;
 	CEdit m_editEndIdx;
 	CButton m_btnRedraw;
+	CScrollBar m_scrollBar;
 	CButton m_btnRun;
 
 	void Initialize_GUI();
+	void Initialize_Variable();
+
 	afx_msg void OnBnClickedBtnRedraw();
 	afx_msg void OnBnClickedBtnAnimationRun();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 };
