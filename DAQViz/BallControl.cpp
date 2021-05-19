@@ -31,6 +31,7 @@ BEGIN_MESSAGE_MAP(BallControl, CDialogEx)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
+	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 // BallControl 메시지 처리기
@@ -164,46 +165,80 @@ void BallControl::GLResize(int cx, int cy) {
 
 void BallControl::GLRenderScene(void) {
 	// TODO: 여기에 구현 코드 추가.
-	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glPushMatrix();
-
 	glEnable(GL_DEPTH_TEST);
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+	glMatrixMode(GL_MODELVIEW);
+	// clear the drawing buffer.
 
-	glShadeModel(GL_FLAT);
+	gluLookAt(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+	////////////////////////////// Sphere //////////////////////////////
 	glLoadIdentity();
+	// Blue color used to draw.
+	glColor3f(0.0, 0.0, 1.0);
+	// traslate the draw by z = -4.0
+	// Note this when you decrease z like -8.0 the drawing will looks far , or smaller.
+	glTranslatef(count_horizontal * 0.1, count_vertical * 0.1, -5.0);
+	// built-in (glut library) function , draw you a sphere.
+	glutSolidSphere(0.3 + count * 0.02, 50, 50);
+	// Flush buffers to screen
 
-	gluLookAt(0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	////////////////////////////// Axis //////////////////////////////
+	GLfloat Axis_min = -100.0f;
+	GLfloat Axis_max = 100.0f;
 
-	glTranslatef(0.0f, 0.0f, -5.0f);
-	glRotatef(rot, 0.0f, 1.0f, 0.0f);
-
-	glBegin(GL_TRIANGLES);
-		glColor3f(1.0f, 0.0f, 0.0f);
-		glVertex3f(0.0f, 1.0f, 0.0f); // { Front }
-		glVertex3f(-1.0f, -1.0f, 1.0f); // { Front }
-		glVertex3f(1.0f, -1.0f, 1.0f); // { Front }
-
-		glColor3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(0.0f, 1.0f, 0.0f); // { Right }
-		glVertex3f(1.0f, -1.0f, 1.0f); // { Right }
-		glVertex3f(1.0f, -1.0f, -1.0f); // { Right }
-
-		glColor3f(0.0f, 0.0f, 1.0f);
-		glVertex3f(0.0f, 1.0f, 0.0f); // { Back }
-		glVertex3f(1.0f, -1.0f, -1.0f); // { Back }
-		glVertex3f(-1.0f, -1.0f, -1.0f); // { Back }
-
-		glColor3f(1.0f, 0.0f, 1.0f);
-		glVertex3f(0.0f, 1.0f, 0.0f); // { Left }
-		glVertex3f(-1.0f, -1.0f, -1.0f); // { Left }
-		glVertex3f(-1.0f, -1.0f, 1.0f); // { Left }
+	glLineWidth(3);
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glVertex3f(Axis_min, -count_vertical * 0.1, 0.0f);
+	glVertex3f(Axis_max, -count_vertical * 0.1, 0.0f);
 	glEnd();
 
-	rot += 1.1f;
+	glLineWidth(3);
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glVertex3f(-count_horizontal * 0.1, Axis_min, 0.0f);
+	glVertex3f(-count_horizontal * 0.1, Axis_max, 0.0f);
+	glEnd();
 
 	glPopMatrix();
 	glFlush();
+}
+
+void BallControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	switch (nChar) {
+	case 'a':
+	case 'A':
+		count--;
+		break;
+	case 'd':
+	case 'D':
+		count++;
+		break;
+	}
+	CDialogEx::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+
+BOOL BallControl::PreTranslateMessage(MSG* pMsg) {
+	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+	if (pMsg->message == WM_KEYDOWN) {
+		if (pMsg->wParam == VK_UP) {
+			count_vertical++;
+		}
+		else if (pMsg->wParam == VK_DOWN) {
+			count_vertical--;
+		}
+		else if (pMsg->wParam == VK_LEFT) {
+			count_horizontal--;
+		}
+		else if (pMsg->wParam == VK_RIGHT) {
+			count_horizontal++;
+		}
+	}
+
+	return CDialogEx::PreTranslateMessage(pMsg);
 }

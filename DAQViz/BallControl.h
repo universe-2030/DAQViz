@@ -32,7 +32,11 @@ private:
 	CDC*	m_pDC;
 	HDC		m_hDC;
 
+	int count = 0;
+	int count_horizontal = 0;
+	int count_vertical = 0;
 	double rot = 0.0;
+
 	double fAspect;
 
 public:
@@ -46,4 +50,7 @@ public:
 
 	void GLResize(int cx, int cy);
 	void GLRenderScene();
+
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
