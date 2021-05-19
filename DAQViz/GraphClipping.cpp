@@ -63,9 +63,9 @@ void GraphClipping::Initialize_GUI() {
 	pMainDlg->Set_Font(m_btnRedraw, 20, 8);
 
 	CString temp;
-	temp.Format(_T("%u"), m_StartIdx);
+	temp.Format(_T("%d"), m_StartIdx);
 	m_editStartIdx.SetWindowText(temp);
-	temp.Format(_T("%u"), m_EndIdx);
+	temp.Format(_T("%d"), m_EndIdx);
 	m_editEndIdx.SetWindowText(temp);
 
 	CRect rectofDialogArea;

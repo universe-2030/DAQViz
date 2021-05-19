@@ -174,7 +174,7 @@ public:
 	void Initialize_GUI();
 	void Initialize_SaveFolder();
 	void Initialize_LogonU();
-	void Initialize_RTOS();	
+	void Initialize_RTOS();
 
 	// MFC Controls
 	afx_msg void RadioCtrl(UINT ID);
@@ -194,6 +194,9 @@ public:
 	void Set_Font(CButton& Btn_, UINT Height_, UINT Width_);
 	void Set_Font(CEdit& Text_, UINT Height_, UINT Width_);
 	void Set_Font(CStatic& Text_, UINT Height_, UINT Width_);
+
+	// Get functions
+	double Get_m_time();
 
 	// Stack & Save
 	void StackData();

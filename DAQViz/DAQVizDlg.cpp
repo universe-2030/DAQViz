@@ -795,3 +795,7 @@ void CDAQVizDlg::Initialize_StartIdx() {
 void CDAQVizDlg::Initialize_EndIdx() {
 	m_editEndIdx.SetWindowText(_T("Not selected"));
 }
+
+double CDAQVizDlg::Get_m_time() {
+	return m_time;
+}
