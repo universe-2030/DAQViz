@@ -75,8 +75,8 @@ private:
 	double* Flex_data;
 	double* IMU_data;
 
-	UINT Pt_forth;
-	UINT Pt_back;
+	int Pt_forth;
+	int Pt_back;
 
 	GraphClipping* Clip_window;
 

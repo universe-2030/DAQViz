@@ -188,8 +188,8 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnDestroy();
 
-	void Set_StartIdx(UINT _idx);
-	void Set_EndIdx(UINT _idx);
+	void Set_StartIdx(int _idx);
+	void Set_EndIdx(int _idx);
 	void Initialize_StartIdx();
 	void Initialize_EndIdx();
 

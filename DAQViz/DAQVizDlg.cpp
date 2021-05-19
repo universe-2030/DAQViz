@@ -777,15 +777,15 @@ void CDAQVizDlg::OnDestroy() {
 	KillTimer(TIMER_EDIT);
 }
 
-void CDAQVizDlg::Set_StartIdx(UINT _idx) {
+void CDAQVizDlg::Set_StartIdx(int _idx) {
 	CString temp;
-	temp.Format(_T("%u"), _idx);
+	temp.Format(_T("%d"), _idx);
 	m_editStartIdx.SetWindowText(temp);
 }
 
-void CDAQVizDlg::Set_EndIdx(UINT _idx) {
+void CDAQVizDlg::Set_EndIdx(int _idx) {
 	CString temp;
-	temp.Format(_T("%u"), _idx);
+	temp.Format(_T("%d"), _idx);
 	m_editEndIdx.SetWindowText(temp);
 }
 

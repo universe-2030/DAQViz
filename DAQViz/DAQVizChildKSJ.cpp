@@ -290,6 +290,8 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 			point_cur.x -= p_RectPlot_fin[graph_idx].left;
 			point_cur.x *= N_GRAPH;
 			point_cur.x += graph_idx;
+			point_cur.x += N_GRAPH * (pMainDlg->Get_m_count() -
+						(p_RectPlot_fin[graph_idx].right - p_RectPlot_fin[graph_idx].left));
 			point_cur.y -= p_RectPlot_fin[graph_idx].top;
 
 			m_NumClicked[graph_idx] += 1;
@@ -311,19 +313,23 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 			p_RectPlot_fin[graph_idx].top <= point_cur.y &&
 			point_cur.y <= p_RectPlot_fin[graph_idx].bottom) {
 			
-			UINT check = point_cur.x;
+			int check = point_cur.x;
 			check -= p_RectPlot_fin[graph_idx].left;
 			check *= N_GRAPH;
 			check += graph_idx;
+			check += N_GRAPH * (pMainDlg->Get_m_count() -
+					(p_RectPlot_fin[graph_idx].right - p_RectPlot_fin[graph_idx].left));
 			
-			if (Pt_forth >= check) {
-				MessageBox(_T("Select the point after the starting time."),
+			if (Pt_forth > check) {
+				MessageBox(_T("Select the point after the start index."),
 						   _T("Notice"), MB_OK | MB_ICONINFORMATION);
 			}
 			else {
 				point_cur.x -= p_RectPlot_fin[graph_idx].left;
 				point_cur.x *= N_GRAPH;
 				point_cur.x += graph_idx;
+				point_cur.x += N_GRAPH * (pMainDlg->Get_m_count() -
+					(p_RectPlot_fin[graph_idx].right - p_RectPlot_fin[graph_idx].left));
 				point_cur.y -= p_RectPlot_fin[graph_idx].top;
 
 				Pt_back = point_cur.x;
@@ -331,15 +337,25 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 
 				// Generate analysis dialog
 				// 1. Ask whether to generate the analysis window or not
-				if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {
-					// 2. Generate new window
-					Clip_window = new GraphClipping(Pt_forth, Pt_back, pMainDlg->Get_m_count());
-					Clip_window->Create(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, this);
-					Clip_window->ShowWindow(SW_SHOW);
+				if (Pt_forth >= 0 && Pt_back >= Pt_forth) {
+					if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {
+						// 2. Generate new window
+						Clip_window = new GraphClipping(Pt_forth, Pt_back, pMainDlg->Get_m_count());
+						Clip_window->Create(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, this);
+						Clip_window->ShowWindow(SW_SHOW);
+					}
+					else {
+						pMainDlg->Initialize_StartIdx();
+						pMainDlg->Initialize_EndIdx();
+					}
 				}
 				else {
-					pMainDlg->Initialize_StartIdx();
-					pMainDlg->Initialize_EndIdx();
+					if (Pt_forth < 0)
+						MessageBox(_T("Start index is negative."),
+								   _T("Notice"), MB_OK | MB_ICONWARNING);
+					else
+						MessageBox(_T("End index is smaller than start index."),
+							_T("Notice"), MB_OK | MB_ICONWARNING);
 				}
 				
 				m_NumClicked[graph_idx] = 0;
@@ -347,7 +363,7 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 		}
 		else {
 			MessageBox(_T("Please click the plot space."),
-					   _T("Notice"), MB_OKCANCEL | MB_ICONINFORMATION);
+					   _T("Notice"), MB_OK | MB_ICONWARNING);
 		}
 	}
 }
