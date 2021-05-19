@@ -16,12 +16,12 @@ GraphClipping::GraphClipping(CWnd* pParent /*=nullptr*/)
 
 }
 
-GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, double _m_time, CWnd* pParent /*=nullptr*/)
+GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, pParent) {
 	m_StartIdx = start_idx;
 	m_EndIdx = end_idx;
 	m_NumIdx = m_EndIdx - m_StartIdx + 1;
-	m_time = _m_time;
+	m_count = _m_count;
 }
 
 GraphClipping::~GraphClipping() {
@@ -104,16 +104,37 @@ void GraphClipping::Initialize_Variable() {
 void GraphClipping::OnBnClickedBtnRedraw() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString temp;
+
 	m_editStartIdx.GetWindowText(temp);
-	m_StartIdx = _ttoi(temp);
+	UINT m_StartIdx_temp = _ttoi(temp);
 	m_editEndIdx.GetWindowText(temp);
-	m_EndIdx = _ttoi(temp);
+	UINT m_EndIdx_temp = _ttoi(temp);
 
-	m_NumIdx = m_EndIdx - m_StartIdx + 1;
-	m_scrollBar.SetScrollRange(0, m_NumIdx - 1);
+	if (m_StartIdx_temp <= m_EndIdx_temp &&
+		m_EndIdx_temp <= m_count) {
+		m_StartIdx = m_StartIdx_temp;
+		m_EndIdx = m_EndIdx_temp;
 
-	ScrollPos = 0;
-	m_scrollBar.SetScrollPos(ScrollPos);
+		m_NumIdx = m_EndIdx - m_StartIdx + 1;
+		m_scrollBar.SetScrollRange(0, m_NumIdx - 1);
+
+		ScrollPos = 0;
+		m_scrollBar.SetScrollPos(ScrollPos);
+	}
+	else {
+		if (m_StartIdx_temp > m_EndIdx_temp) {
+			MessageBox(_T("Start index is larger than end index."),
+					   _T("Caution"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), m_StartIdx);
+			m_editStartIdx.SetWindowText(temp);
+		}
+		else {
+			MessageBox(_T("End index is larger than maximum index."),
+					   _T("Caution"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), m_EndIdx);
+			m_editEndIdx.SetWindowText(temp);
+		}
+	}
 }
 
 void GraphClipping::OnBnClickedBtnAnimationRun() {

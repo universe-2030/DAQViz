@@ -116,6 +116,7 @@ private:
 	volatile bool g_bExitThread = true;
 
 	double m_time = 0.0;
+	UINT m_count = 0;
 
 	// Child dialogs
 	DAQVizChildKSJ* p_ChildDlg_KSJ;
@@ -199,6 +200,7 @@ public:
 
 	// Get functions
 	double Get_m_time();
+	UINT Get_m_count();
 
 	// Stack & Save
 	void StackData();

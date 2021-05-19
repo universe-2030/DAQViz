@@ -554,6 +554,7 @@ int CDAQVizDlg::MainStart() {
 		else if (pShared_Data->bContinue) {
 			////////////////////////////////////////// DAQ //////////////////////////////////////////
 			m_time = pShared_Data->time;
+			m_count = pShared_Data->count;
 
 			// Tic
 			QueryPerformanceCounter(&Counter_DAQ_Start);
@@ -798,4 +799,8 @@ void CDAQVizDlg::Initialize_EndIdx() {
 
 double CDAQVizDlg::Get_m_time() {
 	return m_time;
+}
+
+UINT CDAQVizDlg::Get_m_count() {
+	return m_count;
 }
