@@ -77,6 +77,9 @@ void DAQVizChildKSJ::Initialize_Variable() {
 	sEMG_MAV = new double[N_sEMG];
 	Flex_data = new double[N_Flex];
 	IMU_data = new double[N_IMU];
+
+	Pt_forth = 0;
+	Pt_back = 0;
 }
 
 void DAQVizChildKSJ::Initialize_GUI() {
@@ -339,17 +342,25 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 						Clip_window->ShowWindow(SW_SHOW);
 					}
 					else {
+						Pt_forth = 0;
+						Pt_back = 0;
 						pMainDlg->Initialize_StartIdx();
 						pMainDlg->Initialize_EndIdx();
 					}
 				}
 				else {
-					if (Pt_forth < 0)
+					if (Pt_forth < 0) {
 						MessageBox(_T("Start index is negative."),
-								   _T("Notice"), MB_OK | MB_ICONWARNING);
-					else
+							_T("Notice"), MB_OK | MB_ICONWARNING);
+					}
+					else {
 						MessageBox(_T("End index is smaller than start index."),
 							_T("Notice"), MB_OK | MB_ICONWARNING);
+					}
+					Pt_forth = 0;
+					Pt_back = 0;
+					pMainDlg->Initialize_StartIdx();
+					pMainDlg->Initialize_EndIdx();
 				}
 				
 				m_NumClicked[graph_idx] = 0;
