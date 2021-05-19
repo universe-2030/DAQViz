@@ -175,7 +175,7 @@ void ClippedGraph::GLRenderScene(void) {
 	glColor3f(0.0, 0.0, 1.0);
 	// traslate the draw by z = -4.0
 	// Note this when you decrease z like -8.0 the drawing will looks far , or smaller.
-	glTranslatef(count_horizontal * 0.1, count_vertical * 0.1, -5.0);
+	glTranslatef(count_horizontal * MOVE_SCALE, count_vertical * MOVE_SCALE, -5.0);
 	// built-in (glut library) function , draw you a sphere.
 	glutSolidSphere(0.3 + count * 0.02, 50, 50);
 	// Flush buffers to screen
@@ -187,17 +187,21 @@ void ClippedGraph::GLRenderScene(void) {
 	glLineWidth(3);
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(Axis_min, -count_vertical * 0.1, 0.0f);
-	glVertex3f(Axis_max, -count_vertical * 0.1, 0.0f);
+	glVertex3f(Axis_min, -count_vertical * MOVE_SCALE, 0.0f);
+	glVertex3f(Axis_max, -count_vertical * MOVE_SCALE, 0.0f);
 	glEnd();
 
 	glLineWidth(3);
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(-count_horizontal * 0.1, Axis_min, 0.0f);
-	glVertex3f(-count_horizontal * 0.1, Axis_max, 0.0f);
+	glVertex3f(-count_horizontal * MOVE_SCALE, Axis_min, 0.0f);
+	glVertex3f(-count_horizontal * MOVE_SCALE, Axis_max, 0.0f);
 	glEnd();
 
 	glPopMatrix();
 	glFlush();
+}
+
+void ClippedGraph::Set_count_horizontal(UINT m_count_horizontal) {
+	count_horizontal = m_count_horizontal;
 }

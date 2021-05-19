@@ -23,13 +23,14 @@ protected:
 
 private:
 	ClippedGraph* p_ClippedGraph;
+	ClippedGraph* p_ClippedGraph_2;
 
 	UINT m_StartIdx;
 	UINT m_EndIdx;
 	UINT m_NumIdx;
 	double m_time; // To check whether m_EndIdx exceeds m_time
 
-	int m_Scroll;
+	int ScrollPos;
 
 public:
 	virtual BOOL OnInitDialog();

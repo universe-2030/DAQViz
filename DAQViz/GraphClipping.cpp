@@ -85,29 +85,46 @@ void GraphClipping::Initialize_GUI() {
 	p_ClippedGraph->ShowWindow(SW_SHOW);
 	p_ClippedGraph->MoveWindow(rectofDialogArea);
 
+	GetDlgItem(IDC_PLOT_ANIMATION)->GetWindowRect(&rectofDialogArea);
+	ScreenToClient(&rectofDialogArea);
+
+	p_ClippedGraph_2 = new ClippedGraph();
+	p_ClippedGraph_2->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
+	p_ClippedGraph_2->ShowWindow(SW_SHOW);
+	p_ClippedGraph_2->MoveWindow(rectofDialogArea);
+
 	m_scrollBar.SetScrollRange(0, m_NumIdx - 1);
-	m_scrollBar.SetScrollPos(0);
+	m_scrollBar.SetScrollPos(ScrollPos);
 }
 
 void GraphClipping::Initialize_Variable() {
-	m_Scroll = 0;
+	ScrollPos = 0;
 }
 
 void GraphClipping::OnBnClickedBtnRedraw() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString temp;
+	m_editStartIdx.GetWindowText(temp);
+	m_StartIdx = _ttoi(temp);
+	m_editEndIdx.GetWindowText(temp);
+	m_EndIdx = _ttoi(temp);
 
+	m_NumIdx = m_EndIdx - m_StartIdx + 1;
+	m_scrollBar.SetScrollRange(0, m_NumIdx - 1);
+
+	ScrollPos = 0;
+	m_scrollBar.SetScrollPos(ScrollPos);
 }
-
 
 void GraphClipping::OnBnClickedBtnAnimationRun() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
 }
 
-
 void GraphClipping::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	
+	ScrollPos = nPos;
+
 	SCROLLINFO scrInfo;
 	memset(&scrInfo, 0, sizeof(scrInfo));
 	if (FALSE != m_scrollBar.GetScrollInfo(&scrInfo)) {
@@ -128,9 +145,15 @@ void GraphClipping::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
 			scrInfo.nPos = nPos;
 			break;
 		}
+		ScrollPos = scrInfo.nPos;
 		m_scrollBar.SetScrollInfo(&scrInfo);
 	}
-																																				   출처: https://3001ssw.tistory.com/117?category=939609 [C++, WinAPI, Android, OpenCV 정리 블로그]
+
+	CString temp;
+	temp.Format(_T("%d"), scrInfo.nPos);
+	GetDlgItem(IDC_EDIT_TEST_IDX)->SetWindowText(temp);
+
+	p_ClippedGraph_2->Set_count_horizontal(ScrollPos);
 
 	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }

@@ -5,6 +5,8 @@
 #include "GL/GLU.h"
 
 #define TIME_ELAPSE 20
+#define MOVE_SCALE 0.002
+
 // ClippedGraph 대화 상자
 
 class ClippedGraph : public CDialogEx {
@@ -48,4 +50,5 @@ public:
 
 	void GLResize(int cx, int cy);
 	void GLRenderScene();
+	void Set_count_horizontal(UINT m_count_horizontal);
 };
