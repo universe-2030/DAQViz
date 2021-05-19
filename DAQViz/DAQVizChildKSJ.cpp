@@ -287,11 +287,9 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 			p_RectPlot_fin[graph_idx].top <= point_cur.y &&
 			point_cur.y <= p_RectPlot_fin[graph_idx].bottom) {
 			
-			point_cur.x -= p_RectPlot_fin[graph_idx].left;
+			point_cur.x -= p_RectPlot_fin[graph_idx].right;
 			point_cur.x *= N_GRAPH;
-			point_cur.x += graph_idx;
-			point_cur.x += N_GRAPH * (pMainDlg->Get_m_count() -
-						(p_RectPlot_fin[graph_idx].right - p_RectPlot_fin[graph_idx].left));
+			point_cur.x += pMainDlg->Get_m_count() + graph_idx;
 			point_cur.y -= p_RectPlot_fin[graph_idx].top;
 
 			m_NumClicked[graph_idx] += 1;
@@ -314,22 +312,18 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 			point_cur.y <= p_RectPlot_fin[graph_idx].bottom) {
 			
 			int check = point_cur.x;
-			check -= p_RectPlot_fin[graph_idx].left;
+			check -= p_RectPlot_fin[graph_idx].right;
 			check *= N_GRAPH;
-			check += graph_idx;
-			check += N_GRAPH * (pMainDlg->Get_m_count() -
-					(p_RectPlot_fin[graph_idx].right - p_RectPlot_fin[graph_idx].left));
+			check += pMainDlg->Get_m_count() + graph_idx;
 			
 			if (Pt_forth > check) {
 				MessageBox(_T("Select the point after the start index."),
 						   _T("Notice"), MB_OK | MB_ICONINFORMATION);
 			}
 			else {
-				point_cur.x -= p_RectPlot_fin[graph_idx].left;
+				point_cur.x -= p_RectPlot_fin[graph_idx].right;
 				point_cur.x *= N_GRAPH;
-				point_cur.x += graph_idx;
-				point_cur.x += N_GRAPH * (pMainDlg->Get_m_count() -
-					(p_RectPlot_fin[graph_idx].right - p_RectPlot_fin[graph_idx].left));
+				point_cur.x += pMainDlg->Get_m_count() + graph_idx;
 				point_cur.y -= p_RectPlot_fin[graph_idx].top;
 
 				Pt_back = point_cur.x;
