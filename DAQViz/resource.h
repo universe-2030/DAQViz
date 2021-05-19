@@ -16,6 +16,7 @@
 #define IDD_DAQVIZ_DIALOG_ANIMATION     136
 #define IDD_DAQVIZ_DIALOG_BALL_CONTROL  138
 #define IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING 140
+#define IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH 144
 #define IDC_BTN_SWITCH                  1000
 #define IDC_EDIT_SAVEFOLDERPATH         1001
 #define IDC_SLOT_CHILDDLG               1002
@@ -61,14 +62,20 @@
 #define IDC_EDIT_TIME_END_IDX           1045
 #define IDC_TEXT_TIME_START_IDX         1046
 #define IDC_TEXT_TIME_END_IDX           1047
+#define IDC_TEXT_CLIPPING_START_IDX     1048
+#define IDC_TEXT_CLIPPING_END_IDX       1049
+#define IDC_EDIT_CLIPPING_START_IDX     1050
+#define IDC_EDIT_CLIPPING_END_IDX       1051
+#define IDC_PLOT_CLIPPED_GRAPH          1052
+#define IDC_BTN_REDRAW                  1053
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        144
+#define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1048
+#define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

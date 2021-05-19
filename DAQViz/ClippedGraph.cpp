@@ -1,55 +1,53 @@
-﻿// BallControl.cpp: 구현 파일
+﻿// ClippedGraph.cpp: 구현 파일
 //
 
 #include "pch.h"
 #include "DAQViz.h"
-#include "BallControl.h"
+#include "ClippedGraph.h"
 #include "afxdialogex.h"
 
-// BallControl 대화 상자
 
-IMPLEMENT_DYNAMIC(BallControl, CDialogEx)
+// ClippedGraph 대화 상자
 
-BallControl::BallControl(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_DAQVIZ_DIALOG_BALL_CONTROL, pParent) {
+IMPLEMENT_DYNAMIC(ClippedGraph, CDialogEx)
 
-}
-
-BallControl::~BallControl() {
+ClippedGraph::ClippedGraph(CWnd* pParent /*=nullptr*/)
+	: CDialogEx(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, pParent) {
 
 }
 
-void BallControl::DoDataExchange(CDataExchange* pDX) {
+ClippedGraph::~ClippedGraph() {
+
+}
+
+void ClippedGraph::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
+
 }
 
-
-BEGIN_MESSAGE_MAP(BallControl, CDialogEx)
+BEGIN_MESSAGE_MAP(ClippedGraph, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_DESTROY()
 	ON_WM_TIMER()
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
-	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
-// BallControl 메시지 처리기
+// ClippedGraph 메시지 처리기
 
-BOOL BallControl::OnInitDialog() {
+
+BOOL ClippedGraph::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
 	SetTimer(1000, TIME_ELAPSE, NULL);
 
-	SetWindowPos(NULL, -1920, 0, 500, 500, SWP_NOSIZE);
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
 }
 
-
-void BallControl::OnPaint() {
+void ClippedGraph::OnPaint() {
 	if (IsIconic()) {
 		CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.
 
@@ -74,10 +72,9 @@ void BallControl::OnPaint() {
 		SwapBuffers(m_hDC);
 		wglMakeCurrent(m_hDC, NULL);
 	}
-
 }
 
-void BallControl::OnDestroy() {
+void ClippedGraph::OnDestroy() {
 	CDialogEx::OnDestroy();
 
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
@@ -85,14 +82,13 @@ void BallControl::OnDestroy() {
 	::ReleaseDC(m_hWnd, m_hDC);
 }
 
-void BallControl::OnTimer(UINT_PTR nIDEvent) {
+void ClippedGraph::OnTimer(UINT_PTR nIDEvent) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-
-	CDialogEx::OnTimer(nIDEvent);
 	this->Invalidate(FALSE);
+	CDialogEx::OnTimer(nIDEvent);
 }
 
-int BallControl::OnCreate(LPCREATESTRUCT lpCreateStruct) {
+int ClippedGraph::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	if (CDialogEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
@@ -128,24 +124,23 @@ int BallControl::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	return 0;
 }
 
-void BallControl::OnSize(UINT nType, int cx, int cy) {
+void ClippedGraph::OnSize(UINT nType, int cx, int cy) {
 	CDialogEx::OnSize(nType, cx, cy);
 
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
 	VERIFY(wglMakeCurrent(m_hDC, m_hRC));
 	GLResize(cx, cy);
 	VERIFY(wglMakeCurrent(NULL, NULL));
-
 }
 
-BOOL BallControl::OnEraseBkgnd(CDC* pDC) {
+BOOL ClippedGraph::OnEraseBkgnd(CDC* pDC) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 
-	// 	return CDialogEx::OnEraseBkgnd(pDC);
+	// return CDialogEx::OnEraseBkgnd(pDC);
 	return FALSE;
 }
 
-void BallControl::GLResize(int cx, int cy) {
+void ClippedGraph::GLResize(int cx, int cy) {
 	// TODO: 여기에 구현 코드 추가.
 	if (cy == 0)
 		cy = 1;
@@ -163,7 +158,7 @@ void BallControl::GLResize(int cx, int cy) {
 	glLoadIdentity();
 }
 
-void BallControl::GLRenderScene(void) {
+void ClippedGraph::GLRenderScene(void) {
 	// TODO: 여기에 구현 코드 추가.
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -205,39 +200,4 @@ void BallControl::GLRenderScene(void) {
 
 	glPopMatrix();
 	glFlush();
-}
-
-void BallControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
-	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	switch (nChar) {
-	case 'a':
-	case 'A':
-		count--;
-		break;
-	case 'd':
-	case 'D':
-		count++;
-		break;
-	}
-	CDialogEx::OnKeyDown(nChar, nRepCnt, nFlags);
-}
-
-BOOL BallControl::PreTranslateMessage(MSG* pMsg) {
-	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
-	if (pMsg->message == WM_KEYDOWN) {
-		if (pMsg->wParam == VK_UP) {
-			count_vertical++;
-		}
-		else if (pMsg->wParam == VK_DOWN) {
-			count_vertical--;
-		}
-		else if (pMsg->wParam == VK_LEFT) {
-			count_horizontal--;
-		}
-		else if (pMsg->wParam == VK_RIGHT) {
-			count_horizontal++;
-		}
-	}
-
-	return CDialogEx::PreTranslateMessage(pMsg);
 }

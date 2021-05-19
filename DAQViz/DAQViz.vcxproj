@@ -187,6 +187,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BallControl.h" />
+    <ClInclude Include="ClippedGraph.h" />
     <ClInclude Include="DAQViz.h" />
     <ClInclude Include="DAQVizChildKSJ.h" />
     <ClInclude Include="DAQVizChildOpenGL.h" />
@@ -210,6 +211,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BallControl.cpp" />
+    <ClCompile Include="ClippedGraph.cpp" />
     <ClCompile Include="DAQViz.cpp" />
     <ClCompile Include="DAQVizChildKSJ.cpp" />
     <ClCompile Include="DAQVizChildOpenGL.cpp" />

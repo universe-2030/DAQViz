@@ -325,13 +325,15 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 				point_cur.x *= N_GRAPH;
 				point_cur.x += graph_idx;
 				point_cur.y -= p_RectPlot_fin[graph_idx].top;
+
+				Pt_back = point_cur.x;
 				pMainDlg->Set_EndIdx((UINT)point_cur.x);
 
 				// Generate analysis dialog
 				// 1. Ask whether to generate the analysis window or not
 				if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {
 					// 2. Generate new window
-					Clip_window = new GraphClipping();
+					Clip_window = new GraphClipping(Pt_forth, Pt_back);
 					Clip_window->Create(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, this);
 					Clip_window->ShowWindow(SW_SHOW);
 				}

@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "ClippedGraph.h"
 
 // GraphClipping 대화 상자
 
@@ -7,6 +8,7 @@ class GraphClipping : public CDialogEx {
 
 public:
 	GraphClipping(CWnd* pParent = nullptr);   // 표준 생성자입니다.
+	GraphClipping(UINT start_idx, UINT end_idx, CWnd* pParent = nullptr);
 	virtual ~GraphClipping();
 
 // 대화 상자 데이터입니다.
@@ -18,6 +20,22 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
 
 	DECLARE_MESSAGE_MAP()
+
+private:
+	ClippedGraph* p_ClippedGraph;
+
+	UINT m_StartIdx;
+	UINT m_EndIdx;
+
 public:
 	virtual BOOL OnInitDialog();
+
+	CStatic m_textStartIdx;
+	CStatic m_textEndIdx;
+	CEdit m_editStartIdx;
+	CEdit m_editEndIdx;
+	CButton m_btnRedraw;
+
+	void Initialize_GUI();
+	afx_msg void OnBnClickedBtnRedraw();
 };
