@@ -16,10 +16,11 @@ GraphClipping::GraphClipping(CWnd* pParent /*=nullptr*/)
 
 }
 
-GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, CWnd* pParent /*=nullptr*/)
+GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, double _m_time, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, pParent) {
 	m_StartIdx = start_idx;
 	m_EndIdx = end_idx;
+	m_time = _m_time;
 }
 
 GraphClipping::~GraphClipping() {

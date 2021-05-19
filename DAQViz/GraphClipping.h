@@ -8,7 +8,7 @@ class GraphClipping : public CDialogEx {
 
 public:
 	GraphClipping(CWnd* pParent = nullptr);   // 표준 생성자입니다.
-	GraphClipping(UINT start_idx, UINT end_idx, CWnd* pParent = nullptr);
+	GraphClipping(UINT start_idx, UINT end_idx, double _m_time, CWnd* pParent = nullptr);
 	virtual ~GraphClipping();
 
 // 대화 상자 데이터입니다.
@@ -26,6 +26,7 @@ private:
 
 	UINT m_StartIdx;
 	UINT m_EndIdx;
+	double m_time;
 
 public:
 	virtual BOOL OnInitDialog();
