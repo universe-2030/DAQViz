@@ -26,8 +26,6 @@
 #define N_FLEX_CH 5
 #define N_IMU_CH 2
 
-#define N_GRAPH 6
-
 enum Graph_class {
 	SEMG_MAV,
 	FLEX_SENSOR,

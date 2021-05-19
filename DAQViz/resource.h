@@ -68,6 +68,9 @@
 #define IDC_EDIT_CLIPPING_END_IDX       1051
 #define IDC_PLOT_CLIPPED_GRAPH          1052
 #define IDC_BTN_REDRAW                  1053
+#define IDC_PLOT_ANIMATION              1054
+#define IDC_SCROLLBAR_ANIMATION         1055
+#define IDC_BTN_ANIMATION_RUN           1056
 
 // Next default values for new objects
 // 
@@ -75,7 +78,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1054
+#define _APS_NEXT_CONTROL_VALUE         1057
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

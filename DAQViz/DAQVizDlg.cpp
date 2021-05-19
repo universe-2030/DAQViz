@@ -615,19 +615,19 @@ int CDAQVizDlg::MainStart() {
 			sEMG_temp_abs[2] = abs(0.2 * sin(2 * PI * 3 * m_time));
 			sEMG_temp_abs[3] = abs(0.8 * sin(2 * PI * 1.5 * m_time));
 
-			if (pShared_Data->count % 10 == 0) {
+			if (pShared_Data->count % N_GRAPH == 0) {
 				p_ChildDlg_KSJ->Plot_graph(sEMG_temp_abs, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
 			}
-			else if (pShared_Data->count % 10 == 1) {
+			else if (pShared_Data->count % N_GRAPH == 1) {
 				p_ChildDlg_KSJ->Plot_graph(sEMG_temp_abs, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
 			}
-			else if (pShared_Data->count % 10 == 2) {
+			else if (pShared_Data->count % N_GRAPH == 2) {
 				p_ChildDlg_KSJ->Plot_graph(sEMG_temp_abs, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
 			}
-			else if (pShared_Data->count % 10 == 3) {
+			else if (pShared_Data->count % N_GRAPH == 3) {
 				p_ChildDlg_KSJ->Plot_graph(sEMG_temp_abs, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[3]);
 			}
-			else if (pShared_Data->count % 10 == 4) {
+			else if (pShared_Data->count % N_GRAPH == 4) {
 				p_ChildDlg_KSJ->Plot_graph(Flex_data, p_ChildDlg_KSJ->Get_rtGraph_Flex()[0]);
 			}
 

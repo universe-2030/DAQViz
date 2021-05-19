@@ -26,7 +26,7 @@ private:
 
 	UINT m_StartIdx;
 	UINT m_EndIdx;
-	double m_time;
+	double m_time; // To check whether m_EndIdx exceeds m_time
 
 public:
 	virtual BOOL OnInitDialog();
@@ -36,7 +36,9 @@ public:
 	CEdit m_editStartIdx;
 	CEdit m_editEndIdx;
 	CButton m_btnRedraw;
+	CButton m_btnRun;
 
 	void Initialize_GUI();
 	afx_msg void OnBnClickedBtnRedraw();
+	afx_msg void OnBnClickedBtnAnimationRun();
 };

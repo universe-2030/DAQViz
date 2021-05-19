@@ -186,6 +186,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Animation.h" />
     <ClInclude Include="BallControl.h" />
     <ClInclude Include="ClippedGraph.h" />
     <ClInclude Include="DAQViz.h" />
@@ -210,6 +211,7 @@
     <ClInclude Include="TrainedModel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="BallControl.cpp" />
     <ClCompile Include="ClippedGraph.cpp" />
     <ClCompile Include="DAQViz.cpp" />

@@ -35,10 +35,12 @@ void GraphClipping::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_EDIT_CLIPPING_START_IDX, m_editStartIdx);
 	DDX_Control(pDX, IDC_EDIT_CLIPPING_END_IDX, m_editEndIdx);
 	DDX_Control(pDX, IDC_BTN_REDRAW, m_btnRedraw);
+	DDX_Control(pDX, IDC_BTN_ANIMATION_RUN, m_btnRun);
 }
 
 BEGIN_MESSAGE_MAP(GraphClipping, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_REDRAW, &GraphClipping::OnBnClickedBtnRedraw)
+	ON_BN_CLICKED(IDC_BTN_ANIMATION_RUN, &GraphClipping::OnBnClickedBtnAnimationRun)
 END_MESSAGE_MAP()
 
 // GraphClipping 메시지 처리기
@@ -62,6 +64,7 @@ void GraphClipping::Initialize_GUI() {
 	pMainDlg->Set_Font(m_textEndIdx, 20, 8);
 	pMainDlg->Set_Font(m_editEndIdx, 20, 8);
 	pMainDlg->Set_Font(m_btnRedraw, 20, 8);
+	pMainDlg->Set_Font(m_btnRun, 20, 8);
 
 	CString temp;
 	temp.Format(_T("%d"), m_StartIdx);
@@ -80,6 +83,12 @@ void GraphClipping::Initialize_GUI() {
 }
 
 void GraphClipping::OnBnClickedBtnRedraw() {
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+}
+
+
+void GraphClipping::OnBnClickedBtnAnimationRun() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
 }

@@ -36,6 +36,8 @@
 #define CALI_START 0.100
 #define CALI_END 1.500
 
+#define N_GRAPH 5
+
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
 public:
