@@ -156,7 +156,6 @@ int DAQVizChildOpenGL2::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	return 0;
 }
 
-
 void DAQVizChildOpenGL2::OnSize(UINT nType, int cx, int cy) {
 	CDialogEx::OnSize(nType, cx, cy);
 

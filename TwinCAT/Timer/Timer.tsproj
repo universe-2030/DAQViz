@@ -52,14 +52,13 @@
 			</Hides>
 		</DataType>
 	</DataTypes>
-	<Project ProjectGUID="{40A5E4BD-1805-4BE3-8DB2-696741211C35}" Target64Bit="true" ShowHideConfigurations="#x306">
+	<Project ProjectGUID="{40A5E4BD-1805-4BE3-8DB2-696741211C35}" Target64Bit="true" ShowHideConfigurations="#x106">
 		<System>
 			<Settings>
 				<Cpu BaseTime="1000"/>
-				<IoIdleTask CycleTime="1000"/>
 			</Settings>
 			<Tasks>
-				<Task Id="5" Priority="20" CycleTime="1000" AmsPort="352" AdtTasks="true">
+				<Task Id="2" Priority="20" CycleTime="1000" AmsPort="350">
 					<Name>PlcTask</Name>
 				</Task>
 			</Tasks>
@@ -74,7 +73,7 @@
 							<Id NeedCalleeCall="true">0</Id>
 							<Name>PlcTask</Name>
 							<ManualConfig>
-								<OTCID>#x02010050</OTCID>
+								<OTCID>#x02010020</OTCID>
 							</ManualConfig>
 							<Priority>20</Priority>
 							<CycleTime>100000</CycleTime>

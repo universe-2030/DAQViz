@@ -11,9 +11,7 @@
 #include "DELSYSDAQ.h"
 #include "MatchDevice.h"
 
-// #include "../TwinCAT/TwinCAT/Timer_TwinCAT.h"
-#include "C:/Users/universe2030/Desktop/TwinCAT/TwinCAT/TwinCAT/Timer_TwinCAT.h"		// TwinCAT project header
-
+#include "../TwinCAT/TwinCAT/Timer_TwinCAT.h"
 #include "DAQVizChildKSJ.h"
 #include "DAQVizChildOpenGL.h"
 #include "BallControl.h"

@@ -47,8 +47,7 @@ CDAQVizDlg::CDAQVizDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG, pParent), 
 	m_radioTrainingMode(0), m_radioStreamingMode(0),
 	m_radioSaveMode(0), m_radiosEMGDAQDev(0),
-	m_radioUseIMU(0), m_radioUseFlexSensor(0)
-{
+	m_radioUseIMU(0), m_radioUseFlexSensor(0) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -520,7 +519,7 @@ int CDAQVizDlg::MainStart() {
 	pShared_Data->count = 0;
 
 	// TwinCAT Process Execution (exe 파일 주소 확인)
-	if (CreateProcess(_T("C:/Users/universe2030/Desktop/TwinCAT/TwinCAT/Release/TwinCAT.exe"),
+	if (CreateProcess(_T("../TwinCAT/Release/TwinCAT.exe"),
 		_T("TwinCAT.exe nMemory nMutex"), NULL, NULL, FALSE, 0, NULL, NULL, &startupinfo, &processinfo))
 		m_editStatusBar.SetWindowText(stat += "[USER] Creating Process Success \r\n");
 	else {

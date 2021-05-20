@@ -4,23 +4,22 @@
 #include <winbase.h>
 
 // headers for TwinCAT 3 ADS
-#include "C:/TwinCAT/AdsApi/TcAdsDll/Include/TcAdsDef.h"
-#include "C:/TwinCAT/AdsApi/TcAdsDll/Include/TcAdsAPI.h"
+#include "C:\TwinCAT\AdsApi\TcAdsDll\Include\TcAdsDef.h"
+#include "C:\TwinCAT\AdsApi\TcAdsDll\Include\TcAdsAPI.h"
 
 using namespace std;
 
+#define ENDTIME		300
 #define TIMESTEP	0.001
 
-#define THREAD_TWINCAT  1
-#define THREAD_CALLBACK 2
-#define THREAD_MAIN		0
-
-struct Shared_Data {
-	bool bFirst;
+struct Shared_Data
+{
 	bool bContinue;
-	int iNextOwner;		// 0 : TwinCAT Process
-						// 1 : Callback function
-						// 2 : Main Thread
+	bool bFirst;
+	int iNextOwner;		// previous mutex owner;\
+							 0:User Program,\
+							 1:TwinCAT Process,\
+							 2:Callback function
 	int count;
 	double time;
 };

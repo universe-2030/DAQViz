@@ -35,8 +35,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	WaitForSingleObject(hTCMutex, INFINITY);
 
 	// Shared Memory의 주소값 반환
-	if(pTCData=(Shared_Data *)::MapViewOfFile(hTCMemory,FILE_MAP_ALL_ACCESS,0,0,sizeof(Shared_Data))) 
-		cerr<<"[TC]Data address returned \n";
+	if(pTCData=(Shared_Data *)::MapViewOfFile(hTCMemory,FILE_MAP_ALL_ACCESS,0,0,sizeof(Shared_Data))) cerr<<"[TC]Data address returned \n";
 	else { cerr << "[TC]Error: Address Return Failed \n"; cerr << GetLastError(); getch();}
 	
 	// ADS router에 ADS Port Open 
@@ -94,10 +93,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	else  cerr << "[TC:ADS] Notification Set\n";
 
-	pTCData->iNextOwner = THREAD_CALLBACK;
+	bProcessEnd = 0;
+	pTCData->iNextOwner = 2;
 
-	WaitForSingleObject(hTCMutex, INFINITE);
-	while (pTCData->iNextOwner != THREAD_TWINCAT) {
+	ReleaseMutex(hTCMutex);
+	WaitForSingleObject(hTCMutex, INFINITY);
+	while (pTCData->iNextOwner != 1) {
 		ReleaseMutex(hTCMutex);
 		WaitForSingleObject(hTCMutex, INFINITE);
 	}
@@ -126,40 +127,42 @@ int _tmain(int argc, _TCHAR* argv[])
 	else cerr << "[TC:ADS] ADS Port Closed\n";
 	
 	// Handle 제거와 Process 종료
-	pTCData->iNextOwner = THREAD_MAIN;
+	pTCData->iNextOwner = 0;
 	ReleaseMutex(hTCMutex);		// User process 종료할 수 있도록 Mutex Release
 	CloseHandle(hTCMemory);
 	CloseHandle(hTCMutex);
-
+	
 	return 0;
 }
 
-void __stdcall Callback(AmsAddr* pAddr, AdsNotificationHeader* pNotification, ULONG hUser) {
-	if (bProcessEnd) {
-		WaitForSingleObject(hTCMutex, INFINITE);
-		while (pTCData->iNextOwner != THREAD_CALLBACK) {
+void __stdcall Callback(AmsAddr* pAddr, AdsNotificationHeader* pNotification, ULONG hUser)
+{
+	if (!bProcessEnd){
+		WaitForSingleObject(hTCMutex, INFINITY);
+		while (pTCData->iNextOwner != 2) {
 			ReleaseMutex(hTCMutex);
 			WaitForSingleObject(hTCMutex, INFINITE);
 		}
 	}
 
-	// Real-time processing
-	if (pTCData->bFirst) {
-		pTCData->iNextOwner = THREAD_MAIN;
+	if (pTCData->time >= ENDTIME){
+		pTCData->bContinue = 0;
+		pTCData->iNextOwner = 0;
+		bProcessEnd = 1;
 		ReleaseMutex(hTCMutex);
 	}
-	else if (pTCData->bContinue) {
-		pTCData->iNextOwner = THREAD_MAIN;
+
+	if (pTCData->bContinue){
 		pTCData->time += TIMESTEP;
 		pTCData->count++;
+		pTCData->iNextOwner = 0;
 		ReleaseMutex(hTCMutex);
 	}
-	else if (!pTCData->bContinue) {
-		pTCData->iNextOwner = THREAD_CALLBACK;
+	else if (pTCData->bFirst){
+		pTCData->iNextOwner = 0;
 		ReleaseMutex(hTCMutex);
 	}
-	else if (pTCData->bProcessEnd) {
-		pTCData->iNextOwner = THREAD_MAIN;
-		ReleaseMutex(hTCMutex);
+	else{
+		if(!bProcessEnd) bProcessEnd = 1;
 	}
 }
