@@ -335,65 +335,29 @@ void CDAQVizDlg::Set_Font(CStatic& Text_, UINT Height_, UINT Width_) {
 void CDAQVizDlg::OnBnClickedBtnSwitch() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	if (!m_flag_Switch) { // Turned OFF -> ON
-		AfxBeginThread(MainThreadFunc, this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
-
-		m_comboSelectDlg.EnableWindow(FALSE);
-
-		GetDlgItem(IDC_RADIO_TRAINING_ONLINE)->EnableWindow(FALSE);
-		GetDlgItem(IDC_RADIO_TRAINING_OFFLINE)->EnableWindow(FALSE);
-
-		GetDlgItem(IDC_RADIO_DATA_STREAMING_RT)->EnableWindow(FALSE);
-		GetDlgItem(IDC_RADIO_DATA_STREAMING_LOAD)->EnableWindow(FALSE);
-
-		GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE)->EnableWindow(FALSE);
-		GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_ON)->EnableWindow(FALSE);
-		GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_OFF)->EnableWindow(FALSE);
-
-		GetDlgItem(IDC_RADIO_DEVICE_DELSYS)->EnableWindow(FALSE);
-		GetDlgItem(IDC_RADIO_DEVICE_FRANKFURT)->EnableWindow(FALSE);
-
-		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES)->EnableWindow(FALSE);
-		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_NO)->EnableWindow(FALSE);
-
-		GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_YES)->EnableWindow(FALSE);
-		GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_NO)->EnableWindow(FALSE);
-
-		if (m_radioStreamingMode == 1) {
-			GetDlgItem(IDC_BTN_LOAD)->EnableWindow(FALSE);
+		if (!TimerStarted) {
+			TimerStarted = TRUE;
+			AfxBeginThread(MainThreadFunc, this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+		}
+		else {
+			g_csExitThread.Lock();
+			pShared_Data->bContinue = TRUE;
+			g_csExitThread.Unlock();
 		}
 
+		Set_MFC_Control_Availability(FALSE);
 		m_btnSwitch.SetWindowText(_T("Stop"));
 		m_flag_Switch = TRUE;
 	}
 	else { // Turned ON -> OFF
-		bProcessEnd = TRUE;
-
-		m_comboSelectDlg.EnableWindow(TRUE);
-
-		GetDlgItem(IDC_RADIO_TRAINING_ONLINE)->EnableWindow(TRUE);
-		GetDlgItem(IDC_RADIO_TRAINING_OFFLINE)->EnableWindow(TRUE);
-
-		GetDlgItem(IDC_RADIO_DATA_STREAMING_RT)->EnableWindow(TRUE);
-		GetDlgItem(IDC_RADIO_DATA_STREAMING_LOAD)->EnableWindow(TRUE);
-
-		GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE)->EnableWindow(TRUE);
-		GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_ON)->EnableWindow(TRUE);
-		GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_OFF)->EnableWindow(TRUE);
-
-		GetDlgItem(IDC_RADIO_DEVICE_DELSYS)->EnableWindow(TRUE);
-		GetDlgItem(IDC_RADIO_DEVICE_FRANKFURT)->EnableWindow(TRUE);
-
-		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES)->EnableWindow(TRUE);
-		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_NO)->EnableWindow(TRUE);
-
-		GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_YES)->EnableWindow(TRUE);
-		GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_NO)->EnableWindow(TRUE);
-
-		if (m_radioStreamingMode == 1) {
-			GetDlgItem(IDC_BTN_LOAD)->EnableWindow(TRUE);
+		if (m_radioSaveMode != 0) {
+			Set_MFC_Control_Availability(TRUE);
+			m_btnSwitch.SetWindowText(_T("Start"));
 		}
 
-		m_btnSwitch.SetWindowText(_T("Start"));
+		g_csExitThread.Lock();
+		pShared_Data->bContinue = FALSE;
+		g_csExitThread.Unlock();
 		m_flag_Switch = FALSE;
 	}
 }
@@ -512,14 +476,16 @@ int CDAQVizDlg::MainStart() {
 	}
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 
-	pShared_Data->bFirst = TRUE;
 	pShared_Data->bContinue = FALSE;
+	pShared_Data->bSaveImmediate = b_SaveImmediate_Dlg;
+	pShared_Data->bProcessEnd = FALSE;
+	pShared_Data->bFirst = TRUE;
 	pShared_Data->iNextOwner = THREAD_MAIN;
 	pShared_Data->time = 0.0;
 	pShared_Data->count = 0;
 
 	// TwinCAT Process Execution (exe 파일 주소 확인)
-	if (CreateProcess(_T("../TwinCAT/Release/TwinCAT.exe"),
+	if (CreateProcess(_T("../TwinCAT/Debug/TwinCAT.exe"),
 		_T("TwinCAT.exe nMemory nMutex"), NULL, NULL, FALSE, 0, NULL, NULL, &startupinfo, &processinfo))
 		m_editStatusBar.SetWindowText(stat += "[USER] Creating Process Success \r\n");
 	else {
@@ -534,8 +500,7 @@ int CDAQVizDlg::MainStart() {
 	pShared_Data->iNextOwner = THREAD_TWINCAT;
 	ReleaseMutex(hMutex);
 
-	bProcessEnd = FALSE;
-	while (!bProcessEnd) {
+	while (!pShared_Data->bProcessEnd) {
 		WaitForSingleObject(hMutex, INFINITE);
 		while (pShared_Data->iNextOwner != THREAD_MAIN) {
 			ReleaseMutex(hMutex);
@@ -650,6 +615,10 @@ int CDAQVizDlg::MainStart() {
 		WaitForSingleObject(hMutex, INFINITE);
 	}
 
+	Set_MFC_Control_Availability(FALSE);
+	m_btnSwitch.SetWindowText(_T("End"));
+	m_btnSwitch.EnableWindow(FALSE);
+
 error:
 	CloseHandle(hMutex);
 	CloseHandle(hMemory);
@@ -700,10 +669,25 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 		}
 		switch (m_radioSaveMode) {
 		case 0:
-
+			if (TimerStarted) {
+				g_csExitThread.Lock();
+				pShared_Data->bSaveImmediate = TRUE;
+				g_csExitThread.Unlock();
+			}
+			else {
+				b_SaveImmediate_Dlg = TRUE;
+			}
 			break;
 		case 1:
-
+		case 2:
+			if (TimerStarted) {
+				g_csExitThread.Lock();
+				pShared_Data->bSaveImmediate = FALSE;
+				g_csExitThread.Unlock();
+			}
+			else {
+				b_SaveImmediate_Dlg = FALSE;
+			}
 			break;
 		}
 
@@ -802,4 +786,31 @@ double CDAQVizDlg::Get_m_time() {
 
 UINT CDAQVizDlg::Get_m_count() {
 	return m_count;
+}
+
+void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
+	m_comboSelectDlg.EnableWindow(_isAvailable);
+
+	GetDlgItem(IDC_RADIO_TRAINING_ONLINE)->EnableWindow(_isAvailable);
+	GetDlgItem(IDC_RADIO_TRAINING_OFFLINE)->EnableWindow(_isAvailable);
+
+	GetDlgItem(IDC_RADIO_DATA_STREAMING_RT)->EnableWindow(_isAvailable);
+	GetDlgItem(IDC_RADIO_DATA_STREAMING_LOAD)->EnableWindow(_isAvailable);
+
+	GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE)->EnableWindow(_isAvailable);
+	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_ON)->EnableWindow(_isAvailable);
+	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_OFF)->EnableWindow(_isAvailable);
+
+	GetDlgItem(IDC_RADIO_DEVICE_DELSYS)->EnableWindow(_isAvailable);
+	GetDlgItem(IDC_RADIO_DEVICE_FRANKFURT)->EnableWindow(_isAvailable);
+
+	GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES)->EnableWindow(_isAvailable);
+	GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_NO)->EnableWindow(_isAvailable);
+
+	GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_YES)->EnableWindow(_isAvailable);
+	GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_NO)->EnableWindow(_isAvailable);
+
+	if (m_radioStreamingMode == 1) {
+		GetDlgItem(IDC_BTN_LOAD)->EnableWindow(_isAvailable);
+	}
 }

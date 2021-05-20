@@ -23,10 +23,6 @@
 
 #define TEST_FLAG 1
 
-#define THREAD_MAIN		0
-#define THREAD_TWINCAT  1
-#define THREAD_CALLBACK 2
-
 #define	TIMER_EDIT 1
 
 #define N_FLEX 5
@@ -116,6 +112,9 @@ private:
 	double m_time = 0.0;
 	UINT m_count = 0;
 
+	bool TimerStarted = FALSE;
+	bool b_SaveImmediate_Dlg = TRUE;
+
 	// Child dialogs
 	DAQVizChildKSJ* p_ChildDlg_KSJ;
 	BallControl* p_BallControl;
@@ -191,6 +190,8 @@ public:
 	void Initialize_StartIdx();
 	void Initialize_EndIdx();
 
+	void Set_MFC_Control_Availability(bool _isAvailable);
+
 	// Utilities
 	void Set_Font(CButton& Btn_, UINT Height_, UINT Width_);
 	void Set_Font(CEdit& Text_, UINT Height_, UINT Width_);
@@ -202,8 +203,5 @@ public:
 
 	// Stack & Save
 	void StackData();
-	void SaveData();
-
-	bool bProcessEnd;
-	
+	void SaveData();	
 };
