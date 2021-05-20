@@ -52,8 +52,8 @@ BOOL GraphClipping::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
-	Initialize_GUI();
 	Initialize_Variable();
+	Initialize_GUI();
 
 	SetWindowPos(NULL, 0, -1080, 0, 0, SWP_NOSIZE);
 
@@ -80,7 +80,7 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_CLIPPED_GRAPH)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph = new ClippedGraph();
+	p_ClippedGraph = new ClippedGraph(m_NumIdx);
 	p_ClippedGraph->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph->ShowWindow(SW_SHOW);
 	p_ClippedGraph->MoveWindow(rectofDialogArea);
@@ -88,7 +88,7 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_ANIMATION)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph_2 = new ClippedGraph();
+	p_ClippedGraph_2 = new ClippedGraph(m_NumIdx);
 	p_ClippedGraph_2->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph_2->ShowWindow(SW_SHOW);
 	p_ClippedGraph_2->MoveWindow(rectofDialogArea);

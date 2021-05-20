@@ -16,6 +16,11 @@ ClippedGraph::ClippedGraph(CWnd* pParent /*=nullptr*/)
 
 }
 
+ClippedGraph::ClippedGraph(int _m_Num_idx, CWnd* pParent /*=nullptr*/)
+	: CDialogEx(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, pParent) {
+	m_Num_idx = _m_Num_idx;
+}
+
 ClippedGraph::~ClippedGraph() {
 
 }
@@ -41,6 +46,19 @@ BOOL ClippedGraph::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
+	X_pos = new double[m_Num_idx];
+	for (int i = 0; i < m_Num_idx; i++) {
+		X_pos[i] = -2.5f + 5.0f / (double)(m_Num_idx) * i;
+	}
+
+	Y_val = new double*[NUM_CH];
+	for (int i = 0; i < NUM_CH; i++) {
+		Y_val[i] = new double[m_Num_idx];
+		for (int j = 0; j < m_Num_idx; j++) {
+			Y_val[i][j] = rand() / (double)(RAND_MAX);
+		}
+	}
+
 	SetTimer(1000, TIME_ELAPSE, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -160,7 +178,7 @@ void ClippedGraph::GLResize(int cx, int cy) {
 
 void ClippedGraph::GLRenderScene(void) {
 	// TODO: 여기에 구현 코드 추가.
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glEnable(GL_DEPTH_TEST);
@@ -169,19 +187,144 @@ void ClippedGraph::GLRenderScene(void) {
 
 	gluLookAt(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-	////////////////////////////// Sphere //////////////////////////////
+	///////////////////////////// X-Y Axis (sEMG + Flex sensor) /////////////////////////////
 	glLoadIdentity();
-	// Blue color used to draw.
-	glColor3f(0.0, 0.0, 1.0);
-	// traslate the draw by z = -4.0
-	// Note this when you decrease z like -8.0 the drawing will looks far , or smaller.
-	glTranslatef(count_horizontal * MOVE_SCALE, count_vertical * MOVE_SCALE, -5.0);
-	// built-in (glut library) function , draw you a sphere.
-	glutSolidSphere(0.3 + count * 0.02, 50, 50);
-	// Flush buffers to screen
+	glColor3f(0.0f, 0.0f, 0.0f);
 
-	////////////////////////////// Axis //////////////////////////////
-	GLfloat Axis_min = -100.0f;
+	glTranslatef(0.0, 0.0, -5.0);
+
+	glLineWidth(3);
+	for (int i = 0; i < NUM_GRAPH_ANALYSIS; i++) {
+		// X axis
+		glBegin(GL_LINES);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN + GRAPH_Y_INTERVAL) * i, 0.0f);
+		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN + GRAPH_Y_INTERVAL) * i - GRAPH_Y_LEN, 0.0f);
+		glEnd();
+
+		// Y axis
+		glBegin(GL_LINES);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN + GRAPH_Y_INTERVAL) * i - GRAPH_Y_LEN, 0.0f);
+		glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN + GRAPH_Y_INTERVAL) * i - GRAPH_Y_LEN, 0.0f);
+		glEnd();
+	}
+
+	/////////////////////////////// Graph ///////////////////////////////
+	glLineWidth(1.5);
+	for (int i = 0; i < NUM_CH; i++) {
+		int temp = i / NUM_GRAPH_ANALYSIS;
+
+		if (i % NUM_GRAPH_ANALYSIS == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i % NUM_GRAPH_ANALYSIS == 1)
+			glColor3f(0.0f, 1.0f, 0.0f);
+		else if (i % NUM_GRAPH_ANALYSIS == 2)
+			glColor3f(0.0f, 0.0f, 1.0f);
+		else if (i % NUM_GRAPH_ANALYSIS == 3)
+			glColor3f(1.0f, 1.0f, 0.0f);
+
+		glBegin(GL_LINE_STRIP);
+			for (int j = 0; j < m_Num_idx; j++) {
+				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL * temp
+							- GRAPH_Y_LEN * (temp + 1) + GRAPH_Y_LEN * Y_val[i][j], 0.0f);
+			}
+		glEnd();
+	}
+
+	/////////////////////////////// Polygon ///////////////////////////////
+	X_polygon = -2.0f;
+	Y_polygon = -1.5f;
+	Rad_max = 0.8;
+	for (int i = 0; i < N_GRID_STEP; i++) {
+		if (i == N_GRID_STEP - 1)
+			glLineWidth(2.0);
+		else
+			glLineWidth(1.0);
+
+		glColor3f(0.0f, 0.0f, 0.0f);
+		double rad = Rad_max / (double)N_GRID_STEP * (i + 1);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < 5; j++) {
+			glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / 5.0 * PI * j),
+				Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / 5.0 * PI * j), 0);
+		}
+		glVertex3f(X_polygon + rad * cos(PI / 2.0), Y_polygon + 1 / fAspect * rad * sin(PI / 2.0), 0);
+		glEnd();
+	}
+
+	// Draw center - vertex lines
+	glLineWidth(0.1);
+	for (int i = 0; i < 5; i++) {
+		glBegin(GL_LINE_STRIP);
+			glVertex3f(X_polygon, Y_polygon, 0);
+			glVertex3f(X_polygon + Rad_max * cos(PI / 2.0 + 2 / 5.0 * PI * i),
+				Y_polygon + 1 / fAspect * Rad_max * sin(PI / 2.0 + 2 / 5.0 * PI * i), 0);
+		glEnd();
+	}
+
+	X_polygon = 0.0f;
+	Y_polygon = -1.5f;
+	Rad_max = 0.8;
+	for (int i = 0; i < N_GRID_STEP; i++) {
+		if (i == N_GRID_STEP - 1)
+			glLineWidth(2.0);
+		else
+			glLineWidth(1.0);
+
+		glColor3f(0.0f, 0.0f, 0.0f);
+		double rad = Rad_max / (double)N_GRID_STEP * (i + 1);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < 5; j++) {
+			glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / 5.0 * PI * j),
+				Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / 5.0 * PI * j), 0);
+		}
+		glVertex3f(X_polygon + rad * cos(PI / 2.0), Y_polygon + 1 / fAspect * rad * sin(PI / 2.0), 0);
+		glEnd();
+	}
+
+	// Draw center - vertex lines
+	glLineWidth(0.1);
+	for (int i = 0; i < 5; i++) {
+		glBegin(GL_LINE_STRIP);
+			glVertex3f(X_polygon, Y_polygon, 0);
+			glVertex3f(X_polygon + Rad_max * cos(PI / 2.0 + 2 / 5.0 * PI * i),
+				Y_polygon + 1 / fAspect * Rad_max * sin(PI / 2.0 + 2 / 5.0 * PI * i), 0);
+		glEnd();
+	}
+
+	X_polygon = 2.0f;
+	Y_polygon = -1.5f;
+	Rad_max = 0.8;
+	for (int i = 0; i < N_GRID_STEP; i++) {
+		if (i == N_GRID_STEP - 1)
+			glLineWidth(2.0);
+		else
+			glLineWidth(1.0);
+
+		glColor3f(0.0f, 0.0f, 0.0f);
+		double rad = Rad_max / (double)N_GRID_STEP * (i + 1);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < 6; j++) {
+			glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / 6.0 * PI * j),
+				Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / 6.0 * PI * j), 0);
+		}
+		glVertex3f(X_polygon + rad * cos(PI / 2.0), Y_polygon + 1 / fAspect * rad * sin(PI / 2.0), 0);
+		glEnd();
+	}
+
+	// Draw center - vertex lines
+	glLineWidth(0.1);
+	for (int i = 0; i < 6; i++) {
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(X_polygon, Y_polygon, 0);
+		glVertex3f(X_polygon + Rad_max * cos(PI / 2.0 + 2 / 6.0 * PI * i),
+			Y_polygon + 1 / fAspect * Rad_max * sin(PI / 2.0 + 2 / 6.0 * PI * i), 0);
+		glEnd();
+	}
+
+	/////////////////////////////// Axis ///////////////////////////////
+	/*GLfloat Axis_min = -100.0f;
 	GLfloat Axis_max = 100.0f;
 
 	glLineWidth(3);
@@ -196,7 +339,7 @@ void ClippedGraph::GLRenderScene(void) {
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glVertex3f(-count_horizontal * MOVE_SCALE, Axis_min, 0.0f);
 	glVertex3f(-count_horizontal * MOVE_SCALE, Axis_max, 0.0f);
-	glEnd();
+	glEnd();*/
 
 	glPopMatrix();
 	glFlush();
