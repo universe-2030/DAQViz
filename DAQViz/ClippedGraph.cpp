@@ -16,10 +16,20 @@ ClippedGraph::ClippedGraph(CWnd* pParent /*=nullptr*/)
 	Num_CH = NUM_CH;
 }
 
-ClippedGraph::ClippedGraph(int _m_Num_idx, int _Num_CH, Render _species, CWnd* pParent /*=nullptr*/)
+ClippedGraph::ClippedGraph(int _m_Start_idx, int _m_End_idx,
+						int _m_Num_idx, int _Num_CH, 
+						const std::vector<double>* _sEMG_plot,
+						const std::vector<double>* _Flex_plot,
+						Render _species, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, pParent) {
+	m_Start_idx = _m_Start_idx;
+	m_End_idx = _m_End_idx;
 	m_Num_idx = _m_Num_idx;
 	Num_CH = _Num_CH;
+
+	sEMG_plot = _sEMG_plot;
+	Flex_plot = _Flex_plot;
+
 	species = _species;
 }
 
@@ -240,7 +250,7 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		glBegin(GL_LINE_STRIP);
 			for (int j = 0; j < m_Num_idx; j++) {
 				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * temp
-							- GRAPH_Y_LEN_TOTAL * (temp + 1) + GRAPH_Y_LEN_TOTAL * Y_val[i][j], 0.0f);
+							- GRAPH_Y_LEN_TOTAL * (temp + 1) + GRAPH_Y_LEN_TOTAL * sEMG_plot[i][j + m_Start_idx], 0.0f);
 			}
 		glEnd();
 	}
@@ -300,7 +310,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * temp
-				- GRAPH_Y_LEN_ANI * (temp + 1) + GRAPH_Y_LEN_ANI * Y_val[i][j], 0.0f);
+				- GRAPH_Y_LEN_ANI * (temp + 1) + GRAPH_Y_LEN_ANI * sEMG_plot[i][j + m_Start_idx], 0.0f);
 		}
 		glEnd();
 	}
@@ -415,12 +425,12 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glBegin(GL_LINE_STRIP);
 	for (int i = start_idx; i <= end_idx; i++) {
-		double rad = Rad_max * Y_val[i][Current_idx];
+		double rad = Rad_max * sEMG_plot[i][Current_idx + m_Start_idx];
 		glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)),
 			Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)), 0);
 	}
-	glVertex3f(X_polygon + Rad_max * Y_val[start_idx][Current_idx] * cos(PI / 2.0),
-			   Y_polygon + 1 / fAspect * Rad_max * Y_val[start_idx][Current_idx] * sin(PI / 2.0), 0);
+	glVertex3f(X_polygon + Rad_max * sEMG_plot[start_idx][Current_idx + m_Start_idx] * cos(PI / 2.0),
+			   Y_polygon + 1 / fAspect * Rad_max * sEMG_plot[start_idx][Current_idx + m_Start_idx] * sin(PI / 2.0), 0);
 	glEnd();
 
 	X_polygon = 0.0f;
@@ -433,12 +443,12 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glBegin(GL_LINE_STRIP);
 	for (int i = start_idx; i <= end_idx; i++) {
-		double rad = Rad_max * Y_val[i][Current_idx];
+		double rad = Rad_max * sEMG_plot[i][Current_idx + m_Start_idx];
 		glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)),
 			Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)), 0);
 	}
-	glVertex3f(X_polygon + Rad_max * Y_val[start_idx][Current_idx] * cos(PI / 2.0),
-		Y_polygon + 1 / fAspect * Rad_max * Y_val[start_idx][Current_idx] * sin(PI / 2.0), 0);
+	glVertex3f(X_polygon + Rad_max * sEMG_plot[start_idx][Current_idx + m_Start_idx] * cos(PI / 2.0),
+		Y_polygon + 1 / fAspect * Rad_max * sEMG_plot[start_idx][Current_idx + m_Start_idx] * sin(PI / 2.0), 0);
 	glEnd();
 
 	X_polygon = 2.0f;
@@ -451,12 +461,12 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glBegin(GL_LINE_STRIP);
 	for (int i = start_idx; i <= end_idx; i++) {
-		double rad = Rad_max * Y_val[i][Current_idx];
+		double rad = Rad_max * sEMG_plot[i][Current_idx + m_Start_idx];
 		glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)),
 			Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)), 0);
 	}
-	glVertex3f(X_polygon + Rad_max * Y_val[start_idx][Current_idx] * cos(PI / 2.0),
-		Y_polygon + 1 / fAspect * Rad_max * Y_val[start_idx][Current_idx] * sin(PI / 2.0), 0);
+	glVertex3f(X_polygon + Rad_max * sEMG_plot[start_idx][Current_idx + m_Start_idx] * cos(PI / 2.0),
+		Y_polygon + 1 / fAspect * Rad_max * sEMG_plot[start_idx][Current_idx + m_Start_idx] * sin(PI / 2.0), 0);
 	glEnd();
 
 	glPopMatrix();

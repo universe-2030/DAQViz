@@ -97,7 +97,8 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_CLIPPED_GRAPH)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph = new ClippedGraph(m_NumIdx, NUM_CH, Render::TOTAL);
+	p_ClippedGraph = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx,
+									NUM_CH, sEMG_plot, Flex_plot, Render::TOTAL);
 	p_ClippedGraph->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph->ShowWindow(SW_SHOW);
 	p_ClippedGraph->MoveWindow(rectofDialogArea);
@@ -105,7 +106,8 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_ANIMATION)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph_2 = new ClippedGraph(m_NumIdx, NUM_CH, Render::ANIMATION);
+	p_ClippedGraph_2 = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx,
+										NUM_CH, sEMG_plot, Flex_plot, Render::ANIMATION);
 	p_ClippedGraph_2->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph_2->ShowWindow(SW_SHOW);
 	p_ClippedGraph_2->MoveWindow(rectofDialogArea);

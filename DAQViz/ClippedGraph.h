@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <iostream>
+#include <vector>
 #include "GL/glut.h"
 #include "GL/GL.h"
 #include "GL/GLU.h"
@@ -35,7 +36,11 @@ class ClippedGraph : public CDialogEx {
 
 public:
 	ClippedGraph(CWnd* pParent = nullptr);   // 표준 생성자입니다.
-	ClippedGraph(int _m_Num_idx, int _Num_CH, Render _species, CWnd* pParent = nullptr);   // 표준 생성자입니다.
+	ClippedGraph(int _m_Start_idx, int _m_End_idx,
+				int _m_Num_idx, int _Num_CH,
+				const std::vector<double>* _sEMG_plot,
+				const std::vector<double>* _Flex_plot, 
+				Render _species, CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~ClippedGraph();
 
 // 대화 상자 데이터입니다.
@@ -51,6 +56,8 @@ protected:
 
 private:
 	int Num_CH;
+	int m_Start_idx;
+	int m_End_idx;
 	int m_Num_idx;
 	Render species;
 
@@ -71,6 +78,10 @@ private:
 	double X_polygon;
 	double Y_polygon;
 	double Rad_max;
+
+	// Vector
+	const std::vector<double>* sEMG_plot;
+	const std::vector<double>* Flex_plot;
 
 	// For animation bar
 	int Current_idx = 0;
