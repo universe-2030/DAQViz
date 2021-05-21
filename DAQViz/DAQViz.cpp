@@ -110,4 +110,3 @@ BOOL CDAQVizApp::InitInstance()
 	// 반환합니다.
 	return FALSE;
 }
-

@@ -201,12 +201,21 @@ HCURSOR CDAQVizDlg::OnQueryDragIcon() {
 void CDAQVizDlg::Initialize_Variable() {
 	sEMG_temp = new double[4];
 	sEMG_temp_abs = new double[4];
+	sEMG_temp_MAV = new double[4];
 
 	Flex_data_calib = new float64[N_FLEX];
 	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX);
+	Flex_data_LPF = new float64[N_FLEX];
+	memset(Flex_data_LPF, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX);
 
 	sEMG_temp_16CH = new double[16];
 	memset(sEMG_temp_16CH, 0.0, 2 * sizeof(sEMG_temp_16CH) * 16);
+
+	sEMG_raw_stack = new std::vector<double>[N_SEMG];
+	sEMG_abs_stack = new std::vector<double>[N_SEMG];
+	sEMG_MAV_stack = new std::vector<double>[N_SEMG];
+	Flex_raw_stack = new std::vector<double>[N_FLEX];
+	Flex_LPF_stack = new std::vector<double>[N_FLEX];
 }
 
 void CDAQVizDlg::Initialize_NI() {
@@ -565,8 +574,9 @@ int CDAQVizDlg::MainStart() {
 			// RTGraph Body
 
 			// For test
-			for (int i = 0; i < 16; i++)
-				sEMG_temp_16CH[i] = (double) rand() / (double) RAND_MAX;
+			for (int i = 0; i < 16; i++) {
+				sEMG_temp_16CH[i] = (double)rand() / (double)RAND_MAX;
+			}
 			
 			p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_temp_16CH);
 
@@ -596,6 +606,9 @@ int CDAQVizDlg::MainStart() {
 				p_ChildDlg_KSJ->Plot_graph(Flex_data, p_ChildDlg_KSJ->Get_rtGraph_Flex()[0]);
 			}
 
+			// Stack the data
+
+
 			// Toc
 			QueryPerformanceCounter(&Counter_RTGraph_End);
 			Time_RTGraph_elapse = (double)(Counter_RTGraph_End.QuadPart - Counter_RTGraph_Start.QuadPart)
@@ -618,6 +631,8 @@ int CDAQVizDlg::MainStart() {
 	Set_MFC_Control_Availability(FALSE);
 	m_btnSwitch.SetWindowText(_T("End"));
 	m_btnSwitch.EnableWindow(FALSE);
+
+	SaveData();
 
 error:
 	CloseHandle(hMutex);
@@ -813,4 +828,37 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 	if (m_radioStreamingMode == 1) {
 		GetDlgItem(IDC_BTN_LOAD)->EnableWindow(_isAvailable);
 	}
+}
+
+void CDAQVizDlg::StackData (double* _sEMG_raw,
+							double* _sEMG_abs,
+							double* _sEMG_MAV,
+							double* _Flex_raw,
+							double* _Flex_LPF,
+							double _Time_DAQ_elapse,
+							double _Time_RTGraph_elapse) {
+	for (int i = 0; i < N_SEMG; i++) {
+		sEMG_raw_stack[i].push_back(_sEMG_raw[i]);
+		sEMG_abs_stack[i].push_back(_sEMG_abs[i]);
+		sEMG_MAV_stack[i].push_back(_sEMG_MAV[i]);
+	}
+
+	for (int i = 0; i < N_FLEX; i++) {
+		Flex_raw_stack[i].push_back(_Flex_raw[i]);
+		Flex_LPF_stack[i].push_back(_Flex_LPF[i]);
+	}
+
+	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);
+	Time_RTGraph_elapse_stack.push_back(_Time_RTGraph_elapse);
+}
+
+void CDAQVizDlg::SaveData() {
+	m_editStatusBar.SetWindowText(stat += "[USER] Save Start!");
+	m_editStatusBar.SetWindowText(stat += "\r\n");
+	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+
+	m_editStatusBar.SetWindowText(stat += "[USER] Save End!");
+	m_editStatusBar.SetWindowText(stat += "\r\n");
+	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 }

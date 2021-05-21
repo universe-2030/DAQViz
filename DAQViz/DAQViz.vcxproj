@@ -223,6 +223,7 @@
     <ClCompile Include="glm.cpp" />
     <ClCompile Include="gltools.cpp" />
     <ClCompile Include="GraphClipping.cpp" />
+    <ClCompile Include="Hand.cpp" />
     <ClCompile Include="MatchDevice.cpp" />
     <ClCompile Include="math3d.cpp" />
     <ClCompile Include="NI_AI_AO_DO.cpp" />

@@ -13,13 +13,13 @@ SignalProcessor::SignalProcessor() { // Niave initialization
 	Window_size = 0;
 }
 
-SignalProcessor::SignalProcessor(int N_CH, double cutoff_central, double cutoff_width,
+SignalProcessor::SignalProcessor(int N_ch, double cutoff_central, double cutoff_width,
 								 double time_step, double cutoff_LPF,
 								 double sampling_rate, double n_output,
 								 double rate_max, double in_scale, double _alpha,
 								 double _beta, double onset_threshold_value,
 								 double onset_threshold_slope, int window_size) {
-	N_sEMG_CH = N_CH;
+	N_sEMG_CH = N_ch;
 
 	w_o = cutoff_central;
 	w_c = cutoff_width;

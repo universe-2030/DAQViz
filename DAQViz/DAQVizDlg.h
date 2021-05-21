@@ -10,6 +10,7 @@
 
 #include "DELSYSDAQ.h"
 #include "MatchDevice.h"
+#include "SignalProcessor.h"
 
 #include "../TwinCAT/TwinCAT/Timer_TwinCAT.h"
 #include "DAQVizChildKSJ.h"
@@ -25,6 +26,7 @@
 
 #define	TIMER_EDIT 1
 
+#define N_SEMG 16
 #define N_FLEX 5
 
 #define CALI_START 0.100
@@ -98,6 +100,16 @@ private:
 	CStatic		m_textEndIdx;
 	CEdit		m_editEndIdx;
 
+	// Container variables
+	std::vector<double>* sEMG_raw_stack;
+	std::vector<double>* sEMG_abs_stack;
+	std::vector<double>* sEMG_MAV_stack;
+	std::vector<double>* Flex_raw_stack;
+	std::vector<double>* Flex_LPF_stack;
+
+	std::vector<double> Time_DAQ_elapse_stack;
+	std::vector<double> Time_RTGraph_elapse_stack;
+
 	// TwinCAT variables
 	HANDLE hMutex;
 	HANDLE hMemory;
@@ -150,9 +162,11 @@ private:
 	// Temporary
 	double* sEMG_temp;
 	double* sEMG_temp_abs;
+	double* sEMG_temp_MAV;
 
 	float64* Flex_data;
 	float64* Flex_data_calib;
+	float64* Flex_data_LPF;
 
 	double* sEMG_temp_16CH;
 
@@ -161,6 +175,9 @@ private:
 
 	// Training flag
 	bool bTrained = FALSE;
+
+	// Signal processor
+	SignalProcessor SigProc;
 
 public:
 	// Thread functions
@@ -202,6 +219,12 @@ public:
 	UINT Get_m_count();
 
 	// Stack & Save
-	void StackData();
+	void StackData (double* _sEMG_raw,
+					double* _sEMG_abs,
+					double* _sEMG_MAV,
+					double* _Flex_raw,
+					double* _Flex_LPF,
+					double _Time_DAQ_elapse,
+					double _Time_RTGraph_elapse);
 	void SaveData();	
 };

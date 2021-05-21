@@ -51,7 +51,7 @@ private:
 
 public:
 	SignalProcessor(); // Default constructors
-	SignalProcessor(int N_CH, double cutoff_central, double cutoff_width,
+	SignalProcessor(int N_ch, double cutoff_central, double cutoff_width,
 					double time_step, double cutoff_LPF,
 					double sampling_rate, double n_output,
 					double rate_max, double in_scale, double _alpha,
