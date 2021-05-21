@@ -47,7 +47,7 @@ CDAQVizDlg::CDAQVizDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG, pParent), 
 	m_radioTrainingMode(0), m_radioStreamingMode(0),
 	m_radioSaveMode(1), m_radiosEMGDAQDev(0),
-	m_radioUseIMU(0), m_radioUseFlexSensor(0) {
+	m_radioUseFlexSensor(0), m_radioUseIMU(0) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -158,7 +158,6 @@ BOOL CDAQVizDlg::OnInitDialog()
 	Initialize_MFC();
 	Initialize_SaveFolder();
 	Initialize_LogonU();
-	Initialize_RTOS();
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -218,24 +217,6 @@ void CDAQVizDlg::Initialize_Variable() {
 		b_SaveImmediate_Dlg = FALSE;
 
 	File_loaded_or_not = FALSE;
-
-	sEMG_temp = new double[4];
-	sEMG_temp_abs = new double[4];
-	sEMG_temp_MAV = new double[4];
-
-	Flex_data_calib = new float64[N_FLEX_CH];
-	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX_CH);
-	Flex_data_LPF = new float64[N_FLEX_CH];
-	memset(Flex_data_LPF, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX_CH);
-
-	sEMG_temp_16CH = new double[16];
-	memset(sEMG_temp_16CH, 0.0, 2 * sizeof(sEMG_temp_16CH) * 16);
-
-	sEMG_raw_stack = new std::vector<double>[N_SEMG_CH];
-	sEMG_abs_stack = new std::vector<double>[N_SEMG_CH];
-	sEMG_MAV_stack = new std::vector<double>[N_SEMG_CH];
-	Flex_raw_stack = new std::vector<double>[N_FLEX_CH];
-	Flex_LPF_stack = new std::vector<double>[N_FLEX_CH];
 }
 
 void CDAQVizDlg::Initialize_NI() {
@@ -331,11 +312,72 @@ void CDAQVizDlg::Initialize_SaveFolder() {
 }
 
 void CDAQVizDlg::Initialize_LogonU() {
+	MATCH_Dev = new MatchDevice();
+	if (MATCH_Dev->InitMATCH()) {
+		MessageBox(_T("Unable to initialize the MATCH device"), _T("Warning"), MB_ICONERROR);
+	}
 
+	MATCH_Dev->GetDataAddress();
+
+	if (MATCH_Dev->OpenMATCH()) {
+		MessageBox(_T("Unable to open the MATCH device"), _T("Warning"), MB_ICONERROR);
+		MATCH_Dev->CloseMATCH();
+
+		GetDlgItem(IDC_RADIO_DEVICE_FRANKFURT)->EnableWindow(FALSE);
+
+		m_radioUseIMU = 1;
+		CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES);
+		pCheck->SetCheck(BST_UNCHECKED);
+		pCheck = (CButton*)GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_NO);
+		pCheck->SetCheck(BST_CHECKED);
+		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES)->EnableWindow(FALSE);
+
+		Num_IMU_CH = 0;
+		CString temp;
+		temp.Format(_T("%d"), Num_IMU_CH);
+		m_editNumIMUCH.SetWindowText(temp);
+		m_editNumIMUCH.EnableWindow(FALSE);
+	}
+	else {
+		m_radioUseIMU = 0;
+		CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES);
+		pCheck->SetCheck(m_radioUseIMU);
+	}
 }
 
-void CDAQVizDlg::Initialize_RTOS() {
+void CDAQVizDlg::Dynamic_Allocation() {
+	sEMG_temp = new double[4];
+	sEMG_temp_abs = new double[4];
+	sEMG_temp_MAV = new double[4];
 
+	Flex_data_calib = new float64[N_FLEX_CH];
+	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX_CH);
+	Flex_data_LPF = new float64[N_FLEX_CH];
+	memset(Flex_data_LPF, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX_CH);
+
+	sEMG_temp_16CH = new double[16];
+	memset(sEMG_temp_16CH, 0.0, 2 * sizeof(sEMG_temp_16CH) * 16);
+
+	sEMG_raw_stack = new std::vector<double>[Num_sEMG_CH];
+	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
+	sEMG_MAV_stack = new std::vector<double>[Num_sEMG_CH];
+	
+	Flex_raw_stack = new std::vector<double>[Num_Flex_CH];
+	Flex_LPF_stack = new std::vector<double>[Num_Flex_CH];
+
+	IMU_raw_stack = new std::vector<double>[Num_IMU_CH];
+	IMU_LPF_stack = new std::vector<double>[Num_IMU_CH];
+}
+
+void CDAQVizDlg::Dynamic_Free() {
+	delete sEMG_temp;
+	delete sEMG_temp_abs;
+	delete sEMG_temp_MAV;
+
+	delete Flex_data_calib;
+	delete Flex_data_LPF;
+
+	delete sEMG_temp_16CH;
 }
 
 void CDAQVizDlg::Set_Font(CButton& Btn_, UINT Height_, UINT Width_) {
@@ -377,6 +419,7 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	if (!m_flag_Switch) { // Turned OFF -> ON
 		if (!TimerStarted) {
+			Dynamic_Allocation();
 			TimerStarted = TRUE;
 			AfxBeginThread(MainThreadFunc, this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 		}
@@ -678,7 +721,6 @@ error:
 void CDAQVizDlg::RadioCtrl(UINT ID) {
 	UpdateData(TRUE);
 
-
 	if (IDC_RADIO_TRAINING_ONLINE <= ID && ID <= IDC_RADIO_TRAINING_OFFLINE) {
 		if (TEST_FLAG) {
 			CString radio_val;
@@ -818,6 +860,7 @@ void CDAQVizDlg::OnDestroy() {
 	CDialogEx::OnDestroy();
 
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
+	Dynamic_Free();
 	KillTimer(TIMER_EDIT);
 }
 
@@ -884,17 +927,24 @@ void CDAQVizDlg::StackData (double* _sEMG_raw,
 							double* _sEMG_MAV,
 							double* _Flex_raw,
 							double* _Flex_LPF,
+							double* _IMU_raw,
+							double* _IMU_LPF,
 							double _Time_DAQ_elapse,
 							double _Time_RTGraph_elapse) {
-	for (int i = 0; i < N_SEMG_CH; i++) {
+	for (int i = 0; i < Num_sEMG_CH; i++) {
 		sEMG_raw_stack[i].push_back(_sEMG_raw[i]);
 		sEMG_abs_stack[i].push_back(_sEMG_abs[i]);
 		sEMG_MAV_stack[i].push_back(_sEMG_MAV[i]);
 	}
 
-	for (int i = 0; i < N_FLEX_CH; i++) {
+	for (int i = 0; i < Num_Flex_CH; i++) {
 		Flex_raw_stack[i].push_back(_Flex_raw[i]);
 		Flex_LPF_stack[i].push_back(_Flex_LPF[i]);
+	}
+
+	for (int i = 0; i < Num_IMU_CH; i++) {
+		IMU_raw_stack[i].push_back(_IMU_raw[i]);
+		IMU_LPF_stack[i].push_back(_IMU_LPF[i]);
 	}
 
 	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);

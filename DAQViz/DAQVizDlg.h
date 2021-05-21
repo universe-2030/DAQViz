@@ -122,8 +122,12 @@ private:
 	std::vector<double>* sEMG_raw_stack;
 	std::vector<double>* sEMG_abs_stack;
 	std::vector<double>* sEMG_MAV_stack;
+
 	std::vector<double>* Flex_raw_stack;
 	std::vector<double>* Flex_LPF_stack;
+
+	std::vector<double>* IMU_raw_stack;
+	std::vector<double>* IMU_LPF_stack;
 
 	std::vector<double> Time_DAQ_elapse_stack;
 	std::vector<double> Time_RTGraph_elapse_stack;
@@ -209,7 +213,10 @@ public:
 	void Initialize_GUI();
 	void Initialize_SaveFolder();
 	void Initialize_LogonU();
-	void Initialize_RTOS();
+
+	// Dynamic allocation
+	void Dynamic_Allocation();
+	void Dynamic_Free();
 
 	// MFC Controls
 	afx_msg void RadioCtrl(UINT ID);
@@ -242,6 +249,8 @@ public:
 					double* _sEMG_MAV,
 					double* _Flex_raw,
 					double* _Flex_LPF,
+					double* _IMU_raw,
+					double* _IMU_LPF,
 					double _Time_DAQ_elapse,
 					double _Time_RTGraph_elapse);
 	void SaveData();	
