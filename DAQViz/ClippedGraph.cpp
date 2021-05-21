@@ -5,7 +5,7 @@
 #include "DAQViz.h"
 #include "ClippedGraph.h"
 #include "afxdialogex.h"
-
+#include "GraphClipping.h"
 
 // ClippedGraph 대화 상자
 
@@ -111,7 +111,7 @@ void ClippedGraph::OnTimer(UINT_PTR nIDEvent) {
 		this->Invalidate(FALSE);
 		break;
 	case TIMER_ANIMATION:
-		Current_idx++;
+		Current_idx += TimeStep;
 		if (Current_idx > m_Num_idx)
 			Current_idx = 0;
 		break;
@@ -467,10 +467,18 @@ void ClippedGraph::Set_Current_idx(UINT _Current_idx) {
 	Current_idx = _Current_idx;
 }
 
+void ClippedGraph::Set_TimeStep(UINT _TimeStep) {
+	TimeStep = _TimeStep;
+}
+
 void ClippedGraph::Set_AnimiationTimer() {
 	SetTimer(TIMER_ANIMATION, TIME_ELAPSE, NULL);
 }
 
 void ClippedGraph::Kill_AnimiationTimer() {
 	KillTimer(TIMER_ANIMATION);
+}
+
+int ClippedGraph::Get_Current_idx() {
+	return Current_idx;
 }

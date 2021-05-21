@@ -73,6 +73,7 @@ private:
 
 	// For animation bar
 	int Current_idx = 0;
+	int TimeStep = 1;
 
 public:
 	virtual BOOL OnInitDialog();
@@ -87,6 +88,8 @@ public:
 	void GLRenderScene_Total();
 	void GLRenderScene_Animation();
 	void Set_Current_idx(UINT _Current_idx);
+	void Set_TimeStep(UINT _TimeStep);
 	void Set_AnimiationTimer();
 	void Kill_AnimiationTimer();
+	int Get_Current_idx();
 };

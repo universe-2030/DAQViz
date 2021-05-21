@@ -2,6 +2,8 @@
 #include "ClippedGraph.h"
 
 // GraphClipping 대화 상자
+#define TIMER_GRAPH_CLIPPING 1
+#define TIME_ELAPSE 20
 
 class GraphClipping : public CDialogEx {
 	DECLARE_DYNAMIC(GraphClipping)
@@ -34,6 +36,8 @@ private:
 
 	bool isAnimationRun = FALSE;
 
+	int m_TimeStep = 1;
+
 public:
 	virtual BOOL OnInitDialog();
 
@@ -44,12 +48,18 @@ public:
 	CButton m_btnRedraw;
 	CEdit m_editAnimationIdx;
 	CScrollBar m_scrollBar;
+	CStatic m_textTimeStep;
+	CEdit m_editTimeStep;
 	CButton m_btnRun;
 
 	void Initialize_GUI();
 	void Initialize_Variable();
 
+	void Set_ScrollPos(UINT _ScrollPos);
+
 	afx_msg void OnBnClickedBtnRedraw();
 	afx_msg void OnBnClickedBtnAnimationRun();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnEnChangeEditTimestep();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };
