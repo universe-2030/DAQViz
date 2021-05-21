@@ -4,6 +4,7 @@
 // GraphClipping 대화 상자
 #define TIMER_GRAPH_CLIPPING 1
 #define TIME_ELAPSE 20
+#define NUM_CH 16
 
 class GraphClipping : public CDialogEx {
 	DECLARE_DYNAMIC(GraphClipping)

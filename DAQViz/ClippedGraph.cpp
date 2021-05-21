@@ -13,17 +13,18 @@ IMPLEMENT_DYNAMIC(ClippedGraph, CDialogEx)
 
 ClippedGraph::ClippedGraph(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, pParent) {
-
+	Num_CH = NUM_CH;
 }
 
-ClippedGraph::ClippedGraph(int _m_Num_idx, Render _species, CWnd* pParent /*=nullptr*/)
+ClippedGraph::ClippedGraph(int _m_Num_idx, int _Num_CH, Render _species, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, pParent) {
 	m_Num_idx = _m_Num_idx;
+	Num_CH = _Num_CH;
 	species = _species;
 }
 
 ClippedGraph::~ClippedGraph() {
-
+	Delete_Dynamic_Alloc();
 }
 
 void ClippedGraph::DoDataExchange(CDataExchange* pDX) {
@@ -42,7 +43,6 @@ END_MESSAGE_MAP()
 
 // ClippedGraph 메시지 처리기
 
-
 BOOL ClippedGraph::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
@@ -52,8 +52,8 @@ BOOL ClippedGraph::OnInitDialog() {
 		X_pos[i] = -2.5f + 5.0f / (double)(m_Num_idx) * i;
 	}
 
-	Y_val = new double*[NUM_CH];
-	for (int i = 0; i < NUM_CH; i++) {
+	Y_val = new double*[Num_CH];
+	for (int i = 0; i < Num_CH; i++) {
 		Y_val[i] = new double[m_Num_idx];
 		for (int j = 0; j < m_Num_idx; j++) {
 			Y_val[i][j] = rand() / (double)(RAND_MAX);
@@ -225,7 +225,7 @@ void ClippedGraph::GLRenderScene_Total(void) {
 
 	/////////////////////////////// Graph ///////////////////////////////
 	glLineWidth(1.5);
-	for (int i = 0; i < NUM_CH; i++) {
+	for (int i = 0; i < Num_CH; i++) {
 		int temp = i / NUM_GRAPH_ANALYSIS;
 
 		if (i % NUM_GRAPH_ANALYSIS == 0)
@@ -285,7 +285,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 
 	/////////////////////////////// Graph ///////////////////////////////
 	glLineWidth(1.5);
-	for (int i = 0; i < NUM_CH; i++) {
+	for (int i = 0; i < Num_CH; i++) {
 		int temp = i / NUM_GRAPH_ANALYSIS;
 
 		if (i % NUM_GRAPH_ANALYSIS == 0)
@@ -481,4 +481,28 @@ void ClippedGraph::Kill_AnimiationTimer() {
 
 int ClippedGraph::Get_Current_idx() {
 	return Current_idx;
+}
+
+void ClippedGraph::Delete_Dynamic_Alloc() {
+	delete X_pos;
+	for (int i = 0; i < Num_CH; i++)
+		delete Y_val[i];
+	delete Y_val;
+}
+
+void ClippedGraph::Set_Dynamic_Alloc(UINT _m_Num_idx) {
+	m_Num_idx = _m_Num_idx;
+
+	X_pos = new double[m_Num_idx];
+	for (int i = 0; i < m_Num_idx; i++) {
+		X_pos[i] = -2.5f + 5.0f / (double)(m_Num_idx)*i;
+	}
+
+	Y_val = new double* [Num_CH];
+	for (int i = 0; i < Num_CH; i++) {
+		Y_val[i] = new double[m_Num_idx];
+		for (int j = 0; j < m_Num_idx; j++) {
+			Y_val[i][j] = rand() / (double)(RAND_MAX);
+		}
+	}
 }

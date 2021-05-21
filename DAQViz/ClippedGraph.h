@@ -35,7 +35,7 @@ class ClippedGraph : public CDialogEx {
 
 public:
 	ClippedGraph(CWnd* pParent = nullptr);   // 표준 생성자입니다.
-	ClippedGraph(int _m_Num_idx, Render _species, CWnd* pParent = nullptr);   // 표준 생성자입니다.
+	ClippedGraph(int _m_Num_idx, int _Num_CH, Render _species, CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~ClippedGraph();
 
 // 대화 상자 데이터입니다.
@@ -50,6 +50,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	int Num_CH;
 	int m_Num_idx;
 	Render species;
 
@@ -87,9 +88,13 @@ public:
 	void GLResize(int cx, int cy);
 	void GLRenderScene_Total();
 	void GLRenderScene_Animation();
+
 	void Set_Current_idx(UINT _Current_idx);
 	void Set_TimeStep(UINT _TimeStep);
 	void Set_AnimiationTimer();
 	void Kill_AnimiationTimer();
 	int Get_Current_idx();
+
+	void Delete_Dynamic_Alloc();
+	void Set_Dynamic_Alloc(UINT _m_Num_idx);
 };
