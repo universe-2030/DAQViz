@@ -36,8 +36,9 @@ void GraphClipping::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_EDIT_CLIPPING_START_IDX, m_editStartIdx);
 	DDX_Control(pDX, IDC_EDIT_CLIPPING_END_IDX, m_editEndIdx);
 	DDX_Control(pDX, IDC_BTN_REDRAW, m_btnRedraw);
-	DDX_Control(pDX, IDC_BTN_ANIMATION_RUN, m_btnRun);
+	DDX_Control(pDX, IDC_EDIT_ANIMATION_IDX, m_editAnimationIdx);
 	DDX_Control(pDX, IDC_SCROLLBAR_ANIMATION, m_scrollBar);
+	DDX_Control(pDX, IDC_BTN_ANIMATION_RUN, m_btnRun);
 }
 
 BEGIN_MESSAGE_MAP(GraphClipping, CDialogEx)
@@ -80,7 +81,7 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_CLIPPED_GRAPH)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph = new ClippedGraph(m_NumIdx);
+	p_ClippedGraph = new ClippedGraph(m_NumIdx, Render::TOTAL);
 	p_ClippedGraph->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph->ShowWindow(SW_SHOW);
 	p_ClippedGraph->MoveWindow(rectofDialogArea);
@@ -88,11 +89,12 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_ANIMATION)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph_2 = new ClippedGraph(m_NumIdx);
+	p_ClippedGraph_2 = new ClippedGraph(m_NumIdx, Render::ANIMATION);
 	p_ClippedGraph_2->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph_2->ShowWindow(SW_SHOW);
 	p_ClippedGraph_2->MoveWindow(rectofDialogArea);
 
+	m_editAnimationIdx.SetWindowText(_T("0"));
 	m_scrollBar.SetScrollRange(0, m_NumIdx - 1);
 	m_scrollBar.SetScrollPos(ScrollPos);
 }
@@ -110,6 +112,7 @@ void GraphClipping::OnBnClickedBtnRedraw() {
 	m_editEndIdx.GetWindowText(temp);
 	UINT m_EndIdx_temp = _ttoi(temp);
 
+	// Exception handler
 	if (m_StartIdx_temp <= m_EndIdx_temp &&
 		m_EndIdx_temp <= m_count) {
 		m_StartIdx = m_StartIdx_temp;
@@ -119,6 +122,7 @@ void GraphClipping::OnBnClickedBtnRedraw() {
 		m_scrollBar.SetScrollRange(0, m_NumIdx - 1);
 
 		ScrollPos = 0;
+		p_ClippedGraph_2->Set_Current_idx(ScrollPos);
 		m_scrollBar.SetScrollPos(ScrollPos);
 	}
 	else {
@@ -139,7 +143,26 @@ void GraphClipping::OnBnClickedBtnRedraw() {
 
 void GraphClipping::OnBnClickedBtnAnimationRun() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	if (!isAnimationRun) {
+		isAnimationRun = TRUE;
+		m_btnRun.SetWindowText(_T("Stop"));
+		m_editStartIdx.EnableWindow(FALSE);
+		m_editEndIdx.EnableWindow(FALSE);
+		m_btnRedraw.EnableWindow(FALSE);
 
+		// Run the animation
+		p_ClippedGraph_2->Set_AnimiationTimer();
+	}
+	else {
+		isAnimationRun = FALSE;
+		m_btnRun.SetWindowText(_T("Run"));
+		m_editStartIdx.EnableWindow(TRUE);
+		m_editEndIdx.EnableWindow(TRUE);
+		m_btnRedraw.EnableWindow(TRUE);
+
+		// Stop the animation
+		p_ClippedGraph_2->Kill_AnimiationTimer();
+	}
 }
 
 void GraphClipping::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
@@ -172,9 +195,10 @@ void GraphClipping::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
 
 	CString temp;
 	temp.Format(_T("%d"), scrInfo.nPos);
-	GetDlgItem(IDC_EDIT_TEST_IDX)->SetWindowText(temp);
+	m_editAnimationIdx.SetWindowText(temp);
 
-	p_ClippedGraph_2->Set_count_horizontal(ScrollPos);
+	// p_ClippedGraph_2->Set_count_horizontal(ScrollPos);
+	p_ClippedGraph_2->Set_Current_idx(ScrollPos);
 
 	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }

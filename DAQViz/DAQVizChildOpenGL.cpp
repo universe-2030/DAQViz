@@ -204,7 +204,6 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 			glVertex3f(rad * cos(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
 					   1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)N_sEMG_CH * PI * j),
 					   0);
-				
 		}
 		glVertex3f(rad * cos(PI / 2.0), 1 / fAspect * rad * sin(PI / 2.0), 0);
 		glEnd();

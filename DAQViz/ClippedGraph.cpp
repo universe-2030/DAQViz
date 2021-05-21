@@ -16,9 +16,10 @@ ClippedGraph::ClippedGraph(CWnd* pParent /*=nullptr*/)
 
 }
 
-ClippedGraph::ClippedGraph(int _m_Num_idx, CWnd* pParent /*=nullptr*/)
+ClippedGraph::ClippedGraph(int _m_Num_idx, Render _species, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, pParent) {
 	m_Num_idx = _m_Num_idx;
+	species = _species;
 }
 
 ClippedGraph::~ClippedGraph() {
@@ -59,7 +60,7 @@ BOOL ClippedGraph::OnInitDialog() {
 		}
 	}
 
-	SetTimer(1000, TIME_ELAPSE, NULL);
+	SetTimer(TIMER_RENDER, TIME_ELAPSE, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
@@ -86,7 +87,10 @@ void ClippedGraph::OnPaint() {
 		CDialogEx::OnPaint();
 
 		wglMakeCurrent(m_hDC, m_hRC);
-		GLRenderScene();
+		if (species == TOTAL)
+			GLRenderScene_Total();
+		else if (species == ANIMATION)
+			GLRenderScene_Animation();
 		SwapBuffers(m_hDC);
 		wglMakeCurrent(m_hDC, NULL);
 	}
@@ -102,7 +106,16 @@ void ClippedGraph::OnDestroy() {
 
 void ClippedGraph::OnTimer(UINT_PTR nIDEvent) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	this->Invalidate(FALSE);
+	switch (nIDEvent) {
+	case TIMER_RENDER:
+		this->Invalidate(FALSE);
+		break;
+	case TIMER_ANIMATION:
+		Current_idx++;
+		if (Current_idx > m_Num_idx)
+			Current_idx = 0;
+		break;
+	}
 	CDialogEx::OnTimer(nIDEvent);
 }
 
@@ -176,7 +189,7 @@ void ClippedGraph::GLResize(int cx, int cy) {
 	glLoadIdentity();
 }
 
-void ClippedGraph::GLRenderScene(void) {
+void ClippedGraph::GLRenderScene_Total(void) {
 	// TODO: 여기에 구현 코드 추가.
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -198,15 +211,15 @@ void ClippedGraph::GLRenderScene(void) {
 		// X axis
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN + GRAPH_Y_INTERVAL) * i, 0.0f);
-		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN + GRAPH_Y_INTERVAL) * i - GRAPH_Y_LEN, 0.0f);
+		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i, 0.0f);
+		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
 		glEnd();
 
 		// Y axis
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN + GRAPH_Y_INTERVAL) * i - GRAPH_Y_LEN, 0.0f);
-		glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN + GRAPH_Y_INTERVAL) * i - GRAPH_Y_LEN, 0.0f);
+		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
+		glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
 		glEnd();
 	}
 
@@ -226,21 +239,89 @@ void ClippedGraph::GLRenderScene(void) {
 
 		glBegin(GL_LINE_STRIP);
 			for (int j = 0; j < m_Num_idx; j++) {
-				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL * temp
-							- GRAPH_Y_LEN * (temp + 1) + GRAPH_Y_LEN * Y_val[i][j], 0.0f);
+				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * temp
+							- GRAPH_Y_LEN_TOTAL * (temp + 1) + GRAPH_Y_LEN_TOTAL * Y_val[i][j], 0.0f);
 			}
 		glEnd();
 	}
 
-	/////////////////////////////// Polygon ///////////////////////////////
+	glPopMatrix();
+	glFlush();
+}
+
+void ClippedGraph::GLRenderScene_Animation(void) {
+	// TODO: 여기에 구현 코드 추가.
+	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glEnable(GL_DEPTH_TEST);
+	glMatrixMode(GL_MODELVIEW);
+	// clear the drawing buffer.
+
+	gluLookAt(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+	///////////////////////////// X-Y Axis (sEMG + Flex sensor) /////////////////////////////
+	glLoadIdentity();
+	glColor3f(0.0f, 0.0f, 0.0f);
+
+	glTranslatef(0.0, 0.0, -5.0);
+
+	glLineWidth(3);
+	for (int i = 0; i < NUM_GRAPH_ANALYSIS; i++) {
+		// X axis
+		glBegin(GL_LINES);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i, 0.0f);
+		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
+		glEnd();
+
+		// Y axis
+		glBegin(GL_LINES);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
+		glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
+		glEnd();
+	}
+
+	/////////////////////////////// Graph ///////////////////////////////
+	glLineWidth(1.5);
+	for (int i = 0; i < NUM_CH; i++) {
+		int temp = i / NUM_GRAPH_ANALYSIS;
+
+		if (i % NUM_GRAPH_ANALYSIS == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i % NUM_GRAPH_ANALYSIS == 1)
+			glColor3f(0.0f, 1.0f, 0.0f);
+		else if (i % NUM_GRAPH_ANALYSIS == 2)
+			glColor3f(0.0f, 0.0f, 1.0f);
+		else if (i % NUM_GRAPH_ANALYSIS == 3)
+			glColor3f(1.0f, 1.0f, 0.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * temp
+				- GRAPH_Y_LEN_ANI * (temp + 1) + GRAPH_Y_LEN_ANI * Y_val[i][j], 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////// Graph current index ///////////////////////////////
+	glLineWidth(5.0);
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glBegin(GL_LINES);
+		glVertex3f(X_pos[Current_idx], 3.0f, 0.0f);
+		glVertex3f(X_pos[Current_idx], -1.0f, 0.0f);
+	glEnd();
+
+	/////////////////////////////// Polygon frame ///////////////////////////////
 	X_polygon = -2.0f;
-	Y_polygon = -1.5f;
+	Y_polygon = -2.0f;
 	Rad_max = 0.8;
 	for (int i = 0; i < N_GRID_STEP; i++) {
 		if (i == N_GRID_STEP - 1)
 			glLineWidth(2.0);
 		else
-			glLineWidth(1.0);
+			glLineWidth(0.3);
 
 		glColor3f(0.0f, 0.0f, 0.0f);
 		double rad = Rad_max / (double)N_GRID_STEP * (i + 1);
@@ -257,20 +338,20 @@ void ClippedGraph::GLRenderScene(void) {
 	glLineWidth(0.1);
 	for (int i = 0; i < 5; i++) {
 		glBegin(GL_LINE_STRIP);
-			glVertex3f(X_polygon, Y_polygon, 0);
-			glVertex3f(X_polygon + Rad_max * cos(PI / 2.0 + 2 / 5.0 * PI * i),
-				Y_polygon + 1 / fAspect * Rad_max * sin(PI / 2.0 + 2 / 5.0 * PI * i), 0);
+		glVertex3f(X_polygon, Y_polygon, 0);
+		glVertex3f(X_polygon + Rad_max * cos(PI / 2.0 + 2 / 5.0 * PI * i),
+			Y_polygon + 1 / fAspect * Rad_max * sin(PI / 2.0 + 2 / 5.0 * PI * i), 0);
 		glEnd();
 	}
 
 	X_polygon = 0.0f;
-	Y_polygon = -1.5f;
+	Y_polygon = -2.0f;
 	Rad_max = 0.8;
 	for (int i = 0; i < N_GRID_STEP; i++) {
 		if (i == N_GRID_STEP - 1)
 			glLineWidth(2.0);
 		else
-			glLineWidth(1.0);
+			glLineWidth(0.3);
 
 		glColor3f(0.0f, 0.0f, 0.0f);
 		double rad = Rad_max / (double)N_GRID_STEP * (i + 1);
@@ -287,20 +368,20 @@ void ClippedGraph::GLRenderScene(void) {
 	glLineWidth(0.1);
 	for (int i = 0; i < 5; i++) {
 		glBegin(GL_LINE_STRIP);
-			glVertex3f(X_polygon, Y_polygon, 0);
-			glVertex3f(X_polygon + Rad_max * cos(PI / 2.0 + 2 / 5.0 * PI * i),
-				Y_polygon + 1 / fAspect * Rad_max * sin(PI / 2.0 + 2 / 5.0 * PI * i), 0);
+		glVertex3f(X_polygon, Y_polygon, 0);
+		glVertex3f(X_polygon + Rad_max * cos(PI / 2.0 + 2 / 5.0 * PI * i),
+			Y_polygon + 1 / fAspect * Rad_max * sin(PI / 2.0 + 2 / 5.0 * PI * i), 0);
 		glEnd();
 	}
 
 	X_polygon = 2.0f;
-	Y_polygon = -1.5f;
+	Y_polygon = -2.0f;
 	Rad_max = 0.8;
 	for (int i = 0; i < N_GRID_STEP; i++) {
 		if (i == N_GRID_STEP - 1)
 			glLineWidth(2.0);
 		else
-			glLineWidth(1.0);
+			glLineWidth(0.3);
 
 		glColor3f(0.0f, 0.0f, 0.0f);
 		double rad = Rad_max / (double)N_GRID_STEP * (i + 1);
@@ -323,28 +404,73 @@ void ClippedGraph::GLRenderScene(void) {
 		glEnd();
 	}
 
-	/////////////////////////////// Axis ///////////////////////////////
-	/*GLfloat Axis_min = -100.0f;
-	GLfloat Axis_max = 100.0f;
+	/////////////////////////////// Polygon data ///////////////////////////////
+	X_polygon = -2.0f;
+	Y_polygon = -2.0f;
+	Rad_max = 0.8;
+	int start_idx = 0;
+	int end_idx = 4;
 
-	glLineWidth(3);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(Axis_min, -count_vertical * MOVE_SCALE, 0.0f);
-	glVertex3f(Axis_max, -count_vertical * MOVE_SCALE, 0.0f);
+	glLineWidth(5.0);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glBegin(GL_LINE_STRIP);
+	for (int i = start_idx; i <= end_idx; i++) {
+		double rad = Rad_max * Y_val[i][Current_idx];
+		glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)),
+			Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)), 0);
+	}
+	glVertex3f(X_polygon + Rad_max * Y_val[start_idx][Current_idx] * cos(PI / 2.0),
+			   Y_polygon + 1 / fAspect * Rad_max * Y_val[start_idx][Current_idx] * sin(PI / 2.0), 0);
 	glEnd();
 
-	glLineWidth(3);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(-count_horizontal * MOVE_SCALE, Axis_min, 0.0f);
-	glVertex3f(-count_horizontal * MOVE_SCALE, Axis_max, 0.0f);
-	glEnd();*/
+	X_polygon = 0.0f;
+	Y_polygon = -2.0f;
+	Rad_max = 0.8;
+	start_idx = 5;
+	end_idx = 9;
+
+	glLineWidth(5.0);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glBegin(GL_LINE_STRIP);
+	for (int i = start_idx; i <= end_idx; i++) {
+		double rad = Rad_max * Y_val[i][Current_idx];
+		glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)),
+			Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)), 0);
+	}
+	glVertex3f(X_polygon + Rad_max * Y_val[start_idx][Current_idx] * cos(PI / 2.0),
+		Y_polygon + 1 / fAspect * Rad_max * Y_val[start_idx][Current_idx] * sin(PI / 2.0), 0);
+	glEnd();
+
+	X_polygon = 2.0f;
+	Y_polygon = -2.0f;
+	Rad_max = 0.8;
+	start_idx = 10;
+	end_idx = 15;
+
+	glLineWidth(5.0);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glBegin(GL_LINE_STRIP);
+	for (int i = start_idx; i <= end_idx; i++) {
+		double rad = Rad_max * Y_val[i][Current_idx];
+		glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)),
+			Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)(end_idx - start_idx + 1) * PI * (i - start_idx)), 0);
+	}
+	glVertex3f(X_polygon + Rad_max * Y_val[start_idx][Current_idx] * cos(PI / 2.0),
+		Y_polygon + 1 / fAspect * Rad_max * Y_val[start_idx][Current_idx] * sin(PI / 2.0), 0);
+	glEnd();
 
 	glPopMatrix();
 	glFlush();
 }
 
-void ClippedGraph::Set_count_horizontal(UINT m_count_horizontal) {
-	count_horizontal = m_count_horizontal;
+void ClippedGraph::Set_Current_idx(UINT _Current_idx) {
+	Current_idx = _Current_idx;
+}
+
+void ClippedGraph::Set_AnimiationTimer() {
+	SetTimer(TIMER_ANIMATION, TIME_ELAPSE, NULL);
+}
+
+void ClippedGraph::Kill_AnimiationTimer() {
+	KillTimer(TIMER_ANIMATION);
 }

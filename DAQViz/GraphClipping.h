@@ -32,6 +32,8 @@ private:
 
 	int ScrollPos;
 
+	bool isAnimationRun = FALSE;
+
 public:
 	virtual BOOL OnInitDialog();
 
@@ -40,6 +42,7 @@ public:
 	CEdit m_editStartIdx;
 	CEdit m_editEndIdx;
 	CButton m_btnRedraw;
+	CEdit m_editAnimationIdx;
 	CScrollBar m_scrollBar;
 	CButton m_btnRun;
 

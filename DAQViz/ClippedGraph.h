@@ -5,18 +5,28 @@
 #include "GL/GL.h"
 #include "GL/GLU.h"
 
+#define TIMER_RENDER 1
+#define TIMER_ANIMATION 2
+
 #define TIME_ELAPSE 20
 #define MOVE_SCALE 0.002
 
-#define NUM_GRAPH_ANALYSIS 4
-#define GRAPH_Y_LEN 0.6
-#define GRAPH_Y_INTERVAL 0.15
+#define NUM_GRAPH_ANALYSIS 5
+#define GRAPH_Y_LEN_TOTAL 0.9
+#define GRAPH_Y_INTERVAL_TOTAL 0.2
+#define GRAPH_Y_LEN_ANI 0.6
+#define GRAPH_Y_INTERVAL_ANI 0.15
 
 #define NUM_CH 16
 
 #define N_GRID_STEP 5
 
 #define PI 3.14159265358
+
+enum Render {
+	TOTAL,
+	ANIMATION
+};
 
 // ClippedGraph 대화 상자
 
@@ -25,7 +35,7 @@ class ClippedGraph : public CDialogEx {
 
 public:
 	ClippedGraph(CWnd* pParent = nullptr);   // 표준 생성자입니다.
-	ClippedGraph(int _m_Num_idx, CWnd* pParent = nullptr);   // 표준 생성자입니다.
+	ClippedGraph(int _m_Num_idx, Render _species, CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~ClippedGraph();
 
 // 대화 상자 데이터입니다.
@@ -41,6 +51,7 @@ protected:
 
 private:
 	int m_Num_idx;
+	Render species;
 
 	HGLRC	m_hRC;
 	CDC*	m_pDC;
@@ -60,6 +71,9 @@ private:
 	double Y_polygon;
 	double Rad_max;
 
+	// For animation bar
+	int Current_idx = 0;
+
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
@@ -70,6 +84,9 @@ public:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 
 	void GLResize(int cx, int cy);
-	void GLRenderScene();
-	void Set_count_horizontal(UINT m_count_horizontal);
+	void GLRenderScene_Total();
+	void GLRenderScene_Animation();
+	void Set_Current_idx(UINT _Current_idx);
+	void Set_AnimiationTimer();
+	void Kill_AnimiationTimer();
 };
