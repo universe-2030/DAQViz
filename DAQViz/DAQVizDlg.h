@@ -181,16 +181,17 @@ private:
 	TrainedModel c_TrainedModel;
 	TestModel c_TestModel;
 
-	// Temporary
-	double* sEMG_temp;
-	double* sEMG_temp_abs;
-	double* sEMG_temp_MAV;
+	// Pointer variables
+	double* sEMG_raw_plot;
+	double* sEMG_abs_plot;
+	double* sEMG_MAV_plot;
 
 	float64* Flex_data;
 	float64* Flex_data_calib;
 	float64* Flex_data_LPF;
 
-	double* sEMG_temp_16CH;
+	double* IMU_data;
+	double* IMU_LPF;
 
 	// Calibration
 	int cali_count = 0;
@@ -242,6 +243,16 @@ public:
 	// Get functions
 	double Get_m_time();
 	UINT Get_m_count();
+	
+	const std::vector<double>* Get_sEMG_raw_stack();
+	const std::vector<double>* Get_sEMG_abs_stack();
+	const std::vector<double>* Get_sEMG_MAV_stack();
+
+	const std::vector<double>* Get_Flex_raw_stack();
+	const std::vector<double>* Get_Flex_LPF_stack();
+
+	const std::vector<double>* Get_IMU_raw_stack();
+	const std::vector<double>* Get_IMU_LPF_stack();
 
 	// Stack & Save
 	void StackData (double* _sEMG_raw,

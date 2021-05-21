@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ClippedGraph.h"
+#include <vector>
 
 // GraphClipping 대화 상자
 #define TIMER_GRAPH_CLIPPING 1
@@ -11,7 +12,10 @@ class GraphClipping : public CDialogEx {
 
 public:
 	GraphClipping(CWnd* pParent = nullptr);   // 표준 생성자입니다.
-	GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count, CWnd* pParent = nullptr);
+	GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
+					const std::vector<double>* _sEMG_plot,
+					const std::vector<double>* _Flex_plot,
+					CWnd* pParent = nullptr);
 	virtual ~GraphClipping();
 
 // 대화 상자 데이터입니다.
@@ -27,6 +31,10 @@ protected:
 private:
 	ClippedGraph* p_ClippedGraph;
 	ClippedGraph* p_ClippedGraph_2;
+
+	// Clipped sEMG data
+	const std::vector<double>* sEMG_plot;
+	const std::vector<double>* Flex_plot;
 
 	UINT m_StartIdx;
 	UINT m_EndIdx;

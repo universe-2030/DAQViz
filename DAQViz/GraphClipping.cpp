@@ -16,12 +16,18 @@ GraphClipping::GraphClipping(CWnd* pParent /*=nullptr*/)
 
 }
 
-GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count, CWnd* pParent /*=nullptr*/)
+GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
+							const std::vector<double>* _sEMG_plot,
+							const std::vector<double>* _Flex_plot,
+							CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, pParent) {
 	m_StartIdx = start_idx;
 	m_EndIdx = end_idx;
 	m_NumIdx = m_EndIdx - m_StartIdx + 1;
 	m_count = _m_count;
+
+	sEMG_plot = _sEMG_plot;
+	Flex_plot = _Flex_plot;
 }
 
 GraphClipping::~GraphClipping() {

@@ -339,7 +339,8 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 				if (Pt_forth >= 0 && Pt_back >= Pt_forth) {
 					if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {
 						// 2. Generate new window
-						Clip_window = new GraphClipping(Pt_forth, Pt_back, pMainDlg->Get_m_count());
+						Clip_window = new GraphClipping(Pt_forth, Pt_back, pMainDlg->Get_m_count(),
+									pMainDlg->Get_sEMG_MAV_stack(), pMainDlg->Get_Flex_raw_stack());
 						Clip_window->Create(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, this);
 						Clip_window->ShowWindow(SW_SHOW);
 					}

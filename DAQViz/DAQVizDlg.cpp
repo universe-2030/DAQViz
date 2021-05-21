@@ -341,22 +341,27 @@ void CDAQVizDlg::Initialize_LogonU() {
 	else {
 		m_radioUseIMU = 0;
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES);
-		pCheck->SetCheck(m_radioUseIMU);
+		pCheck->SetCheck(BST_CHECKED);
 	}
 }
 
 void CDAQVizDlg::Dynamic_Allocation() {
-	sEMG_temp = new double[4];
-	sEMG_temp_abs = new double[4];
-	sEMG_temp_MAV = new double[4];
+	sEMG_raw_plot = new double[Num_sEMG_CH];
+	memset(sEMG_raw_plot, 0.0, 2 * sizeof(sEMG_raw_plot) * Num_sEMG_CH);
+	sEMG_abs_plot = new double[Num_sEMG_CH];
+	memset(sEMG_abs_plot, 0.0, 2 * sizeof(sEMG_abs_plot) * Num_sEMG_CH);
+	sEMG_MAV_plot = new double[Num_sEMG_CH];
+	memset(sEMG_MAV_plot, 0.0, 2 * sizeof(sEMG_MAV_plot) * Num_sEMG_CH);
 
-	Flex_data_calib = new float64[N_FLEX_CH];
-	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX_CH);
-	Flex_data_LPF = new float64[N_FLEX_CH];
-	memset(Flex_data_LPF, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX_CH);
+	Flex_data_calib = new float64[Num_Flex_CH];
+	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * Num_Flex_CH);
+	Flex_data_LPF = new float64[Num_Flex_CH];
+	memset(Flex_data_LPF, 0.0, 2 * sizeof(Flex_data_calib) * Num_Flex_CH);
 
-	sEMG_temp_16CH = new double[16];
-	memset(sEMG_temp_16CH, 0.0, 2 * sizeof(sEMG_temp_16CH) * 16);
+	IMU_data = new double[Num_IMU_CH];
+	memset(IMU_data, 0.0, 2 * sizeof(IMU_data) * Num_IMU_CH);
+	IMU_LPF = new double[Num_IMU_CH];
+	memset(IMU_LPF, 0.0, 2 * sizeof(IMU_LPF) * Num_IMU_CH);
 
 	sEMG_raw_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
@@ -370,14 +375,15 @@ void CDAQVizDlg::Dynamic_Allocation() {
 }
 
 void CDAQVizDlg::Dynamic_Free() {
-	delete sEMG_temp;
-	delete sEMG_temp_abs;
-	delete sEMG_temp_MAV;
+	delete sEMG_raw_plot;
+	delete sEMG_abs_plot;
+	delete sEMG_MAV_plot;
 
 	delete Flex_data_calib;
 	delete Flex_data_LPF;
 
-	delete sEMG_temp_16CH;
+	delete IMU_data;
+	delete IMU_LPF;
 }
 
 void CDAQVizDlg::Set_Font(CButton& Btn_, UINT Height_, UINT Width_) {
@@ -419,7 +425,6 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	if (!m_flag_Switch) { // Turned OFF -> ON
 		if (!TimerStarted) {
-			Dynamic_Allocation();
 			TimerStarted = TRUE;
 			AfxBeginThread(MainThreadFunc, this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 		}
@@ -523,6 +528,9 @@ int CDAQVizDlg::MainStart() {
 	LARGE_INTEGER Counter_RTGraph_Start, Counter_RTGraph_End, Counter_RTGraph_Frequency;
 	QueryPerformanceFrequency(&Counter_DAQ_Frequency);
 	QueryPerformanceFrequency(&Counter_RTGraph_Frequency);
+
+	// Dynamic allocation
+	Dynamic_Allocation();
 
 	// Mutex Generation
 	if (hMutex = CreateMutex(NULL, TRUE, L"nMutex"))
@@ -649,45 +657,40 @@ int CDAQVizDlg::MainStart() {
 			// RTGraph Body
 
 			// For test
-			for (int i = 0; i < 16; i++) {
-				sEMG_temp_16CH[i] = (double)rand() / (double)RAND_MAX;
+			for (int i = 0; i < Num_sEMG_CH; i++) {
+				sEMG_raw_plot[i] = abs(sin(2 * PI * 0.5 * (i + 1) * m_time));
+				sEMG_abs_plot[i] = abs(sin(2 * PI * 0.5 * (i + 1) * m_time));
+				sEMG_MAV_plot[i] = abs(sin(2 * PI * 0.5 * (i + 1) * m_time));
 			}
-			
-			p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_temp_16CH);
 
-			sEMG_temp[0] = 0.3 * sin(2 * PI * m_time);
-			sEMG_temp[1] = 0.5 * sin(2 * PI * 2 * m_time);
-			sEMG_temp[2] = 0.2 * sin(2 * PI * 3 * m_time);
-			sEMG_temp[3] = 0.8 * sin(2 * PI * 1.5 * m_time);
-
-			sEMG_temp_abs[0] = abs(0.3 * sin(2 * PI * m_time));
-			sEMG_temp_abs[1] = abs(0.5 * sin(2 * PI * 2 * m_time));
-			sEMG_temp_abs[2] = abs(0.2 * sin(2 * PI * 3 * m_time));
-			sEMG_temp_abs[3] = abs(0.8 * sin(2 * PI * 1.5 * m_time));
+			// Polygon
+			p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_MAV_plot);
 
 			if (pShared_Data->count % N_GRAPH == 0) {
-				p_ChildDlg_KSJ->Plot_graph(sEMG_temp_abs, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
+				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 1) {
-				p_ChildDlg_KSJ->Plot_graph(sEMG_temp_abs, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
+				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 2) {
-				p_ChildDlg_KSJ->Plot_graph(sEMG_temp_abs, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
+				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 3) {
-				p_ChildDlg_KSJ->Plot_graph(sEMG_temp_abs, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[3]);
+				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[3]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 4) {
 				p_ChildDlg_KSJ->Plot_graph(Flex_data, p_ChildDlg_KSJ->Get_rtGraph_Flex()[0]);
 			}
 
-			// Stack the data
-
-
 			// Toc
 			QueryPerformanceCounter(&Counter_RTGraph_End);
 			Time_RTGraph_elapse = (double)(Counter_RTGraph_End.QuadPart - Counter_RTGraph_Start.QuadPart)
 				/ (double)Counter_RTGraph_Frequency.QuadPart * 1000; // ms scale
+
+			// Stack the data
+			StackData(sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
+					Flex_data, Flex_data_LPF, IMU_data, IMU_LPF,
+					Time_DAQ_elapse, Time_RTGraph_elapse);
 
 			pShared_Data->iNextOwner = THREAD_CALLBACK;
 			ReleaseMutex(hMutex);
@@ -704,10 +707,12 @@ int CDAQVizDlg::MainStart() {
 	}
 
 	Set_MFC_Control_Availability(FALSE);
+
+	// Save the data
+	SaveData();
+
 	m_btnSwitch.SetWindowText(_T("End"));
 	m_btnSwitch.EnableWindow(FALSE);
-
-	SaveData();
 
 error:
 	CloseHandle(hMutex);
@@ -791,10 +796,10 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 		CString temp;
 		switch (m_radiosEMGDAQDev) {
 		case 0:
-			Num_sEMG_CH = 16;
+			Num_sEMG_CH = DELSYS_CH_MAX;
 			break;
 		case 1:
-			Num_sEMG_CH = 8;
+			Num_sEMG_CH = FRANKFURT_CH_MAX;
 			break;
 		}
 		temp.Format(_T("%d"), Num_sEMG_CH);
@@ -809,15 +814,16 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 		CString temp;
 		switch (m_radioUseFlexSensor) {
 		case 0:
-			Num_Flex_CH = 5;
+			Num_Flex_CH = FLEX_CH_MAX;
 			m_editNumFlexCH.EnableWindow(TRUE);
+			temp.Format(_T("%d"), Num_Flex_CH);
 			break;
 		case 1:
-			Num_Flex_CH = 0;
+			Num_Flex_CH = FLEX_CH_MAX;
 			m_editNumFlexCH.EnableWindow(FALSE);
+			temp.Format(_T("%d"), 0);
 			break;
 		}
-		temp.Format(_T("%d"), Num_Flex_CH);
 		m_editNumFlexCH.SetWindowText(temp);
 	}
 	else if (IDC_RADIO_USE_IMU_LOGONU_YES <= ID && ID <= IDC_RADIO_USE_IMU_LOGONU_NO) {
@@ -829,15 +835,16 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 		CString temp;
 		switch (m_radioUseIMU) {
 		case 0:
-			Num_IMU_CH = 2;
+			Num_IMU_CH = IMU_CH_MAX;
 			m_editNumIMUCH.EnableWindow(TRUE);
+			temp.Format(_T("%d"), Num_IMU_CH);
 			break;
 		case 1:
-			Num_IMU_CH = 0;
+			Num_IMU_CH = IMU_CH_MAX;
 			m_editNumIMUCH.EnableWindow(FALSE);
+			temp.Format(_T("%d"), 0);
 			break;
 		}
-		temp.Format(_T("%d"), Num_IMU_CH);
 		m_editNumIMUCH.SetWindowText(temp);
 	}
 }
@@ -891,6 +898,35 @@ double CDAQVizDlg::Get_m_time() {
 UINT CDAQVizDlg::Get_m_count() {
 	return m_count;
 }
+
+const std::vector<double>* CDAQVizDlg::Get_sEMG_raw_stack() {
+	return sEMG_raw_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_sEMG_abs_stack() {
+	return sEMG_abs_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_sEMG_MAV_stack() {
+	return sEMG_MAV_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_Flex_raw_stack() {
+	return Flex_raw_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_Flex_LPF_stack() {
+	return Flex_LPF_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_IMU_raw_stack() {
+	return IMU_raw_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_IMU_LPF_stack() {
+	return IMU_LPF_stack;
+}
+
 
 void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 	if (!_isAvailable) {
@@ -956,6 +992,8 @@ void CDAQVizDlg::SaveData() {
 	m_editStatusBar.SetWindowText(stat += "\r\n");
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 
+	// Save code
+
 
 	m_editStatusBar.SetWindowText(stat += "[USER] Save End!");
 	m_editStatusBar.SetWindowText(stat += "\r\n");
@@ -965,6 +1003,7 @@ void CDAQVizDlg::SaveData() {
 void CDAQVizDlg::OnEnChangeEditNumSemgCh() {
 	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString temp;
+
 	m_editNumsEMGCH.GetWindowText(temp);
 	int Num_sEMG_CH = _ttoi(temp);
 	if (m_radiosEMGDAQDev == 0) {
@@ -1007,10 +1046,10 @@ void CDAQVizDlg::OnEnChangeEditNumSemgCh() {
 	}
 }
 
-
 void CDAQVizDlg::OnEnChangeEditNumFlexCh() {
 	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString temp;
+
 	m_editNumFlexCH.GetWindowText(temp);
 	int Num_Flex_CH = _ttoi(temp);
 	if (m_radioUseFlexSensor == 0) {
@@ -1037,6 +1076,7 @@ void CDAQVizDlg::OnEnChangeEditNumFlexCh() {
 void CDAQVizDlg::OnEnChangeEditNumImuCh() {
 	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString temp;
+
 	m_editNumIMUCH.GetWindowText(temp);
 	int Num_IMU_CH = _ttoi(temp);
 	if (m_radioUseIMU == 0) {
