@@ -46,7 +46,7 @@ END_MESSAGE_MAP()
 CDAQVizDlg::CDAQVizDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG, pParent), 
 	m_radioTrainingMode(0), m_radioStreamingMode(0),
-	m_radioSaveMode(0), m_radiosEMGDAQDev(0),
+	m_radioSaveMode(1), m_radiosEMGDAQDev(0),
 	m_radioUseIMU(0), m_radioUseFlexSensor(0) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -90,6 +90,12 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_TEXT_TIME_END_IDX, m_textEndIdx);
 	DDX_Control(pDX, IDC_EDIT_TIME_START_IDX, m_editStartIdx);
 	DDX_Control(pDX, IDC_EDIT_TIME_END_IDX, m_editEndIdx);
+	DDX_Control(pDX, IDC_TEXT_NUM_SEMG_CH, m_textNumsEMGCH);
+	DDX_Control(pDX, IDC_EDIT_NUM_SEMG_CH, m_editNumsEMGCH);
+	DDX_Control(pDX, IDC_TEXT_NUM_FLEX_CH, m_textNumFlexCH);
+	DDX_Control(pDX, IDC_TEXT_NUM_IMU_CH, m_textNumIMUCH);
+	DDX_Control(pDX, IDC_EDIT_NUM_FLEX_CH, m_editNumFlexCH);
+	DDX_Control(pDX, IDC_EDIT_NUM_IMU_CH, m_editNumIMUCH);
 }
 
 BEGIN_MESSAGE_MAP(CDAQVizDlg, CDialogEx)
@@ -109,6 +115,9 @@ BEGIN_MESSAGE_MAP(CDAQVizDlg, CDialogEx)
 ON_WM_SIZE()
 ON_WM_TIMER()
 ON_WM_DESTROY()
+ON_EN_CHANGE(IDC_EDIT_NUM_SEMG_CH, &CDAQVizDlg::OnEnChangeEditNumSemgCh)
+ON_EN_CHANGE(IDC_EDIT_NUM_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumFlexCh)
+ON_EN_CHANGE(IDC_EDIT_NUM_IMU_CH, &CDAQVizDlg::OnEnChangeEditNumImuCh)
 END_MESSAGE_MAP()
 
 // CDAQVizDlg 메시지 처리기
@@ -199,30 +208,41 @@ HCURSOR CDAQVizDlg::OnQueryDragIcon() {
 }
 
 void CDAQVizDlg::Initialize_Variable() {
+	m_time = 0.0;
+	m_count = 0;
+
+	TimerStarted = FALSE;
+	if (m_radioSaveMode == 0)
+		b_SaveImmediate_Dlg = TRUE;
+	else
+		b_SaveImmediate_Dlg = FALSE;
+
+	File_loaded_or_not = FALSE;
+
 	sEMG_temp = new double[4];
 	sEMG_temp_abs = new double[4];
 	sEMG_temp_MAV = new double[4];
 
-	Flex_data_calib = new float64[N_FLEX];
-	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX);
-	Flex_data_LPF = new float64[N_FLEX];
-	memset(Flex_data_LPF, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX);
+	Flex_data_calib = new float64[N_FLEX_CH];
+	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX_CH);
+	Flex_data_LPF = new float64[N_FLEX_CH];
+	memset(Flex_data_LPF, 0.0, 2 * sizeof(Flex_data_calib) * N_FLEX_CH);
 
 	sEMG_temp_16CH = new double[16];
 	memset(sEMG_temp_16CH, 0.0, 2 * sizeof(sEMG_temp_16CH) * 16);
 
-	sEMG_raw_stack = new std::vector<double>[N_SEMG];
-	sEMG_abs_stack = new std::vector<double>[N_SEMG];
-	sEMG_MAV_stack = new std::vector<double>[N_SEMG];
-	Flex_raw_stack = new std::vector<double>[N_FLEX];
-	Flex_LPF_stack = new std::vector<double>[N_FLEX];
+	sEMG_raw_stack = new std::vector<double>[N_SEMG_CH];
+	sEMG_abs_stack = new std::vector<double>[N_SEMG_CH];
+	sEMG_MAV_stack = new std::vector<double>[N_SEMG_CH];
+	Flex_raw_stack = new std::vector<double>[N_FLEX_CH];
+	Flex_LPF_stack = new std::vector<double>[N_FLEX_CH];
 }
 
 void CDAQVizDlg::Initialize_NI() {
 	AI_sEMG = new NI_AI_sEMG("Dev1/ai0:15", 16);
 	NI_AI_sEMG::InitializeNI();
 
-	AI_Flex = new NI_AI_Flex("Dev2/ai0:4", N_FLEX);
+	AI_Flex = new NI_AI_Flex("Dev2/ai0:4", N_FLEX_CH);
 	NI_AI_Flex::InitializeNI();
 }
 
@@ -246,16 +266,28 @@ void CDAQVizDlg::Initialize_GUI() {
 	Set_Font(m_editStartIdx, 20, 8);
 	Set_Font(m_textEndIdx, 20, 8);
 	Set_Font(m_editEndIdx, 20, 8);
+	Set_Font(m_textNumsEMGCH, 20, 8);
+	Set_Font(m_editNumsEMGCH, 20, 8);
+	Set_Font(m_textNumFlexCH, 20, 8);
+	Set_Font(m_editNumFlexCH, 20, 8);
+	Set_Font(m_textNumIMUCH, 20, 8);
+	Set_Font(m_editNumIMUCH, 20, 8);
 
 	m_comboSelectDlg.AddString(_T("1. Sejin Kim"));
 	m_comboSelectDlg.AddString(_T("2. Another users"));
-
 	m_comboSelectDlg.SetCurSel(0);
 
 	m_editLoadName.SetWindowText(_T("Select file"));
-
 	m_editStartIdx.SetWindowText(_T("Not selected"));
 	m_editEndIdx.SetWindowText(_T("Not selected"));
+
+	CString temp;
+	temp.Format(_T("%d"), DELSYS_CH_MAX);
+	m_editNumsEMGCH.SetWindowTextW(temp);
+	temp.Format(_T("%d"), FLEX_CH_MAX);
+	m_editNumFlexCH.SetWindowTextW(temp);
+	temp.Format(_T("%d"), IMU_CH_MAX);
+	m_editNumIMUCH.SetWindowTextW(temp);
 
 	if (m_radioStreamingMode == 0)
 		m_btnLoad.EnableWindow(FALSE);
@@ -266,7 +298,7 @@ void CDAQVizDlg::Initialize_GUI() {
 	GetDlgItem(IDC_SLOT_CHILDDLG)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ChildDlg_KSJ = new DAQVizChildKSJ();
+	p_ChildDlg_KSJ = new DAQVizChildKSJ(N_SEMG_CH, N_FLEX_CH, N_IMU_CH);
 	p_ChildDlg_KSJ->Create(IDD_DAQVIZ_DIALOG_CHILD_KSJ, this);
 	p_ChildDlg_KSJ->ShowWindow(SW_SHOW);
 	p_ChildDlg_KSJ->MoveWindow(rectofDialogArea);
@@ -544,20 +576,20 @@ int CDAQVizDlg::MainStart() {
 
 				// Calibration DAQ
 				cali_count++;
-				for (int i = 0; i < N_FLEX; i++)
+				for (int i = 0; i < N_FLEX_CH; i++)
 					Flex_data_calib[i] += Flex_data[i];
 
 				if (pShared_Data->count == CALI_END * 1000) {
 					m_editStatusBar.SetWindowText(stat += "[USER] Calibration end \r\n");
 					m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 
-					for (int i = 0; i < N_FLEX; i++)
+					for (int i = 0; i < N_FLEX_CH; i++)
 						Flex_data_calib[i] /= (double)cali_count;
 				}
 
 			}
 			else {
-				for (int i = 0; i < N_FLEX; i++) {
+				for (int i = 0; i < N_FLEX_CH; i++) {
 					Flex_data[i] -= Flex_data_calib[i];
 				}
 			}	
@@ -646,6 +678,7 @@ error:
 void CDAQVizDlg::RadioCtrl(UINT ID) {
 	UpdateData(TRUE);
 
+
 	if (IDC_RADIO_TRAINING_ONLINE <= ID && ID <= IDC_RADIO_TRAINING_OFFLINE) {
 		if (TEST_FLAG) {
 			CString radio_val;
@@ -713,29 +746,17 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 			radio_val.Format(_T("%d"), m_radiosEMGDAQDev);
 			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
 		}
+		CString temp;
 		switch (m_radiosEMGDAQDev) {
 		case 0:
-
+			Num_sEMG_CH = 16;
 			break;
 		case 1:
-
+			Num_sEMG_CH = 8;
 			break;
 		}
-	}
-	else if (IDC_RADIO_USE_IMU_LOGONU_YES <= ID && ID <= IDC_RADIO_USE_IMU_LOGONU_NO) {
-		if (TEST_FLAG) {
-			CString radio_val;
-			radio_val.Format(_T("%d"), m_radioUseIMU);
-			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
-		}
-		switch (m_radioUseIMU) {
-		case 0:
-
-			break;
-		case 1:
-
-			break;
-		}
+		temp.Format(_T("%d"), Num_sEMG_CH);
+		m_editNumsEMGCH.SetWindowText(temp);
 	}
 	else if (IDC_RADIO_USE_FLEX_SENSOR_YES <= ID && ID <= IDC_RADIO_USE_FLEX_SENSOR_NO) {
 		if (TEST_FLAG) {
@@ -743,14 +764,39 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 			radio_val.Format(_T("%d"), m_radioUseFlexSensor);
 			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
 		}
+		CString temp;
 		switch (m_radioUseFlexSensor) {
 		case 0:
-
+			Num_Flex_CH = 5;
+			m_editNumFlexCH.EnableWindow(TRUE);
 			break;
 		case 1:
-
+			Num_Flex_CH = 0;
+			m_editNumFlexCH.EnableWindow(FALSE);
 			break;
 		}
+		temp.Format(_T("%d"), Num_Flex_CH);
+		m_editNumFlexCH.SetWindowText(temp);
+	}
+	else if (IDC_RADIO_USE_IMU_LOGONU_YES <= ID && ID <= IDC_RADIO_USE_IMU_LOGONU_NO) {
+		if (TEST_FLAG) {
+			CString radio_val;
+			radio_val.Format(_T("%d"), m_radioUseIMU);
+			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
+		}
+		CString temp;
+		switch (m_radioUseIMU) {
+		case 0:
+			Num_IMU_CH = 2;
+			m_editNumIMUCH.EnableWindow(TRUE);
+			break;
+		case 1:
+			Num_IMU_CH = 0;
+			m_editNumIMUCH.EnableWindow(FALSE);
+			break;
+		}
+		temp.Format(_T("%d"), Num_IMU_CH);
+		m_editNumIMUCH.SetWindowText(temp);
 	}
 }
 
@@ -804,30 +850,33 @@ UINT CDAQVizDlg::Get_m_count() {
 }
 
 void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
-	m_comboSelectDlg.EnableWindow(_isAvailable);
+	if (!_isAvailable) {
+		m_comboSelectDlg.EnableWindow(_isAvailable);
 
-	GetDlgItem(IDC_RADIO_TRAINING_ONLINE)->EnableWindow(_isAvailable);
-	GetDlgItem(IDC_RADIO_TRAINING_OFFLINE)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_TRAINING_ONLINE)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_TRAINING_OFFLINE)->EnableWindow(_isAvailable);
 
-	GetDlgItem(IDC_RADIO_DATA_STREAMING_RT)->EnableWindow(_isAvailable);
-	GetDlgItem(IDC_RADIO_DATA_STREAMING_LOAD)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_DATA_STREAMING_RT)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_DATA_STREAMING_LOAD)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_BTN_LOAD)->EnableWindow(_isAvailable);
+
+		GetDlgItem(IDC_RADIO_DEVICE_DELSYS)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_DEVICE_FRANKFURT)->EnableWindow(_isAvailable);
+
+		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_NO)->EnableWindow(_isAvailable);
+
+		GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_YES)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_NO)->EnableWindow(_isAvailable);
+
+		m_editNumsEMGCH.EnableWindow(_isAvailable);
+		m_editNumFlexCH.EnableWindow(_isAvailable);
+		m_editNumIMUCH.EnableWindow(_isAvailable);
+	}
 
 	GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE)->EnableWindow(_isAvailable);
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_ON)->EnableWindow(_isAvailable);
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_OFF)->EnableWindow(_isAvailable);
-
-	GetDlgItem(IDC_RADIO_DEVICE_DELSYS)->EnableWindow(_isAvailable);
-	GetDlgItem(IDC_RADIO_DEVICE_FRANKFURT)->EnableWindow(_isAvailable);
-
-	GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES)->EnableWindow(_isAvailable);
-	GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_NO)->EnableWindow(_isAvailable);
-
-	GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_YES)->EnableWindow(_isAvailable);
-	GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_NO)->EnableWindow(_isAvailable);
-
-	if (m_radioStreamingMode == 1) {
-		GetDlgItem(IDC_BTN_LOAD)->EnableWindow(_isAvailable);
-	}
 }
 
 void CDAQVizDlg::StackData (double* _sEMG_raw,
@@ -837,13 +886,13 @@ void CDAQVizDlg::StackData (double* _sEMG_raw,
 							double* _Flex_LPF,
 							double _Time_DAQ_elapse,
 							double _Time_RTGraph_elapse) {
-	for (int i = 0; i < N_SEMG; i++) {
+	for (int i = 0; i < N_SEMG_CH; i++) {
 		sEMG_raw_stack[i].push_back(_sEMG_raw[i]);
 		sEMG_abs_stack[i].push_back(_sEMG_abs[i]);
 		sEMG_MAV_stack[i].push_back(_sEMG_MAV[i]);
 	}
 
-	for (int i = 0; i < N_FLEX; i++) {
+	for (int i = 0; i < N_FLEX_CH; i++) {
 		Flex_raw_stack[i].push_back(_Flex_raw[i]);
 		Flex_LPF_stack[i].push_back(_Flex_LPF[i]);
 	}
@@ -861,4 +910,102 @@ void CDAQVizDlg::SaveData() {
 	m_editStatusBar.SetWindowText(stat += "[USER] Save End!");
 	m_editStatusBar.SetWindowText(stat += "\r\n");
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+}
+
+void CDAQVizDlg::OnEnChangeEditNumSemgCh() {
+	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString temp;
+	m_editNumsEMGCH.GetWindowText(temp);
+	int Num_sEMG_CH = _ttoi(temp);
+	if (m_radiosEMGDAQDev == 0) {
+		if (Num_sEMG_CH > DELSYS_CH_MAX) {
+			MessageBox(_T("DELSYS Trigno sEMG channel should be smaller than 16."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), DELSYS_CH_MAX);
+			m_editNumsEMGCH.SetWindowText(temp);
+			Num_sEMG_CH = DELSYS_CH_MAX;
+		}
+		else if (Num_sEMG_CH < 1) {
+			MessageBox(_T("sEMG channel should be larger than 1."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), 1);
+			m_editNumsEMGCH.SetWindowText(temp);
+			Num_sEMG_CH = 1;
+		}
+		else {
+			this->Num_sEMG_CH = Num_sEMG_CH;
+		}
+	}
+	else if (m_radiosEMGDAQDev == 1) {
+		if (Num_sEMG_CH > FRANKFURT_CH_MAX) {
+			MessageBox(_T("LogonU sEMG channel should be smaller than 8."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), FRANKFURT_CH_MAX);
+			m_editNumsEMGCH.SetWindowText(temp);
+			Num_sEMG_CH = FRANKFURT_CH_MAX;
+		}
+		else if (Num_sEMG_CH < 1) {
+			MessageBox(_T("sEMG channel should be larger than 1."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), 1);
+			m_editNumsEMGCH.SetWindowText(temp);
+			Num_sEMG_CH = 1;
+		}
+		else {
+			this->Num_sEMG_CH = Num_sEMG_CH;
+		}
+	}
+}
+
+
+void CDAQVizDlg::OnEnChangeEditNumFlexCh() {
+	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString temp;
+	m_editNumFlexCH.GetWindowText(temp);
+	int Num_Flex_CH = _ttoi(temp);
+	if (m_radioUseFlexSensor == 0) {
+		if (Num_Flex_CH > FLEX_CH_MAX) {
+			MessageBox(_T("Flex sensor channel should be smaller than 5."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), FLEX_CH_MAX);
+			m_editNumFlexCH.SetWindowText(temp);
+			Num_Flex_CH = FLEX_CH_MAX;
+		}
+		else if (Num_Flex_CH < 1) {
+			MessageBox(_T("Flex sensor channel should be larger than 1."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), 1);
+			m_editNumFlexCH.SetWindowText(temp);
+			Num_Flex_CH = 1;
+		}
+		else {
+			this->Num_Flex_CH = Num_Flex_CH;
+		}
+	}
+}
+
+void CDAQVizDlg::OnEnChangeEditNumImuCh() {
+	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString temp;
+	m_editNumIMUCH.GetWindowText(temp);
+	int Num_IMU_CH = _ttoi(temp);
+	if (m_radioUseIMU == 0) {
+		if (Num_IMU_CH > IMU_CH_MAX) {
+			MessageBox(_T("IMU sensor channel should be smaller than 2."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), IMU_CH_MAX);
+			m_editNumIMUCH.SetWindowText(temp);
+			Num_IMU_CH = IMU_CH_MAX;
+		}
+		else if (Num_IMU_CH < 1) {
+			MessageBox(_T("IMU sensor channel should be larger than 1."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), 1);
+			m_editNumIMUCH.SetWindowText(temp);
+			Num_IMU_CH = 1;
+		}
+		else {
+			this->Num_IMU_CH = Num_IMU_CH;
+		}
+	}
 }

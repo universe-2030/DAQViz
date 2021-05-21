@@ -12,8 +12,7 @@
 
 // DAQVizChildOpenGL 대화 상자
 
-class DAQVizChildOpenGL : public CDialogEx
-{
+class DAQVizChildOpenGL : public CDialogEx {
 	DECLARE_DYNAMIC(DAQVizChildOpenGL)
 
 public:

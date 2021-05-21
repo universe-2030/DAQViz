@@ -26,13 +26,19 @@
 
 #define	TIMER_EDIT 1
 
-#define N_SEMG 16
-#define N_FLEX 5
+#define N_SEMG_CH 16
+#define N_FLEX_CH 5
+#define N_IMU_CH 2
 
 #define CALI_START 0.100
 #define CALI_END 1.500
 
 #define N_GRAPH 5
+
+#define DELSYS_CH_MAX 16
+#define FRANKFURT_CH_MAX 8
+#define FLEX_CH_MAX 5
+#define IMU_CH_MAX 2
 
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
@@ -59,6 +65,11 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	// The number of channels
+	UINT Num_sEMG_CH;
+	UINT Num_Flex_CH;
+	UINT Num_IMU_CH;
+
 	// MFC control variables
 	CButton m_btnSwitch;
 	BOOL m_flag_Switch = 0;
@@ -83,12 +94,12 @@ private:
 
 	CStatic m_textsEMGDAQDev;
 	UINT m_radiosEMGDAQDev;
-
-	CStatic m_textUseIMU;
-	UINT m_radioUseIMU;
-
+	
 	CStatic m_textUseFlexSensor;
 	UINT    m_radioUseFlexSensor;
+	
+	CStatic m_textUseIMU;
+	UINT m_radioUseIMU;
 
 	CEdit m_editStatusBar;
 
@@ -99,6 +110,13 @@ private:
 	CEdit		m_editStartIdx;
 	CStatic		m_textEndIdx;
 	CEdit		m_editEndIdx;
+
+	CStatic		m_textNumsEMGCH;
+	CEdit		m_editNumsEMGCH;
+	CStatic		m_textNumFlexCH;
+	CEdit		m_editNumFlexCH;
+	CStatic		m_textNumIMUCH;
+	CEdit		m_editNumIMUCH;
 
 	// Container variables
 	std::vector<double>* sEMG_raw_stack;
@@ -121,11 +139,11 @@ private:
 	CCriticalSection g_csExitThread;
 	volatile bool g_bExitThread = true;
 
-	double m_time = 0.0;
-	UINT m_count = 0;
+	double m_time;
+	UINT m_count;
 
-	bool TimerStarted = FALSE;
-	bool b_SaveImmediate_Dlg = TRUE;
+	bool TimerStarted;
+	bool b_SaveImmediate_Dlg;
 
 	// Child dialogs
 	DAQVizChildKSJ* p_ChildDlg_KSJ;
@@ -145,7 +163,7 @@ private:
 
 	// Load the txt file
 	ifstream inFile;
-	bool File_loaded_or_not = FALSE;
+	bool File_loaded_or_not;
 
 	// DAQ device
 	DELSYSDAQ* DELSYS_Dev;
@@ -227,4 +245,7 @@ public:
 					double _Time_DAQ_elapse,
 					double _Time_RTGraph_elapse);
 	void SaveData();	
+	afx_msg void OnEnChangeEditNumSemgCh();
+	afx_msg void OnEnChangeEditNumFlexCh();
+	afx_msg void OnEnChangeEditNumImuCh();
 };

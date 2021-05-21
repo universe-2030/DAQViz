@@ -74,6 +74,12 @@
 #define IDC_EDIT_ANIMATION_IDX          1057
 #define IDC_TEXT_TIMESTEP               1058
 #define IDC_EDIT_TIMESTEP               1059
+#define IDC_EDIT_NUM_SEMG_CH            1060
+#define IDC_TEXT_NUM_SEMG_CH            1061
+#define IDC_EDIT_NUM_FLEX_CH            1062
+#define IDC_TEXT_NUM_FLEX_CH            1063
+#define IDC_EDIT_NUM_IMU_CH             1064
+#define IDC_TEXT_NUM_IMU_CH             1065
 
 // Next default values for new objects
 // 
@@ -81,7 +87,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1060
+#define _APS_NEXT_CONTROL_VALUE         1062
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

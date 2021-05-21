@@ -22,10 +22,6 @@
 #define IMU_MIN -90
 #define IMU_MAX 90
 
-#define N_SEMG_CH 16
-#define N_FLEX_CH 5
-#define N_IMU_CH 2
-
 enum Graph_class {
 	SEMG_MAV,
 	FLEX_SENSOR,
@@ -69,12 +65,13 @@ private:
 	int N_IMU;
 
 	// Data containers
-	double* sEMG_raw;
 	double* sEMG_MAV;
+	double* Flex_raw;
+	double* Flex_LPF;
+	double* IMU_raw;
+	double* IMU_LPF;
 
-	double* Flex_data;
-	double* IMU_data;
-
+	// Clipping window
 	int Pt_forth;
 	int Pt_back;
 
@@ -95,8 +92,9 @@ public:
 
 	COScopeCtrl** Get_rtGraph_sEMG_MAV();
 	COScopeCtrl** Get_rtGraph_Flex();
-
 	DAQVizChildOpenGL* Get_OpenGLPointer();
+
+	void Set_sEMG_MAV(double* _sEMG_MAV);
 	
 	void Cursor_set(UINT graph_idx);
 	afx_msg void OnClickedGraphSemgMav1();

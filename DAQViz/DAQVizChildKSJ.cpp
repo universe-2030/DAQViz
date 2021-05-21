@@ -27,11 +27,11 @@ DAQVizChildKSJ::DAQVizChildKSJ(int _N_sEMG_CH, int _N_Flex_CH, int _N_IMU_CH,
 }
 
 DAQVizChildKSJ::~DAQVizChildKSJ() {
-	delete sEMG_raw;
 	delete sEMG_MAV;
-
-	delete Flex_data;
-	delete IMU_data;
+	delete Flex_raw;
+	delete Flex_LPF;
+	delete IMU_raw;
+	delete IMU_LPF;
 }
 
 void DAQVizChildKSJ::DoDataExchange(CDataExchange* pDX) {
@@ -75,8 +75,10 @@ void DAQVizChildKSJ::Initialize_Variable() {
 	rtGraph_IMU = new COScopeCtrl*;
 
 	sEMG_MAV = new double[N_sEMG];
-	Flex_data = new double[N_Flex];
-	IMU_data = new double[N_IMU];
+	Flex_raw = new double[N_Flex];
+	Flex_LPF = new double[N_Flex];
+	IMU_raw = new double[N_IMU];
+	IMU_LPF = new double[N_IMU];
 
 	Pt_forth = 0;
 	Pt_back = 0;
