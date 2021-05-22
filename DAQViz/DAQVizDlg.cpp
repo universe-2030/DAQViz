@@ -258,7 +258,7 @@ void CDAQVizDlg::Initialize_GUI() {
 	Set_Font(m_editNumIMUCH, 20, 8);
 
 	m_comboSelectDlg.AddString(_T("1. Sejin Kim"));
-	m_comboSelectDlg.AddString(_T("2. Another users"));
+	// m_comboSelectDlg.AddString(_T("2. Another users"));
 	m_comboSelectDlg.SetCurSel(0);
 
 	m_editParameterLoadName.SetWindowText(_T("Select file"));
@@ -301,7 +301,7 @@ void CDAQVizDlg::Initialize_GUI() {
 }
 
 void CDAQVizDlg::Initialize_SaveFolder() {
-	SaveFolderPath = "D:/Training-free algorithm/";
+	SaveFolderPath_Main = SAVE_FOLDER_PATH_MACRO;
 
 	char timeDateBuf[80];
 	time_t now = time(0);
@@ -316,7 +316,13 @@ void CDAQVizDlg::Initialize_SaveFolder() {
 	strftime(timeDateBuf, sizeof(timeDateBuf), "%H%M%S", &tstruct);
 	SaveFolderName += timeDateBuf;
 
-	SaveFolderPath += SaveFolderName;
+	if (m_radioSaveMode == 0)
+		SaveFolderPath = SaveFolderPath_Main + SaveFolderName + _T("_Unsupervised");
+	else if (m_radioSaveMode == 1)
+		SaveFolderPath = SaveFolderPath_Main + SaveFolderName + _T("_Training");
+	else if (m_radioSaveMode == 2)
+		SaveFolderPath = SaveFolderPath_Main + SaveFolderName + _T("_Test");
+
 	m_editSaveFolderPath.SetWindowText(SaveFolderPath);
 }
 
@@ -744,11 +750,31 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 			radio_val.Format(_T("%d"), m_radioTrainingMode);
 			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
 		}
+
+		CString temp = SaveFolderPath_Main + SaveFolderName;
 		switch (m_radioTrainingMode) {
 		case 0:
+			m_btnParameterLoad.EnableWindow(FALSE);
+
+			temp += _T("_Unsupervised");
+			SaveFolderPath = temp;
+			m_editSaveFolderPath.SetWindowText(SaveFolderPath);
 
 			break;
 		case 1:
+			m_btnParameterLoad.EnableWindow(FALSE);
+
+			temp += _T("_Training");
+			SaveFolderPath = temp;
+			m_editSaveFolderPath.SetWindowText(SaveFolderPath);
+
+			break;
+		case 2:
+			m_btnParameterLoad.EnableWindow(TRUE);
+
+			temp += _T("_Test");
+			SaveFolderPath = temp;
+			m_editSaveFolderPath.SetWindowText(SaveFolderPath);
 
 			break;
 		}
@@ -1130,5 +1156,26 @@ void CDAQVizDlg::OnEnChangeEditNumImuCh() {
 
 void CDAQVizDlg::OnBnClickedBtnParameterLoad() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CFileDialog read_file(TRUE, NULL, NULL, OFN_FILEMUSTEXIST, _T("파일 선택 (.txt) | *.txt"));
+	read_file.m_ofn.lpstrTitle = _T("Load할 텍스트 파일을 선택하세요.");
+	read_file.m_ofn.lpstrInitialDir = _T("../Loading_data");
 
+	CString m_filename;
+	CString m_filedir;
+
+	if (read_file.DoModal() == IDOK) {
+		m_filename = read_file.GetFileName();
+		m_filedir = read_file.GetPathName();
+
+		if (!File_loaded_or_not) {
+			File_loaded_or_not = TRUE;
+			inFile.open(m_filedir);
+			m_editLoadName.SetWindowText(m_filename);
+		}
+		else {
+			inFile.close();
+			inFile.open(m_filedir);
+			m_editLoadName.SetWindowText(m_filename);
+		}
+	}
 }

@@ -42,6 +42,8 @@
 
 #define FLEX_ANALOG_ABS_MAX 0.75
 
+#define SAVE_FOLDER_PATH_MACRO "D:/Training-free algorithm/"
+
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
 public:
@@ -158,6 +160,7 @@ private:
 	BallControl* p_BallControl;
 
 	// Saving folder
+	CString SaveFolderPath_Main;
 	CString SaveFolderPath;
 	CString SaveFolderName;
 
