@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <iostream>
+#include <vector>
+#include <windows.h>
 #include <gltools.h>
 #include <glframe.h>
 #include "GL/glut.h"
@@ -10,7 +12,17 @@
 #include "glm.h"
 #include "Hand.h"
 
+#define TIMER_MAIN 1
+#define TIMER_RENDER 2
+#define TIMER_ANIMATION 3
+#define TIME_ELAPSE 20
+
 #define PI 3.14159265358
+
+enum Render_Hand {
+	MAIN_HAND,
+	RENDER_HAND,
+};
 
 // DAQVizChildOpenGL2 대화 상자
 
@@ -20,6 +32,11 @@ class DAQVizChildOpenGL2 : public CDialogEx
 
 public:
 	DAQVizChildOpenGL2(CWnd* pParent = nullptr);   // 표준 생성자입니다.
+	DAQVizChildOpenGL2(int _m_Start_idx,
+					int _m_End_idx, int _m_Num_idx,
+					const std::vector<double>* _Flex_plot,
+					Render_Hand _species, bool _b_glutInit,
+					CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~DAQVizChildOpenGL2();
 
 // 대화 상자 데이터입니다.
@@ -34,6 +51,21 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	int m_Start_idx;
+	int m_End_idx;
+	int m_Num_idx;
+	Render_Hand species;
+
+	// Vector
+	const std::vector<double>* Flex_plot;
+
+	// For animation bar
+	int Current_idx = 0;
+	int TimeStep = 1;
+
+	// glut initialization boolean
+	bool b_glutInit = FALSE;
+
 	HGLRC	m_hRC;
 	CDC*	m_pDC;
 	HDC		m_hDC;
@@ -42,10 +74,14 @@ private:
 	float first_plot;
 	float second_plot;
 
+	float root_animation;
+	float first_animation;
+	float second_animation;
+
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
-	afx_msg void OnDestroy();
+	afx_msg void OnClose();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -53,8 +89,17 @@ public:
 
 	void SetupRC();
 	void DrawGround();
+
+	void Convert_jointangle();
+	void Convert_jointangle(int _Current_idx);
 	void RenderScene();
+	void RenderScene_Animation();
 	void objectAnimate(int i);
+
+	void Set_Current_idx(UINT _Current_idx);
+	void Set_TimeStep(UINT _TimeStep);
+	void Set_AnimationTimer();
+	void Kill_AnimationTimer();
 
 	void myKeys(unsigned char key, int x, int y);
 	void SpecialKeys(int key, int x, int y);

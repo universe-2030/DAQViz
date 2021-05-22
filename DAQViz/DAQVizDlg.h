@@ -136,6 +136,8 @@ private:
 	std::vector<double> Time_DAQ_elapse_stack;
 	std::vector<double> Time_RTGraph_elapse_stack;
 
+	std::vector<double> MotionLabel;
+
 	// TwinCAT variables
 	HANDLE hMutex;
 	HANDLE hMemory;

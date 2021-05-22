@@ -55,6 +55,7 @@ BEGIN_MESSAGE_MAP(GraphClipping, CDialogEx)
 	ON_WM_HSCROLL()
 	ON_EN_CHANGE(IDC_EDIT_TIMESTEP, &GraphClipping::OnEnChangeEditTimestep)
 	ON_WM_TIMER()
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 // GraphClipping 메시지 처리기
@@ -111,6 +112,23 @@ void GraphClipping::Initialize_GUI() {
 	p_ClippedGraph_2->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph_2->ShowWindow(SW_SHOW);
 	p_ClippedGraph_2->MoveWindow(rectofDialogArea);
+
+	GetDlgItem(IDC_PLOT_ANIMATION_HAND)->GetWindowRect(&rectofDialogArea);
+	ScreenToClient(&rectofDialogArea);
+
+	p_HandMotion = new DAQVizChildOpenGL2(m_StartIdx, m_EndIdx, m_NumIdx,
+										Flex_plot, Render_Hand::RENDER_HAND, TRUE);
+	p_HandMotion->Create(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, this);
+	p_HandMotion->ShowWindow(SW_SHOW);
+	p_HandMotion->MoveWindow(rectofDialogArea);
+
+	GetDlgItem(IDC_PLOT_ANIMATION_BALL_CONTROL)->GetWindowRect(&rectofDialogArea);
+	ScreenToClient(&rectofDialogArea);
+
+	p_BallControl = new BallControl(m_StartIdx, m_EndIdx, m_NumIdx, Render_Ball::RENDER_BALL);
+	p_BallControl->Create(IDD_DAQVIZ_DIALOG_BALL_CONTROL, this);
+	p_BallControl->ShowWindow(SW_SHOW);
+	p_BallControl->MoveWindow(rectofDialogArea);
 
 	m_scrollBar.SetScrollRange(0, m_NumIdx - 1);
 	m_scrollBar.SetScrollPos(ScrollPos);
@@ -185,7 +203,9 @@ void GraphClipping::OnBnClickedBtnAnimationRun() {
 
 		// Run the animation
 		SetTimer(TIMER_GRAPH_CLIPPING, TIME_ELAPSE, NULL);
-		p_ClippedGraph_2->Set_AnimiationTimer();
+		p_ClippedGraph_2->Set_AnimationTimer();
+		p_HandMotion->Set_AnimationTimer();
+		p_BallControl->Set_AnimationTimer();
 	}
 	else {
 		isAnimationRun = FALSE;
@@ -197,7 +217,9 @@ void GraphClipping::OnBnClickedBtnAnimationRun() {
 
 		// Stop the animation
 		KillTimer(TIMER_GRAPH_CLIPPING);
-		p_ClippedGraph_2->Kill_AnimiationTimer();
+		p_ClippedGraph_2->Kill_AnimationTimer();
+		p_HandMotion->Kill_AnimationTimer();
+		p_BallControl->Kill_AnimationTimer();
 	}
 }
 
@@ -234,6 +256,8 @@ void GraphClipping::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
 	m_editAnimationIdx.SetWindowText(temp);
 
 	p_ClippedGraph_2->Set_Current_idx(ScrollPos);
+	p_HandMotion->Set_Current_idx(ScrollPos);
+	p_BallControl->Set_Current_idx(ScrollPos);
 
 	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }
@@ -245,6 +269,10 @@ void GraphClipping::OnEnChangeEditTimestep() {
 	m_TimeStep = _ttoi(temp);
 	if (p_ClippedGraph_2 != NULL)
 		p_ClippedGraph_2->Set_TimeStep(m_TimeStep);
+	if (p_HandMotion!= NULL)
+		p_HandMotion->Set_TimeStep(m_TimeStep);
+	if (p_BallControl != NULL)
+		p_BallControl->Set_TimeStep(m_TimeStep);
 }
 
 void GraphClipping::OnTimer(UINT_PTR nIDEvent) {
@@ -258,4 +286,12 @@ void GraphClipping::OnTimer(UINT_PTR nIDEvent) {
 		break;
 	}
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+void GraphClipping::OnClose() {
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	p_HandMotion->OnClose();
+	p_BallControl->OnClose();
+
+	CDialogEx::OnClose();
 }

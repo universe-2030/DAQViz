@@ -6,10 +6,10 @@
 #include "GL/GL.h"
 #include "GL/GLU.h"
 
-#define TIMER_RENDER 1
-#define TIMER_ANIMATION 2
-
+#define TIMER_RENDER 2
+#define TIMER_ANIMATION 3
 #define TIME_ELAPSE 20
+
 #define MOVE_SCALE 0.002
 
 #define NUM_GRAPH_ANALYSIS 5
@@ -55,10 +55,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	int Num_CH;
 	int m_Start_idx;
 	int m_End_idx;
 	int m_Num_idx;
+	int Num_CH;
 	Render species;
 
 	HGLRC	m_hRC;
@@ -73,7 +73,6 @@ private:
 	double fAspect;
 
 	double* X_pos;
-	double** Y_val;
 
 	double X_polygon;
 	double Y_polygon;
@@ -102,8 +101,8 @@ public:
 
 	void Set_Current_idx(UINT _Current_idx);
 	void Set_TimeStep(UINT _TimeStep);
-	void Set_AnimiationTimer();
-	void Kill_AnimiationTimer();
+	void Set_AnimationTimer();
+	void Kill_AnimationTimer();
 	int Get_Current_idx();
 
 	void Delete_Dynamic_Alloc();

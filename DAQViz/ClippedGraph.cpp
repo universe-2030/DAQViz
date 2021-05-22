@@ -26,11 +26,10 @@ ClippedGraph::ClippedGraph(int _m_Start_idx, int _m_End_idx,
 	m_End_idx = _m_End_idx;
 	m_Num_idx = _m_Num_idx;
 	Num_CH = _Num_CH;
+	species = _species;
 
 	sEMG_plot = _sEMG_plot;
 	Flex_plot = _Flex_plot;
-
-	species = _species;
 }
 
 ClippedGraph::~ClippedGraph() {
@@ -60,14 +59,6 @@ BOOL ClippedGraph::OnInitDialog() {
 	X_pos = new double[m_Num_idx];
 	for (int i = 0; i < m_Num_idx; i++) {
 		X_pos[i] = -2.5f + 5.0f / (double)(m_Num_idx) * i;
-	}
-
-	Y_val = new double*[Num_CH];
-	for (int i = 0; i < Num_CH; i++) {
-		Y_val[i] = new double[m_Num_idx];
-		for (int j = 0; j < m_Num_idx; j++) {
-			Y_val[i][j] = rand() / (double)(RAND_MAX);
-		}
 	}
 
 	SetTimer(TIMER_RENDER, TIME_ELAPSE, NULL);
@@ -118,7 +109,7 @@ void ClippedGraph::OnTimer(UINT_PTR nIDEvent) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	switch (nIDEvent) {
 	case TIMER_RENDER:
-		this->Invalidate(FALSE);
+
 		break;
 	case TIMER_ANIMATION:
 		Current_idx += TimeStep;
@@ -126,6 +117,8 @@ void ClippedGraph::OnTimer(UINT_PTR nIDEvent) {
 			Current_idx = 0;
 		break;
 	}
+	this->Invalidate(FALSE);
+
 	CDialogEx::OnTimer(nIDEvent);
 }
 
@@ -481,11 +474,11 @@ void ClippedGraph::Set_TimeStep(UINT _TimeStep) {
 	TimeStep = _TimeStep;
 }
 
-void ClippedGraph::Set_AnimiationTimer() {
+void ClippedGraph::Set_AnimationTimer() {
 	SetTimer(TIMER_ANIMATION, TIME_ELAPSE, NULL);
 }
 
-void ClippedGraph::Kill_AnimiationTimer() {
+void ClippedGraph::Kill_AnimationTimer() {
 	KillTimer(TIMER_ANIMATION);
 }
 
@@ -495,9 +488,6 @@ int ClippedGraph::Get_Current_idx() {
 
 void ClippedGraph::Delete_Dynamic_Alloc() {
 	delete X_pos;
-	for (int i = 0; i < Num_CH; i++)
-		delete Y_val[i];
-	delete Y_val;
 }
 
 void ClippedGraph::Set_Dynamic_Alloc(UINT _m_Num_idx) {
@@ -506,13 +496,5 @@ void ClippedGraph::Set_Dynamic_Alloc(UINT _m_Num_idx) {
 	X_pos = new double[m_Num_idx];
 	for (int i = 0; i < m_Num_idx; i++) {
 		X_pos[i] = -2.5f + 5.0f / (double)(m_Num_idx)*i;
-	}
-
-	Y_val = new double* [Num_CH];
-	for (int i = 0; i < Num_CH; i++) {
-		Y_val[i] = new double[m_Num_idx];
-		for (int j = 0; j < m_Num_idx; j++) {
-			Y_val[i][j] = rand() / (double)(RAND_MAX);
-		}
 	}
 }

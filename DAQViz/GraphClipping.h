@@ -1,6 +1,9 @@
 ﻿#pragma once
-#include "ClippedGraph.h"
+
 #include <vector>
+#include "ClippedGraph.h"
+#include "DAQVizChildOpenGL2.h"
+#include "BallControl.h"
 
 // GraphClipping 대화 상자
 #define TIMER_GRAPH_CLIPPING 1
@@ -31,6 +34,8 @@ protected:
 private:
 	ClippedGraph* p_ClippedGraph;
 	ClippedGraph* p_ClippedGraph_2;
+	DAQVizChildOpenGL2* p_HandMotion;
+	BallControl* p_BallControl;
 
 	// Clipped sEMG data
 	const std::vector<double>* sEMG_plot;
@@ -71,4 +76,5 @@ public:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnEnChangeEditTimestep();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnClose();
 };

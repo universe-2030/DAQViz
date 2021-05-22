@@ -22,7 +22,7 @@ int			cursorPos[2];
 bool		cameraControlMode = false;
 GLFrame		hand[2];
 Hand		rightHand(&hand[0]);
-Hand		leftHand(&hand[1]);
+Hand		rightHand_2(&hand[1]);
 int			jointIndex = 0;
 
 // DAQVizChildOpenGL2 대화 상자
@@ -31,7 +31,25 @@ IMPLEMENT_DYNAMIC(DAQVizChildOpenGL2, CDialogEx)
 
 DAQVizChildOpenGL2::DAQVizChildOpenGL2(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent) {
+	species = MAIN_HAND;
+}
 
+DAQVizChildOpenGL2::DAQVizChildOpenGL2(int _m_Start_idx,
+								int _m_End_idx, int _m_Num_idx,
+								const std::vector<double>* _Flex_plot,
+								Render_Hand _species, bool _b_glutInit,
+								CWnd* pParent /*=nullptr*/)
+	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent) {
+	
+	m_Start_idx = _m_Start_idx;
+	m_End_idx = _m_End_idx;
+	m_Num_idx = _m_Num_idx;
+
+	Flex_plot = _Flex_plot;
+
+	species = _species;
+
+	b_glutInit = _b_glutInit;
 }
 
 DAQVizChildOpenGL2::~DAQVizChildOpenGL2() {
@@ -44,7 +62,7 @@ void DAQVizChildOpenGL2::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(DAQVizChildOpenGL2, CDialogEx)
-	ON_WM_DESTROY()
+	ON_WM_CLOSE()
 	ON_WM_TIMER()
 	ON_WM_CREATE()
 	ON_WM_SIZE()
@@ -58,16 +76,23 @@ BOOL DAQVizChildOpenGL2::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
-	int argc = 1;
-	char* argv[] = { "Hello", "Hello" };
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_MULTISAMPLE);
-	glutInitWindowSize(500, 500);
-	glutInitWindowPosition(0, 0);
-	glutCreateWindow("OpenGL 3D Model Demo");
-
+	if (!b_glutInit) {
+		int argc = 1;
+		char* argv[] = { "Hello", "Hello" };
+		glutInit(&argc, argv);
+		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_MULTISAMPLE);
+		glutInitWindowSize(500, 500);
+		glutInitWindowPosition(0, 0);
+		glutCreateWindow("OpenGL 3D Model Demo");
+	}
 	SetupRC();
-	SetTimer(1000, 50, NULL);
+
+	if (species == MAIN_HAND)
+		SetTimer(TIMER_MAIN, TIME_ELAPSE, NULL);
+	else if (species == RENDER_HAND) {
+		KillTimer(TIMER_MAIN);
+		SetTimer(TIMER_RENDER, TIME_ELAPSE, NULL);
+	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
@@ -94,33 +119,23 @@ void DAQVizChildOpenGL2::OnPaint() {
 		CDialogEx::OnPaint();
 
 		wglMakeCurrent(m_hDC, m_hRC);
-		RenderScene();
+		if (species == MAIN_HAND)
+			RenderScene();
+		else if (species == RENDER_HAND)
+			RenderScene_Animation();
 		SwapBuffers(m_hDC);
 		wglMakeCurrent(m_hDC, NULL);
 	}
 }
 
-void DAQVizChildOpenGL2::OnDestroy() {
-	CDialogEx::OnDestroy();
-
-	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
-	wglDeleteContext(m_hRC);
-	::ReleaseDC(m_hWnd, m_hDC);
-}
-
-
-void DAQVizChildOpenGL2::OnTimer(UINT_PTR nIDEvent) {
-	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	CDialogEx::OnTimer(nIDEvent);
-	
+void DAQVizChildOpenGL2::Convert_jointangle() {
 	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
-
 	if (pMainDlg != NULL) {
 		if (pMainDlg->Get_TimerStarted()) {
 			for (int i = 0; i < 5; i++) {
 				if (pMainDlg->Get_Flex_raw_stack()[i].size() > 0) {
 					UINT idx_temp = pMainDlg->Get_Flex_raw_stack()[i].size();
-					
+
 					if (i > 0) {
 						root_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
 						root_plot = rightHand.Get_root_init()[4 - i] -
@@ -133,7 +148,7 @@ void DAQVizChildOpenGL2::OnTimer(UINT_PTR nIDEvent) {
 					second_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
 					second_plot = rightHand.Get_second_init()[4 - i] -
 						(rightHand.Get_second_max()[4 - i] - rightHand.Get_second_init()[4 - i]) * second_plot / FLEX_ANALOG_ABS_MAX;
-					
+
 					if (i == 0)
 						rightHand.ThumbRotatePos(first_plot, second_plot);
 					else if (i == 1)
@@ -148,10 +163,84 @@ void DAQVizChildOpenGL2::OnTimer(UINT_PTR nIDEvent) {
 			}
 		}
 	}
-
-	this->Invalidate(FALSE);
 }
 
+void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
+	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
+	if (pMainDlg != NULL) {
+		if (pMainDlg->Get_TimerStarted()) {
+			for (int i = 0; i < 5; i++) {
+				UINT idx_temp = m_Start_idx + _Current_idx;
+
+				if (i > 0) {
+					root_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+					root_animation = rightHand_2.Get_root_init()[4 - i] -
+						(rightHand_2.Get_root_max()[4 - i] - rightHand_2.Get_root_init()[4 - i]) * root_animation / FLEX_ANALOG_ABS_MAX;
+				}
+
+				first_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+				first_animation = rightHand_2.Get_first_init()[4 - i] -
+					(rightHand_2.Get_first_max()[4 - i] - rightHand_2.Get_first_init()[4 - i]) * first_animation / FLEX_ANALOG_ABS_MAX;
+				second_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+				second_animation = rightHand_2.Get_second_init()[4 - i] -
+					(rightHand_2.Get_second_max()[4 - i] - rightHand_2.Get_second_init()[4 - i]) * second_animation / FLEX_ANALOG_ABS_MAX;
+
+				if (i == 0)
+					rightHand_2.ThumbRotatePos(first_animation, second_animation);
+				else if (i == 1)
+					rightHand_2.IndexRotatePos(root_animation, first_animation, second_animation);
+				else if (i == 2)
+					rightHand_2.MiddleRotatePos(root_animation, first_animation, second_animation);
+				else if (i == 3)
+					rightHand_2.RingRotatePos(root_animation, first_animation, second_animation);
+				else if (i == 4)
+					rightHand_2.PinkyRotatePos(root_animation, first_animation, second_animation);
+			}
+		}
+	}
+}
+
+void DAQVizChildOpenGL2::Set_Current_idx(UINT _Current_idx) {
+	Current_idx = _Current_idx;
+}
+
+void DAQVizChildOpenGL2::Set_TimeStep(UINT _TimeStep) {
+	TimeStep = _TimeStep;
+}
+
+void DAQVizChildOpenGL2::Set_AnimationTimer() {
+	SetTimer(TIMER_ANIMATION, TIME_ELAPSE, NULL);
+}
+
+void DAQVizChildOpenGL2::Kill_AnimationTimer() {
+	KillTimer(TIMER_ANIMATION);
+}
+
+void DAQVizChildOpenGL2::OnTimer(UINT_PTR nIDEvent) {
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	CDialogEx::OnTimer(nIDEvent);
+
+	switch (nIDEvent) {
+	case TIMER_MAIN:
+		if (species == MAIN_HAND) {
+			Convert_jointangle();
+		}
+		break;
+	case TIMER_RENDER:
+		if (species == RENDER_HAND) {
+			Convert_jointangle(Current_idx);
+		}
+		break;
+	case TIMER_ANIMATION:
+		if (species == RENDER_HAND) {
+			Current_idx += TimeStep;
+			if (Current_idx > m_Num_idx)
+				Current_idx = 0;
+		}
+		break;
+	}
+	this->Invalidate(FALSE);
+}
 
 int DAQVizChildOpenGL2::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	if (CDialogEx::OnCreate(lpCreateStruct) == -1)
@@ -277,8 +366,7 @@ void DAQVizChildOpenGL2::DrawGround(void)
 }
 
 // Called to draw scene
-void DAQVizChildOpenGL2::RenderScene(void)
-{
+void DAQVizChildOpenGL2::RenderScene(void) {
 	//frameCamera.Normalize();
 	//frametorus.Normalize();
 	//cout << "Camera Position: (" << frameCamera.GetOriginX() << ", " << frameCamera.GetOriginY() << ", " << frameCamera.GetOriginZ() << ")" << endl;
@@ -431,12 +519,169 @@ void DAQVizChildOpenGL2::RenderScene(void)
 	glPopMatrix();
 #pragma endregion
 
-
-	//쬞Ξ셕?glutWire*()큍?か톱좥첩퍀쩧╁ㅦⓦ┳짽?츙?ずか톱
 #pragma region JointObject
 	glPushMatrix();
 	//glRotatef(90, 0, 0, 1);
 	rightHand.Render();
+	glPopMatrix();
+#pragma endregion
+
+	glPopMatrix();
+
+	// Do the buffer Swap
+	glutSwapBuffers();
+}
+
+void DAQVizChildOpenGL2::RenderScene_Animation(void) {
+	// Clear the window with current clearing color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glPushMatrix();
+
+	frameCamera.ApplyCameraTransform();
+
+	// Draw the ground
+	DrawGround();
+	glTranslatef(0, 1, 0);
+
+#pragma region PolygonObject
+	glPushMatrix();
+	const float vertices[8][3] = { { -1, -1, -1 },
+									{ 1, -1, -1 },
+									{ 1, 1, -1 },
+									{ -1, 1, -1 },
+									{ -1, -1, 1 },
+									{ 1, -1, 1 },
+									{ 1, 1, 1 },
+									{ -1, 1, 1 } };
+	glTranslatef(1, 0, 1);
+	//glScalef(0.1, 0.1, 0.1);
+	glColor3ub(255, 0, 255);
+
+#pragma region PolygonObject_Solid
+
+	// glEnable(GL_POLYGON_OFFSET_FILL);
+	// glPolygonOffset(.5, .5);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	//Back
+	//glColor3ub(0, 0, 0);
+	//glBegin(GL_POLYGON);
+	//glNormal3f(0, 0, -1);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[3]);
+	//glEnd();
+
+	////Front
+	//glColor3ub(255, 0, 255);
+	//glBegin(GL_POLYGON);
+	//glNormal3f(0, 0, 1);
+	//glVertex3fv(vertices[4]);
+	//glVertex3fv(vertices[5]);
+	//glVertex3fv(vertices[6]);
+	//glVertex3fv(vertices[7]);
+	//glEnd();
+
+	////Top
+	//glColor3ub(0, 0, 255);
+	//glBegin(GL_POLYGON);
+	//glNormal3f(0, 1, 0);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[3]);
+	//glEnd();
+
+	////Bottom
+	//glColor3ub(255, 255, 255);
+	//glBegin(GL_POLYGON);
+	//glNormal3f(0, -1, 0);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[4]);
+	//glVertex3fv(vertices[5]);
+	//glEnd();
+
+	////Left
+	//glColor3ub(0, 255, 0);
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[3]);
+	//glVertex3fv(vertices[7]);
+	//glVertex3fv(vertices[4]);
+	//glEnd();
+
+	////Right
+	//glColor3ub(255, 0, 0);
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[6]);
+	//glVertex3fv(vertices[5]);
+	//glEnd();
+	//glDisable(GL_POLYGON_OFFSET_FILL);
+#pragma endregion
+
+#pragma region PolygonObject_Wire
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glColor3ub(255, 255, 255);
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[3]);
+	//glEnd();
+
+	////Front
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[4]);
+	//glVertex3fv(vertices[5]);
+	//glVertex3fv(vertices[6]);
+	//glVertex3fv(vertices[7]);
+	//glEnd();
+
+	////Top
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[3]);
+	//glEnd();
+
+	////Bottom
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[4]);
+	//glVertex3fv(vertices[5]);
+	//glEnd();
+
+	////Left
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[0]);
+	//glVertex3fv(vertices[3]);
+	//glVertex3fv(vertices[7]);
+	//glVertex3fv(vertices[4]);
+	//glEnd();
+
+	////Right
+	//glBegin(GL_POLYGON);
+	//glVertex3fv(vertices[1]);
+	//glVertex3fv(vertices[2]);
+	//glVertex3fv(vertices[6]);
+	//glVertex3fv(vertices[5]);
+	//glEnd();
+#pragma endregion
+
+	glPopMatrix();
+#pragma endregion
+
+#pragma region JointObject
+	glPushMatrix();
+	//glRotatef(90, 0, 0, 1);
+	rightHand_2.Render();
 	glPopMatrix();
 #pragma endregion
 
@@ -497,10 +742,8 @@ void DAQVizChildOpenGL2::objectAnimate(int i)
 //	glutPostRedisplay();
 //}
 
-void DAQVizChildOpenGL2::myKeys(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
+void DAQVizChildOpenGL2::myKeys(unsigned char key, int x, int y) {
+	switch (key) {
 	case 'w':
 		/* Your Implementation */
 		//Ex:  frametorus.????
@@ -686,4 +929,16 @@ void DAQVizChildOpenGL2::ChangeSize(int w, int h)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+}
+
+void DAQVizChildOpenGL2::OnClose()
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	wglDeleteContext(m_hRC);
+	::ReleaseDC(m_hWnd, m_hDC);
+
+	KillTimer(TIMER_RENDER);
+	SetTimer(TIMER_MAIN, TIME_ELAPSE, NULL);
+
+	CDialogEx::OnClose();
 }

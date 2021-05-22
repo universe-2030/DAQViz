@@ -54,12 +54,6 @@
     <ClInclude Include="SignalProcessor.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="TrainedModel.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="TestModel.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="NI_AI_AO_DO.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -111,12 +105,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="SignalProcessor.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="TrainedModel.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="TestModel.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="NI_AI_AO_DO.cpp">

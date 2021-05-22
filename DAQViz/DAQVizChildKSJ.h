@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include "OScopeCtrl.h"
-#include "include/GL/glew.h"
-#include "include/GL/wglew.h"
+#include "GL/glew.h"
+#include "GL/wglew.h"
 
 #include "DAQVizChildOpenGL.h"
 #include "DAQVizChildOpenGL2.h"
@@ -61,6 +61,7 @@ private:
 	DAQVizChildOpenGL* p_ChildOpenGL;
 	DAQVizChildOpenGL2* p_ChildOpenGL_2;
 	BallControl* p_BallControl;
+	GraphClipping* Clip_window;
 
 	int N_sEMG;
 	int N_Flex;
@@ -76,8 +77,6 @@ private:
 	// Clipping window
 	int Pt_forth;
 	int Pt_back;
-
-	GraphClipping* Clip_window;
 
 public:
 	CStatic m_textsEMGPlot;

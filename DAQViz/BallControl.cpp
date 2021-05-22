@@ -12,7 +12,36 @@ IMPLEMENT_DYNAMIC(BallControl, CDialogEx)
 
 BallControl::BallControl(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_BALL_CONTROL, pParent) {
+	species = MAIN_BALL;
+}
 
+BallControl::BallControl(int _m_Start_idx,
+						int _m_End_idx, int _m_Num_idx,
+						Render_Ball _species, CWnd* pParent /*=nullptr*/)
+	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent) {
+
+	m_Start_idx = _m_Start_idx;
+	m_End_idx = _m_End_idx;
+	m_Num_idx = _m_Num_idx;
+
+	species = _species;
+}
+
+BallControl::BallControl(int _m_Start_idx,
+					int _m_End_idx, int _m_Num_idx,
+					const std::vector<double>* _MotionLabel_plot,
+					const std::vector<double>* _Estimation_plot,
+					Render_Ball _species, CWnd* pParent /*=nullptr*/)
+	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent) {
+
+	m_Start_idx = _m_Start_idx;
+	m_End_idx = _m_End_idx;
+	m_Num_idx = _m_Num_idx;
+
+	MotionLabel_plot = _MotionLabel_plot;
+	Estimation_plot = _Estimation_plot;
+
+	species = _species;
 }
 
 BallControl::~BallControl() {
@@ -26,7 +55,7 @@ void BallControl::DoDataExchange(CDataExchange* pDX) {
 
 BEGIN_MESSAGE_MAP(BallControl, CDialogEx)
 	ON_WM_PAINT()
-	ON_WM_DESTROY()
+	ON_WM_CLOSE()
 	ON_WM_TIMER()
 	ON_WM_CREATE()
 	ON_WM_SIZE()
@@ -40,7 +69,8 @@ BOOL BallControl::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
-	SetTimer(1000, TIME_ELAPSE, NULL);
+	// SetTimer(TIMER_MAIN, TIME_ELAPSE, NULL);
+	// SetTimer(TIMER_RENDER, TIME_ELAPSE, NULL);
 
 	SetWindowPos(NULL, -1920, 0, 500, 500, SWP_NOSIZE);
 
@@ -70,19 +100,30 @@ void BallControl::OnPaint() {
 		CDialogEx::OnPaint();
 
 		wglMakeCurrent(m_hDC, m_hRC);
-		GLRenderScene();
+		if (species == MAIN_BALL)
+			GLRenderScene();
+		else if (species == RENDER_BALL)
+			GLRenderScene_Animation();
 		SwapBuffers(m_hDC);
 		wglMakeCurrent(m_hDC, NULL);
 	}
 
 }
 
-void BallControl::OnDestroy() {
-	CDialogEx::OnDestroy();
+void BallControl::Set_Current_idx(UINT _Current_idx) {
+	Current_idx = _Current_idx;
+}
 
-	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
-	wglDeleteContext(m_hRC);
-	::ReleaseDC(m_hWnd, m_hDC);
+void BallControl::Set_TimeStep(UINT _TimeStep) {
+	TimeStep = _TimeStep;
+}
+
+void BallControl::Set_AnimationTimer() {
+	SetTimer(TIMER_ANIMATION, TIME_ELAPSE, NULL);
+}
+
+void BallControl::Kill_AnimationTimer() {
+	KillTimer(TIMER_ANIMATION);
 }
 
 void BallControl::OnTimer(UINT_PTR nIDEvent) {
@@ -90,9 +131,17 @@ void BallControl::OnTimer(UINT_PTR nIDEvent) {
 
 	CDialogEx::OnTimer(nIDEvent);
 
-	/*if (count < 100)
-		count++;*/
-
+	switch (nIDEvent) {
+	case TIMER_MAIN:
+		
+		break;
+	case TIMER_RENDER:
+		
+		break;
+	case TIMER_ANIMATION:
+		
+		break;
+	}
 	this->Invalidate(FALSE);
 }
 
@@ -211,6 +260,50 @@ void BallControl::GLRenderScene(void) {
 	glFlush();
 }
 
+void BallControl::GLRenderScene_Animation(void) {
+	// TODO: 여기에 구현 코드 추가.
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glEnable(GL_DEPTH_TEST);
+	glMatrixMode(GL_MODELVIEW);
+	// clear the drawing buffer.
+
+	gluLookAt(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+	////////////////////////////// Sphere //////////////////////////////
+	glLoadIdentity();
+	// Blue color used to draw.
+	glColor3f(0.0, 0.0, 1.0);
+	// traslate the draw by z = -4.0
+	// Note this when you decrease z like -8.0 the drawing will looks far , or smaller.
+	glTranslatef(count_horizontal * 0.1, count_vertical * 0.1, -5.0);
+	// built-in (glut library) function , draw you a sphere.
+	glutSolidSphere(0.3 + count * 0.02, 50, 50);
+	// Flush buffers to screen
+
+	////////////////////////////// Axis //////////////////////////////
+	GLfloat Axis_min = -100.0f;
+	GLfloat Axis_max = 100.0f;
+
+	glLineWidth(3);
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glVertex3f(Axis_min, -count_vertical * 0.1, 0.0f);
+	glVertex3f(Axis_max, -count_vertical * 0.1, 0.0f);
+	glEnd();
+
+	glLineWidth(3);
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glVertex3f(-count_horizontal * 0.1, Axis_min, 0.0f);
+	glVertex3f(-count_horizontal * 0.1, Axis_max, 0.0f);
+	glEnd();
+
+	glPopMatrix();
+	glFlush();
+}
+
 void BallControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	switch (nChar) {
@@ -244,4 +337,10 @@ BOOL BallControl::PreTranslateMessage(MSG* pMsg) {
 	}
 
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+void BallControl::OnClose() {
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+
+	CDialogEx::OnClose();
 }
