@@ -26,8 +26,6 @@
 #define IDC_EDIT_STATUS_BAR             1006
 #define IDC_TEXT_DATA_STREAMING         1007
 #define IDC_TEXT_TRAINING_MODE          1008
-#define IDC_RADIO_TRAINING_ONLINE       1009
-#define IDC_RADIO_TRAINING_OFFLINE      1010
 #define IDC_RADIO_DATA_STREAMING_RT     1011
 #define IDC_RADIO_DATA_STREAMING_LOAD   1012
 #define IDC_BTN_LOAD                    1013
@@ -80,6 +78,11 @@
 #define IDC_TEXT_NUM_FLEX_CH            1063
 #define IDC_EDIT_NUM_IMU_CH             1064
 #define IDC_TEXT_NUM_IMU_CH             1065
+#define IDC_RADIO_UNSUPERVISED          1066
+#define IDC_RADIO_TRAINING              1067
+#define IDC_RADIO_TEST                  1068
+#define IDC_BTN_PARAMETER_LOAD          1069
+#define IDC_EDIT_PARAMETER_LOAD_NAME    1070
 
 // Next default values for new objects
 // 
@@ -87,7 +90,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1062
+#define _APS_NEXT_CONTROL_VALUE         1069
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

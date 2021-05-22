@@ -45,7 +45,7 @@ END_MESSAGE_MAP()
 
 CDAQVizDlg::CDAQVizDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG, pParent), 
-	m_radioTrainingMode(0), m_radioStreamingMode(0),
+	m_radioTrainingMode(1), m_radioStreamingMode(0),
 	m_radioSaveMode(1), m_radiosEMGDAQDev(0),
 	m_radioUseFlexSensor(0), m_radioUseIMU(0) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -62,7 +62,9 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_COMBO_DLG_SELECT, m_comboSelectDlg);
 
 	DDX_Control(pDX, IDC_TEXT_TRAINING_MODE, m_textTrainingMode);
-	DDX_Radio(pDX, IDC_RADIO_TRAINING_ONLINE, (int&)m_radioTrainingMode);
+	DDX_Radio(pDX, IDC_RADIO_UNSUPERVISED, (int&)m_radioTrainingMode);
+	DDX_Control(pDX, IDC_BTN_PARAMETER_LOAD, m_btnParameterLoad);
+	DDX_Control(pDX, IDC_EDIT_PARAMETER_LOAD_NAME, m_editParameterLoadName);
 
 	DDX_Control(pDX, IDC_TEXT_DATA_STREAMING, m_textDataStreamingMode);
 	DDX_Radio(pDX, IDC_RADIO_DATA_STREAMING_RT, (int&)m_radioStreamingMode);
@@ -103,7 +105,7 @@ BEGIN_MESSAGE_MAP(CDAQVizDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BTN_SWITCH, &CDAQVizDlg::OnBnClickedBtnSwitch)
-	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_TRAINING_ONLINE, IDC_RADIO_TRAINING_OFFLINE, RadioCtrl)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_UNSUPERVISED, IDC_RADIO_TEST, RadioCtrl)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_DATA_STREAMING_RT, IDC_RADIO_DATA_STREAMING_LOAD, RadioCtrl)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_SAVE_IMMEDIATE, IDC_RADIO_STOP_AND_RUN_STACK_OFF, RadioCtrl)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_DEVICE_DELSYS, IDC_RADIO_DEVICE_FRANKFURT, RadioCtrl)
@@ -118,6 +120,7 @@ ON_WM_DESTROY()
 ON_EN_CHANGE(IDC_EDIT_NUM_SEMG_CH, &CDAQVizDlg::OnEnChangeEditNumSemgCh)
 ON_EN_CHANGE(IDC_EDIT_NUM_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumFlexCh)
 ON_EN_CHANGE(IDC_EDIT_NUM_IMU_CH, &CDAQVizDlg::OnEnChangeEditNumImuCh)
+ON_BN_CLICKED(IDC_BTN_PARAMETER_LOAD, &CDAQVizDlg::OnBnClickedBtnParameterLoad)
 END_MESSAGE_MAP()
 
 // CDAQVizDlg 메시지 처리기
@@ -258,6 +261,7 @@ void CDAQVizDlg::Initialize_GUI() {
 	m_comboSelectDlg.AddString(_T("2. Another users"));
 	m_comboSelectDlg.SetCurSel(0);
 
+	m_editParameterLoadName.SetWindowText(_T("Select file"));
 	m_editLoadName.SetWindowText(_T("Select file"));
 	m_editStartIdx.SetWindowText(_T("Not selected"));
 	m_editEndIdx.SetWindowText(_T("Not selected"));
@@ -269,6 +273,11 @@ void CDAQVizDlg::Initialize_GUI() {
 	m_editNumFlexCH.SetWindowTextW(temp);
 	temp.Format(_T("%d"), IMU_CH_MAX);
 	m_editNumIMUCH.SetWindowTextW(temp);
+
+	if (m_radioTrainingMode == 0 || m_radioTrainingMode == 1)
+		m_btnParameterLoad.EnableWindow(FALSE);
+	else
+		m_btnParameterLoad.EnableWindow(TRUE);
 
 	if (m_radioStreamingMode == 0)
 		m_btnLoad.EnableWindow(FALSE);
@@ -712,7 +721,7 @@ int CDAQVizDlg::MainStart() {
 	Set_MFC_Control_Availability(FALSE);
 
 	// Save the data
-	SaveData();
+	SaveData(SaveFolderPath);
 
 	m_btnSwitch.SetWindowText(_T("End"));
 	m_btnSwitch.EnableWindow(FALSE);
@@ -729,7 +738,7 @@ error:
 void CDAQVizDlg::RadioCtrl(UINT ID) {
 	UpdateData(TRUE);
 
-	if (IDC_RADIO_TRAINING_ONLINE <= ID && ID <= IDC_RADIO_TRAINING_OFFLINE) {
+	if (IDC_RADIO_UNSUPERVISED <= ID && ID <= IDC_RADIO_TEST) {
 		if (TEST_FLAG) {
 			CString radio_val;
 			radio_val.Format(_T("%d"), m_radioTrainingMode);
@@ -939,8 +948,9 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 	if (!_isAvailable) {
 		m_comboSelectDlg.EnableWindow(_isAvailable);
 
-		GetDlgItem(IDC_RADIO_TRAINING_ONLINE)->EnableWindow(_isAvailable);
-		GetDlgItem(IDC_RADIO_TRAINING_OFFLINE)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_UNSUPERVISED)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_TRAINING)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_TEST)->EnableWindow(_isAvailable);
 
 		GetDlgItem(IDC_RADIO_DATA_STREAMING_RT)->EnableWindow(_isAvailable);
 		GetDlgItem(IDC_RADIO_DATA_STREAMING_LOAD)->EnableWindow(_isAvailable);
@@ -994,14 +1004,25 @@ void CDAQVizDlg::StackData (double* _sEMG_raw,
 	Time_RTGraph_elapse_stack.push_back(_Time_RTGraph_elapse);
 }
 
-void CDAQVizDlg::SaveData() {
+void CDAQVizDlg::SaveData(CString SaveFolderName) {
+	////////////////////////////////////////////////////////////////////////////////////////
 	m_editStatusBar.SetWindowText(stat += "[USER] Save Start!");
 	m_editStatusBar.SetWindowText(stat += "\r\n");
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 
-	// Save code
+	////////////////////////////////////// Save code ////////////////////////////////////////
+	CreateDirectory(SaveFolderName, NULL);
 
+	CString prefix = SaveFolderName;
+	prefix += "/";
 
+	ofstream f_time, f_time_elapsed_DAQ, f_time_elapsed_RTGraph;
+	ofstream f_sEMG_raw, f_sEMG_abs, f_sEMG_MAV;
+	ofstream f_Flex_raw, f_Flex_LPF;
+	ofstream f__raw, f_IMU_LPF;
+	ofstream f_sEMG_pattern_num, f_sEMG_pattern_idx, f_sEMG_pattern_log_prob;
+
+	////////////////////////////////////////////////////////////////////////////////////////
 	m_editStatusBar.SetWindowText(stat += "[USER] Save End!");
 	m_editStatusBar.SetWindowText(stat += "\r\n");
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
@@ -1105,4 +1126,9 @@ void CDAQVizDlg::OnEnChangeEditNumImuCh() {
 			this->Num_IMU_CH = Num_IMU_CH;
 		}
 	}
+}
+
+void CDAQVizDlg::OnBnClickedBtnParameterLoad() {
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
 }

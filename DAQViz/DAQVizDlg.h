@@ -84,6 +84,8 @@ private:
 
 	CStatic m_textTrainingMode;
 	UINT m_radioTrainingMode;
+	CButton m_btnParameterLoad;
+	CEdit m_editParameterLoadName;
 
 	CStatic m_textDataStreamingMode;
 	UINT m_radioStreamingMode;
@@ -267,8 +269,9 @@ public:
 					double* _IMU_LPF,
 					double _Time_DAQ_elapse,
 					double _Time_RTGraph_elapse);
-	void SaveData();	
+	void SaveData(CString SaveFolderName);
 	afx_msg void OnEnChangeEditNumSemgCh();
 	afx_msg void OnEnChangeEditNumFlexCh();
 	afx_msg void OnEnChangeEditNumImuCh();
+	afx_msg void OnBnClickedBtnParameterLoad();
 };
