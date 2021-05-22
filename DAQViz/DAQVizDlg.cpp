@@ -468,7 +468,7 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 
 void CDAQVizDlg::OnBnClickedBtnLoad() {
 	CFileDialog read_file(TRUE, NULL, NULL, OFN_FILEMUSTEXIST, _T("파일 선택 (.txt) | *.txt"));
-	read_file.m_ofn.lpstrTitle = _T("Load할 텍스트 파일을 선택하세요.");
+	read_file.m_ofn.lpstrTitle = _T("Load할 데이터 텍스트 파일을 선택하세요.");
 	read_file.m_ofn.lpstrInitialDir = _T("../Loading_data");
 
 	CString m_filename;
@@ -1157,7 +1157,7 @@ void CDAQVizDlg::OnEnChangeEditNumImuCh() {
 void CDAQVizDlg::OnBnClickedBtnParameterLoad() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CFileDialog read_file(TRUE, NULL, NULL, OFN_FILEMUSTEXIST, _T("파일 선택 (.txt) | *.txt"));
-	read_file.m_ofn.lpstrTitle = _T("Load할 텍스트 파일을 선택하세요.");
+	read_file.m_ofn.lpstrTitle = _T("Load할 파라미터 텍스트 파일을 선택하세요.");
 	read_file.m_ofn.lpstrInitialDir = _T("../Loading_data");
 
 	CString m_filename;
