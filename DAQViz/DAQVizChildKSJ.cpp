@@ -295,7 +295,6 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 				return;
 			}
 
-
 	if (m_NumClicked[graph_idx] == 0) {
 		CPoint point_cur;
 		::GetCursorPos(&point_cur);

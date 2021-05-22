@@ -84,7 +84,9 @@
 #define IDC_RADIO_TRAINING              1067
 #define IDC_RADIO_TEST                  1068
 #define IDC_BTN_PARAMETER_LOAD          1069
+#define IDC_PLOT_ANIMATION_HAND         1069
 #define IDC_EDIT_PARAMETER_LOAD_NAME    1070
+#define IDC_PLOT_ANIMATION_BALL_CONTROL 1070
 
 // Next default values for new objects
 // 
@@ -92,7 +94,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1069
+#define _APS_NEXT_CONTROL_VALUE         1071
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
