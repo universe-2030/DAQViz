@@ -6,6 +6,7 @@
 
 #include "DAQVizChildOpenGL.h"
 #include "DAQVizChildOpenGL2.h"
+#include "BallControl.h"
 #include "GraphClipping.h"
 
 // DAQVizChildKSJ 대화 상자
@@ -59,6 +60,7 @@ private:
 
 	DAQVizChildOpenGL* p_ChildOpenGL;
 	DAQVizChildOpenGL2* p_ChildOpenGL_2;
+	BallControl* p_BallControl;
 
 	int N_sEMG;
 	int N_Flex;
@@ -104,4 +106,5 @@ public:
 	afx_msg void OnClickedGraphSemgMav4();
 	afx_msg void OnClickedGraphFlexSensor();
 	afx_msg void OnClickedGraphLogonuImu();
+	CStatic m_textBallControl;
 };

@@ -293,10 +293,6 @@ void CDAQVizDlg::Initialize_GUI() {
 	p_ChildDlg_KSJ->ShowWindow(SW_SHOW);
 	p_ChildDlg_KSJ->MoveWindow(rectofDialogArea);
 
-	p_BallControl = new BallControl();
-	p_BallControl->Create(IDD_DAQVIZ_DIALOG_BALL_CONTROL, this);
-	p_BallControl->ShowWindow(SW_SHOW);
-
 	SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
 }
 

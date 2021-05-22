@@ -57,7 +57,9 @@
 #define IDC_TEXT_SEMG_PLOT              1042
 #define IDC_TEXT_MOTION                 1043
 #define IDC_EDIT_TIME_START_IDX         1044
+#define IDC_TEXT_BALL_CONTROL           1044
 #define IDC_EDIT_TIME_END_IDX           1045
+#define IDC_PLOT_BALL_CONTROL           1045
 #define IDC_TEXT_TIME_START_IDX         1046
 #define IDC_TEXT_TIME_END_IDX           1047
 #define IDC_TEXT_CLIPPING_START_IDX     1048

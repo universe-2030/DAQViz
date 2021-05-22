@@ -39,6 +39,7 @@ void DAQVizChildKSJ::DoDataExchange(CDataExchange* pDX) {
 
 	DDX_Control(pDX, IDC_TEXT_SEMG_PLOT, m_textsEMGPlot);
 	DDX_Control(pDX, IDC_TEXT_MOTION, m_textMotionRendering);
+	DDX_Control(pDX, IDC_TEXT_BALL_CONTROL, m_textBallControl);
 }
 
 BEGIN_MESSAGE_MAP(DAQVizChildKSJ, CDialogEx)
@@ -88,6 +89,7 @@ void DAQVizChildKSJ::Initialize_GUI() {
 	CDAQVizDlg* pMainDlg = new CDAQVizDlg();
 	pMainDlg->Set_Font(m_textsEMGPlot, 20, 8);
 	pMainDlg->Set_Font(m_textMotionRendering, 20, 8);
+	pMainDlg->Set_Font(m_textBallControl, 20, 8);
 
 	rtGraph_sEMG_MAV[0] = Initialize_graph(IDC_GRAPH_SEMG_MAV_1, 1, 4, rtGraph_sEMG_MAV[0], SEMG_MAV);
 	rtGraph_sEMG_MAV[1] = Initialize_graph(IDC_GRAPH_SEMG_MAV_2, 5, 8, rtGraph_sEMG_MAV[1], SEMG_MAV);
@@ -134,6 +136,14 @@ void DAQVizChildKSJ::Initialize_GUI() {
 	p_ChildOpenGL_2->Create(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, this);
 	p_ChildOpenGL_2->ShowWindow(SW_SHOW);
 	p_ChildOpenGL_2->MoveWindow(rectofDialogArea);
+	
+	GetDlgItem(IDC_PLOT_BALL_CONTROL)->GetWindowRect(&rectofDialogArea);
+	ScreenToClient(&rectofDialogArea);
+
+	p_BallControl = new BallControl();
+	p_BallControl->Create(IDD_DAQVIZ_DIALOG_BALL_CONTROL, this);
+	p_BallControl->ShowWindow(SW_SHOW);
+	p_BallControl->MoveWindow(rectofDialogArea);
 
 	delete pMainDlg;
 }
