@@ -92,6 +92,7 @@ public:
 
 	COScopeCtrl** Get_rtGraph_sEMG_MAV();
 	COScopeCtrl** Get_rtGraph_Flex();
+	COScopeCtrl** Get_rtGraph_IMU();
 	DAQVizChildOpenGL* Get_OpenGLPointer();
 
 	void Set_sEMG_MAV(double* _sEMG_MAV);

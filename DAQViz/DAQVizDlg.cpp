@@ -681,6 +681,9 @@ int CDAQVizDlg::MainStart() {
 			else if (pShared_Data->count % N_GRAPH == 4) {
 				p_ChildDlg_KSJ->Plot_graph(Flex_data, p_ChildDlg_KSJ->Get_rtGraph_Flex()[0]);
 			}
+			else if (pShared_Data->count % N_GRAPH == 5) {
+				p_ChildDlg_KSJ->Plot_graph(IMU_data, p_ChildDlg_KSJ->Get_rtGraph_IMU()[0]);
+			}
 
 			// Toc
 			QueryPerformanceCounter(&Counter_RTGraph_End);
@@ -897,6 +900,10 @@ double CDAQVizDlg::Get_m_time() {
 
 UINT CDAQVizDlg::Get_m_count() {
 	return m_count;
+}
+
+bool CDAQVizDlg::Get_TimerStarted() {
+	return TimerStarted;
 }
 
 const std::vector<double>* CDAQVizDlg::Get_sEMG_raw_stack() {

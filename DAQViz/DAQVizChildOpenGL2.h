@@ -38,6 +38,10 @@ private:
 	CDC*	m_pDC;
 	HDC		m_hDC;
 
+	float root_plot;
+	float first_plot;
+	float second_plot;
+
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();

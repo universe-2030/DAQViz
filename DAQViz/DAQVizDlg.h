@@ -33,12 +33,14 @@
 #define CALI_START 0.100
 #define CALI_END 1.500
 
-#define N_GRAPH 5
+#define N_GRAPH 6
 
 #define DELSYS_CH_MAX 16
 #define FRANKFURT_CH_MAX 8
 #define FLEX_CH_MAX 5
 #define IMU_CH_MAX 2
+
+#define FLEX_ANALOG_ABS_MAX 0.75
 
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
@@ -243,6 +245,7 @@ public:
 	// Get functions
 	double Get_m_time();
 	UINT Get_m_count();
+	bool Get_TimerStarted();
 	
 	const std::vector<double>* Get_sEMG_raw_stack();
 	const std::vector<double>* Get_sEMG_abs_stack();

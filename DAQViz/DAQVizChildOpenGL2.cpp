@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "DAQViz.h"
+#include "DAQVizDlg.h"
 #include "DAQVizChildOpenGL2.h"
 #include "afxdialogex.h"
 
@@ -110,12 +111,44 @@ void DAQVizChildOpenGL2::OnDestroy() {
 
 void DAQVizChildOpenGL2::OnTimer(UINT_PTR nIDEvent) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-
 	CDialogEx::OnTimer(nIDEvent);
+	
+	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
 
-	if (++jointIndex > 14)
-		jointIndex = 0;
-	rightHand.setJointIndex(jointIndex);
+	if (pMainDlg != NULL) {
+		if (pMainDlg->Get_TimerStarted()) {
+			for (int i = 0; i < 5; i++) {
+				if (pMainDlg->Get_Flex_raw_stack()[i].size() > 0) {
+					UINT idx_temp = pMainDlg->Get_Flex_raw_stack()[i].size();
+					
+					if (i > 0) {
+						root_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+						root_plot = rightHand.Get_root_init()[4 - i] -
+							(rightHand.Get_root_max()[4 - i] - rightHand.Get_root_init()[4 - i]) * root_plot / FLEX_ANALOG_ABS_MAX;
+					}
+
+					first_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+					first_plot = rightHand.Get_first_init()[4 - i] -
+						(rightHand.Get_first_max()[4 - i] - rightHand.Get_first_init()[4 - i]) * first_plot / FLEX_ANALOG_ABS_MAX;
+					second_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+					second_plot = rightHand.Get_second_init()[4 - i] -
+						(rightHand.Get_second_max()[4 - i] - rightHand.Get_second_init()[4 - i]) * second_plot / FLEX_ANALOG_ABS_MAX;
+					
+					if (i == 0)
+						rightHand.ThumbRotatePos(first_plot, second_plot);
+					else if (i == 1)
+						rightHand.IndexRotatePos(root_plot, first_plot, second_plot);
+					else if (i == 2)
+						rightHand.MiddleRotatePos(root_plot, first_plot, second_plot);
+					else if (i == 3)
+						rightHand.RingRotatePos(root_plot, first_plot, second_plot);
+					else if (i == 4)
+						rightHand.PinkyRotatePos(root_plot, first_plot, second_plot);
+				}
+			}
+		}
+	}
+
 	this->Invalidate(FALSE);
 }
 

@@ -14,25 +14,87 @@ Hand::Hand(GLFrame* obj) {
 	glmVertexNormals(arm, 90);
 
 	index = 0;// INDEX: 0~2:litte finger ; 3~5:right finger ; 6~8:middle ; 9~11: fore ; 12~13: thumb
+	finger_index = 0;
 
-	root[0] = 9;
-	first[0] = 30;
-	second[0] = 30;
+	/// ///////////////////////////////////////////////////////////////////////
+	root[0] = 15;
+	first[0] = 15;
+	second[0] = 15;
 
 	root[1] = 15;
-	first[1] = 45;
-	second[1] = 9;
+	first[1] = 15;
+	second[1] = 15;
 
-	root[2] = 9;
-	first[2] = 36;
-	second[2] = 9;
+	root[2] = 15;
+	first[2] = 15;
+	second[2] = 15;
 
-	root[3] = 12;
-	first[3] = 45;
-	second[3] = 9;
+	root[3] = 15;
+	first[3] = 15;
+	second[3] = 15;
 
-	first[4] = 21;
-	second[4] = 30;
+	first[4] = 15;
+	second[4] = 15;
+
+	/// ///////////////////////////////////////////////////////////////////////
+	root_init[0] = 15;
+	first_init[0] = 15;
+	second_init[0] = 15;
+
+	root_init[1] = 15;
+	first_init[1] = 15;
+	second_init[1] = 15;
+
+	root_init[2] = 15;
+	first_init[2] = 15;
+	second_init[2] = 15;
+
+	root_init[3] = 15;
+	first_init[3] = 15;
+	second_init[3] = 15;
+
+	first_init[4] = 15;
+	second_init[4] = 15;
+
+	/// ///////////////////////////////////////////////////////////////////////
+	root_min[0] = 0;
+	first_min[0] = 0;
+	second_min[0] = 0;
+
+	root_min[1] = 0;
+	first_min[1] = 0;
+	second_min[1] = 0;
+
+	root_min[2] = 0;
+	first_min[2] = 0;
+	second_min[2] = 0;
+
+	root_min[3] = 0;
+	first_min[3] = 0;
+	second_min[3] = 0;
+
+	first_min[4] = 0;
+	second_min[4] = 0;
+
+	/// ///////////////////////////////////////////////////////////////////////
+	root_max[0] = 90;
+	first_max[0] = 90;
+	second_max[0] = 90;
+
+	root_max[1] = 90;
+	first_max[1] = 90;
+	second_max[1] = 90;
+
+	root_max[2] = 90;
+	first_max[2] = 90;
+	second_max[2] = 90;
+
+	root_max[3] = 90;
+	first_max[3] = 90;
+	second_max[3] = 90;
+
+	first_max[4] = 90;
+	second_max[4] = 90;
 
 	armDeg = 0;
 }
@@ -43,6 +105,143 @@ Hand::~Hand() {
 
 void Hand::setJointIndex(int num) {
 	index = num;
+}
+
+void Hand::WristRotatePos(float pos1) {
+	index = 14;
+	setJointIndex(index); // Wrist index
+	armDeg = pos1;
+	if (armDeg >= 84)
+		armDeg = 84;
+	else if (armDeg <= -50)
+		armDeg = -50;
+}
+
+void Hand::ThumbRotatePos(float pos1, float pos2) {
+	finger_index = 4;
+	index = 12;
+	setJointIndex(index); // Thumb - first index
+	first[finger_index] = pos1;
+	if (first[finger_index] >= first_max[finger_index])
+		first[finger_index] = first_max[finger_index];
+	else if (first[finger_index] <= first_min[finger_index])
+		first[finger_index] = first_min[finger_index];
+
+	index = 13;
+	setJointIndex(index); // Thumb - second index
+	second[finger_index] = pos2;
+	if (second[finger_index] >= second_max[finger_index])
+		second[finger_index] = second_max[finger_index];
+	else if (second[finger_index] <= second_min[finger_index])
+		second[finger_index] = second_min[finger_index];
+}
+
+void Hand::IndexRotatePos(float pos1, float pos2, float pos3) {
+	finger_index = 3;
+	index = 9;
+	setJointIndex(index); // Thumb - first index
+	root[finger_index] = pos1;
+	if (root[finger_index] >= root_max[finger_index])
+		root[finger_index] = root_max[finger_index];
+	else if (root[finger_index] <= root_min[finger_index])
+		root[finger_index] = root_min[finger_index];
+
+	index = 10;
+	setJointIndex(index); // Thumb - first index
+	first[finger_index] = pos1;
+	if (first[finger_index] >= first_max[finger_index])
+		first[finger_index] = first_max[finger_index];
+	else if (first[finger_index] <= first_min[finger_index])
+		first[finger_index] = first_min[finger_index];
+
+	index = 11;
+	setJointIndex(index); // Thumb - second index
+	second[finger_index] = pos2;
+	if (second[finger_index] >= second_max[finger_index])
+		second[finger_index] = second_max[finger_index];
+	else if (second[finger_index] <= second_min[finger_index])
+		second[finger_index] = second_min[finger_index];
+}
+
+void Hand::MiddleRotatePos(float pos1, float pos2, float pos3) {
+	finger_index = 2;
+	index = 6;
+	setJointIndex(index); // Thumb - first index
+	root[finger_index] = pos1;
+	if (root[finger_index] >= root_max[finger_index])
+		root[finger_index] = root_max[finger_index];
+	else if (root[finger_index] <= root_min[finger_index])
+		root[finger_index] = root_min[finger_index];
+
+	index = 7;
+	setJointIndex(index); // Thumb - first index
+	first[finger_index] = pos1;
+	if (first[finger_index] >= first_max[finger_index])
+		first[finger_index] = first_max[finger_index];
+	else if (first[finger_index] <= first_min[finger_index])
+		first[finger_index] = first_min[finger_index];
+
+	index = 8;
+	setJointIndex(index); // Thumb - second index
+	second[finger_index] = pos2;
+	if (second[finger_index] >= second_max[finger_index])
+		second[finger_index] = second_max[finger_index];
+	else if (second[finger_index] <= second_min[finger_index])
+		second[finger_index] = second_min[finger_index];
+}
+
+void Hand::RingRotatePos(float pos1, float pos2, float pos3) {
+	finger_index = 1;
+	index = 3;
+	setJointIndex(index); // Thumb - first index
+	root[finger_index] = pos1;
+	if (root[finger_index] >= root_max[finger_index])
+		root[finger_index] = root_max[finger_index];
+	else if (root[finger_index] <= root_min[finger_index])
+		root[finger_index] = root_min[finger_index];
+
+	index = 4;
+	setJointIndex(index); // Thumb - first index
+	first[finger_index] = pos1;
+	if (first[finger_index] >= first_max[finger_index])
+		first[finger_index] = first_max[finger_index];
+	else if (first[finger_index] <= first_min[finger_index])
+		first[finger_index] = first_min[finger_index];
+
+	index = 5;
+	setJointIndex(index); // Thumb - second index
+	second[finger_index] = pos2;
+	if (second[finger_index] >= second_max[finger_index])
+		second[finger_index] = second_max[finger_index];
+	else if (second[finger_index] <= second_min[finger_index])
+		second[finger_index] = second_min[finger_index];
+}
+
+void Hand::PinkyRotatePos(float pos1, float pos2, float pos3) {
+	finger_index = 0;
+	index = 0;
+	setJointIndex(index); // Thumb - first index
+	root[finger_index] = pos1;
+	if (root[finger_index] >= root_max[finger_index])
+		root[finger_index] = root_max[finger_index];
+	else if (root[finger_index] <= root_min[finger_index])
+		root[finger_index] = root_min[finger_index];
+
+	index = 1;
+	setJointIndex(index); // Thumb - first index
+	first[finger_index] = pos1;
+	if (first[finger_index] >= first_max[finger_index])
+		first[finger_index] = first_max[finger_index];
+	else if (first[finger_index] <= first_min[finger_index])
+		first[finger_index] = first_min[finger_index];
+
+	index = 2;
+	setJointIndex(index); // Thumb - second index
+	second[finger_index] = pos2;
+	if (second[finger_index] >= second_max[finger_index])
+		second[finger_index] = second_max[finger_index];
+	else if (second[finger_index] <= second_min[finger_index])
+		second[finger_index] = second_min[finger_index];
 }
 
 void Hand::fingerRotatePos(float pos) {
@@ -57,28 +256,36 @@ void Hand::fingerRotatePos(float pos) {
 		second[4] = pos;
 		if (second[4] >= 90)
 			second[4] = 90;
-		else if (second[4] <= -30)
-			second[4] = -30;
+		else if (second[4] <= 0)
+			second[4] = 0;
 	}
 	else if (index == 14) {
 		armDeg = pos;
 		if (armDeg >= 84)
 			armDeg = 84;
+		if (armDeg <= -50)
+			armDeg = -50;
 	}
 	else if (index % 3 == 0) {
 		root[index / 3] = pos;
 		if (root[index / 3] >= 78)
 			root[index / 3] = 78;
+		if (root[index / 3] <= 0)
+			root[index / 3] = 0;
 	}
 	else if (index % 3 == 1) {
 		first[index / 3] = pos;
 		if (first[index / 3] >= 99)
 			first[index / 3] = 99;
+		if (first[index / 3] <= 0)
+			first[index / 3] = 0;
 	}
 	else if (index % 3 == 2) {
 		second[index / 3] = pos;
 		if (second[index / 3] >= 90)
 			second[index / 3] = 90;
+		if (second[index / 3] <= 0)
+			second[index / 3] = 0;
 	}
 }
 
@@ -412,4 +619,40 @@ void Hand::Render() {
 #pragma endregion
 
 	glPopMatrix();
+}
+
+const float* Hand::Get_root_init() {
+	return root_init;
+}
+
+const float* Hand::Get_first_init() {
+	return first_init;
+}
+
+const float* Hand::Get_second_init() {
+	return second_init;
+}
+
+const float* Hand::Get_root_min() {
+	return root_min;
+}
+
+const float* Hand::Get_first_min() {
+	return first_min;
+}
+
+const float* Hand::Get_second_min() {
+	return second_min;
+}
+
+const float* Hand::Get_root_max() {
+	return root_max;
+}
+
+const float* Hand::Get_first_max() {
+	return first_max;
+}
+
+const float* Hand::Get_second_max() {
+	return second_max;
 }

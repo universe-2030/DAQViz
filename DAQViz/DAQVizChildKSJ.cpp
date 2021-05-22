@@ -242,6 +242,10 @@ COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Flex() {
 	return rtGraph_Flex;
 }
 
+COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_IMU() {
+	return rtGraph_IMU;
+}
+
 DAQVizChildOpenGL* DAQVizChildKSJ::Get_OpenGLPointer() {
 	return p_ChildOpenGL;
 }
