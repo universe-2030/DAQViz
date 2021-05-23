@@ -195,8 +195,6 @@ void GraphClipping::OnBnClickedBtnRedraw() {
 		CString temp;
 		temp.Format(_T("%d"), ScrollPos + m_StartIdx);
 		m_editAnimationIdx.SetWindowText(temp);
-
-		std::cout << Flex_plot[0][0] << " " << Flex_plot[1][0] << std::endl;
 	}
 	else {
 		if (m_StartIdx_temp <= 0) {
