@@ -109,6 +109,10 @@ float MatchDevice::Get_aEmg_aligned(int index) {
 	return aEmg_aligned[index];
 }
 
+int MatchDevice::Get_aEmg_channel_idx(int index) {
+	return aEmg_channel_idx[index];
+}
+
 float MatchDevice::Get_aEuler(int index) {
 	return aEuler[index];
 }

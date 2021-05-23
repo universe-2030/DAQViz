@@ -490,7 +490,9 @@ void ClippedGraph::Delete_Dynamic_Alloc() {
 	delete X_pos;
 }
 
-void ClippedGraph::Set_Dynamic_Alloc(UINT _m_Num_idx) {
+void ClippedGraph::Set_Dynamic_Alloc(UINT _m_Start_idx, UINT _m_End_idx, UINT _m_Num_idx) {
+	m_Start_idx = _m_Start_idx;
+	m_End_idx = _m_End_idx;
 	m_Num_idx = _m_Num_idx;
 
 	X_pos = new double[m_Num_idx];

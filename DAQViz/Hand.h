@@ -61,7 +61,18 @@ private:
 	float first_max[5];
 	float second_max[5];
 
-	float armDeg;
+	float armDeg; // wrist_FE와 같은 변수라고 생각하면 됨 (수정 예정)
+	float wrist_RU;
+
+	float wrist_FE_init;
+	float wrist_RU_init;
+
+	float wrist_FE_min;
+	float wrist_RU_min;
+
+	float wrist_FE_max;
+	float wrist_RU_max;
+
 	int index;
 	int finger_index;
 };

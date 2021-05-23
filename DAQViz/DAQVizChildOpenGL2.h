@@ -73,10 +73,14 @@ private:
 	float root_plot;
 	float first_plot;
 	float second_plot;
+	float wrist_FE_plot;
+	float wrist_RU_plot;
 
 	float root_animation;
 	float first_animation;
 	float second_animation;
+	float wrist_FE_animation;
+	float wrist_RU_animation;
 
 public:
 	virtual BOOL OnInitDialog();
@@ -100,6 +104,8 @@ public:
 	void Set_TimeStep(UINT _TimeStep);
 	void Set_AnimationTimer();
 	void Kill_AnimationTimer();
+
+	void Set_Redraw(UINT _m_Start_idx, UINT _m_End_idx, UINT _m_Num_idx);
 
 	void myKeys(unsigned char key, int x, int y);
 	void SpecialKeys(int key, int x, int y);

@@ -88,6 +88,7 @@ public:
 	wchar_t* Get_pPid();
 	float Get_aEmg(int index);
 	float Get_aEmg_aligned(int index);
+	int	  Get_aEmg_channel_idx(int index);
 	float Get_aEuler(int index);
 	float Get_aAccel(int index);
 	float Get_aGyro(int index);

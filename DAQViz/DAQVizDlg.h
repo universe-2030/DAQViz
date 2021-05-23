@@ -11,14 +11,15 @@
 #include "DELSYSDAQ.h"
 #include "MatchDevice.h"
 #include "SignalProcessor.h"
+#include "Model.h"
 
 #include "../TwinCAT/TwinCAT/Timer_TwinCAT.h"
 #include "DAQVizChildKSJ.h"
 
 #include "NI_AI_AO_DO.h"
 
-#include "TrainedModel.h"
-#include "TestModel.h"
+#define TS 0.001
+#define Fs 1000
 
 #define TEST_FLAG 1
 
@@ -28,7 +29,7 @@
 #define N_FLEX_CH 5
 #define N_IMU_CH 2
 
-#define CALI_START 0.100
+#define CALI_START 0.300
 #define CALI_END 1.500
 
 #define N_GRAPH 6
@@ -178,14 +179,11 @@ private:
 	// DAQ device
 	DELSYSDAQ* DELSYS_Dev;
 	MatchDevice* MATCH_Dev;
+	bool isMATCHconnected;
 
 	// NI analog input modules
 	NI_AI_sEMG* AI_sEMG;
 	NI_AI_Flex* AI_Flex;
-
-	// Trained & Test model
-	TrainedModel c_TrainedModel;
-	TestModel c_TestModel;
 
 	// Pointer variables
 	double* sEMG_raw_plot;
@@ -194,10 +192,8 @@ private:
 
 	float64* Flex_data;
 	float64* Flex_data_calib;
-	float64* Flex_data_LPF;
 
 	double* IMU_data;
-	double* IMU_LPF;
 
 	// Calibration
 	int cali_count = 0;
@@ -206,7 +202,7 @@ private:
 	bool bTrained = FALSE;
 
 	// Signal processor
-	SignalProcessor SigProc;
+	SignalProcessor* SigProc;
 
 public:
 	// Thread functions
@@ -256,12 +252,17 @@ public:
 	const std::vector<double>* Get_sEMG_MAV_stack();
 
 	const std::vector<double>* Get_Flex_raw_stack();
-	const std::vector<double>* Get_Flex_LPF_stack();
 
 	const std::vector<double>* Get_IMU_raw_stack();
-	const std::vector<double>* Get_IMU_LPF_stack();
 
 	// Stack & Save
+	void StackData (double* _sEMG_raw,
+					double* _sEMG_abs,
+					double* _sEMG_MAV,
+					double* _Flex_raw,
+					double* _IMU_raw,
+					double _Time_DAQ_elapse,
+					double _Time_RTGraph_elapse);
 	void StackData (double* _sEMG_raw,
 					double* _sEMG_abs,
 					double* _sEMG_MAV,

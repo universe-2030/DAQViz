@@ -202,6 +202,7 @@
     <ClInclude Include="Hand.h" />
     <ClInclude Include="LuMatchFdn.h" />
     <ClInclude Include="MatchDevice.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="NI_AI_AO_DO.h" />
     <ClInclude Include="OScopeCtrl.h" />
     <ClInclude Include="pch.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="Hand.cpp" />
     <ClCompile Include="MatchDevice.cpp" />
     <ClCompile Include="math3d.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="NI_AI_AO_DO.cpp" />
     <ClCompile Include="OScopeCtrl.cpp" />
     <ClCompile Include="pch.cpp">

@@ -219,6 +219,8 @@ void CDAQVizDlg::Initialize_Variable() {
 	else
 		b_SaveImmediate_Dlg = FALSE;
 
+	isMATCHconnected = FALSE;
+
 	File_loaded_or_not = FALSE;
 }
 
@@ -350,6 +352,7 @@ void CDAQVizDlg::Initialize_LogonU() {
 		m_editNumIMUCH.EnableWindow(FALSE);
 	}
 	else {
+		isMATCHconnected = TRUE;
 		m_radioUseIMU = 0;
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES);
 		pCheck->SetCheck(BST_CHECKED);
@@ -366,23 +369,19 @@ void CDAQVizDlg::Dynamic_Allocation() {
 
 	Flex_data_calib = new float64[Num_Flex_CH];
 	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * Num_Flex_CH);
-	Flex_data_LPF = new float64[Num_Flex_CH];
-	memset(Flex_data_LPF, 0.0, 2 * sizeof(Flex_data_calib) * Num_Flex_CH);
 
 	IMU_data = new double[Num_IMU_CH];
 	memset(IMU_data, 0.0, 2 * sizeof(IMU_data) * Num_IMU_CH);
-	IMU_LPF = new double[Num_IMU_CH];
-	memset(IMU_LPF, 0.0, 2 * sizeof(IMU_LPF) * Num_IMU_CH);
 
 	sEMG_raw_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_MAV_stack = new std::vector<double>[Num_sEMG_CH];
 	
 	Flex_raw_stack = new std::vector<double>[Num_Flex_CH];
-	Flex_LPF_stack = new std::vector<double>[Num_Flex_CH];
 
 	IMU_raw_stack = new std::vector<double>[Num_IMU_CH];
-	IMU_LPF_stack = new std::vector<double>[Num_IMU_CH];
+
+	SigProc = new SignalProcessor(Num_sEMG_CH, Num_Flex_CH, Num_IMU_CH, TS, Fs, 30);
 }
 
 void CDAQVizDlg::Dynamic_Free() {
@@ -391,10 +390,8 @@ void CDAQVizDlg::Dynamic_Free() {
 	delete sEMG_MAV_plot;
 
 	delete Flex_data_calib;
-	delete Flex_data_LPF;
 
 	delete IMU_data;
-	delete IMU_LPF;
 }
 
 void CDAQVizDlg::Set_Font(CButton& Btn_, UINT Height_, UINT Width_) {
@@ -629,14 +626,16 @@ int CDAQVizDlg::MainStart() {
 			// DAQ Body
 			AI_Flex->ReadOneStep();
 			Flex_data = AI_Flex->Get_m_ReadValue();
-
-			if (CALI_START <= pShared_Data->time && pShared_Data->time < CALI_END) {
+			if (CALI_START <= pShared_Data->time && pShared_Data->time <= CALI_END) {
 				if (pShared_Data->count == CALI_START * 1000) {
 					m_editStatusBar.SetWindowText(stat += "[USER] Calibration start \r\n");
 					m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 				}
 
-				// Calibration DAQ
+				// Calibration DAQ - sEMG
+
+
+				// Calibration DAQ - Flex
 				cali_count++;
 				for (int i = 0; i < N_FLEX_CH; i++)
 					Flex_data_calib[i] += Flex_data[i];
@@ -654,7 +653,25 @@ int CDAQVizDlg::MainStart() {
 				for (int i = 0; i < N_FLEX_CH; i++) {
 					Flex_data[i] -= Flex_data_calib[i];
 				}
-			}	
+			}
+
+			// IMU data
+			if (isMATCHconnected && m_radioUseIMU == 0) {
+				MATCH_Dev->GetSensorData();
+				int idx_1, idx_2;
+				idx_1 = MATCH_Dev->Get_aEmg_channel_idx(0);
+				idx_2 = MATCH_Dev->Get_aEmg_channel_idx(1);
+
+				IMU_data[0] = MATCH_Dev->Get_aEuler(3 * (idx_1 - 1)) - MATCH_Dev->Get_aEuler(3 * (idx_2 - 1));
+
+				float IMU_data_RU_1 = MATCH_Dev->Get_aEuler(3 * (idx_1 - 1) + 2);
+				if (IMU_data_RU_1 < 0)
+					IMU_data_RU_1 += 360;
+				float IMU_data_RU_2 = MATCH_Dev->Get_aEuler(3 * (idx_2 - 1) + 2);
+				if (IMU_data_RU_2 < 0)
+					IMU_data_RU_2 += 360;
+				IMU_data[1] = IMU_data_RU_1 - IMU_data_RU_2;
+			}
 
 			// Toc
 			QueryPerformanceCounter(&Counter_DAQ_End);
@@ -703,8 +720,7 @@ int CDAQVizDlg::MainStart() {
 
 			// Stack the data
 			StackData(sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
-					Flex_data, Flex_data_LPF, IMU_data, IMU_LPF,
-					Time_DAQ_elapse, Time_RTGraph_elapse);
+					Flex_data, IMU_data, Time_DAQ_elapse, Time_RTGraph_elapse);
 
 			pShared_Data->iNextOwner = THREAD_CALLBACK;
 			ReleaseMutex(hMutex);
@@ -953,18 +969,10 @@ const std::vector<double>* CDAQVizDlg::Get_Flex_raw_stack() {
 	return Flex_raw_stack;
 }
 
-const std::vector<double>* CDAQVizDlg::Get_Flex_LPF_stack() {
-	return Flex_LPF_stack;
-}
 
 const std::vector<double>* CDAQVizDlg::Get_IMU_raw_stack() {
 	return IMU_raw_stack;
 }
-
-const std::vector<double>* CDAQVizDlg::Get_IMU_LPF_stack() {
-	return IMU_LPF_stack;
-}
-
 
 void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 	if (!_isAvailable) {
@@ -995,6 +1003,31 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 	GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE)->EnableWindow(_isAvailable);
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_ON)->EnableWindow(_isAvailable);
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_OFF)->EnableWindow(_isAvailable);
+}
+
+void CDAQVizDlg::StackData (double* _sEMG_raw,
+							double* _sEMG_abs,
+							double* _sEMG_MAV,
+							double* _Flex_raw,
+							double* _IMU_raw,
+							double _Time_DAQ_elapse,
+							double _Time_RTGraph_elapse) {
+	for (int i = 0; i < Num_sEMG_CH; i++) {
+		sEMG_raw_stack[i].push_back(_sEMG_raw[i]);
+		sEMG_abs_stack[i].push_back(_sEMG_abs[i]);
+		sEMG_MAV_stack[i].push_back(_sEMG_MAV[i]);
+	}
+
+	for (int i = 0; i < Num_Flex_CH; i++) {
+		Flex_raw_stack[i].push_back(_Flex_raw[i]);
+	}
+
+	for (int i = 0; i < Num_IMU_CH; i++) {
+		IMU_raw_stack[i].push_back(_IMU_raw[i]);
+	}
+
+	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);
+	Time_RTGraph_elapse_stack.push_back(_Time_RTGraph_elapse);
 }
 
 void CDAQVizDlg::StackData (double* _sEMG_raw,

@@ -126,6 +126,12 @@ void BallControl::Kill_AnimationTimer() {
 	KillTimer(TIMER_ANIMATION);
 }
 
+void BallControl::Set_Redraw(UINT _m_Start_idx, UINT _m_End_idx, UINT _m_Num_idx) {
+	m_Start_idx = _m_Start_idx;
+	m_End_idx = _m_End_idx;
+	m_Num_idx = _m_Num_idx;
+}
+
 void BallControl::OnTimer(UINT_PTR nIDEvent) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 

@@ -18,10 +18,10 @@
 #define SEMG_MAV_MAX 1.2
 
 #define FLEX_SENSOR_MIN -1.5
-#define FLEX_SENSOR_MAX 1.5
+#define FLEX_SENSOR_MAX 0.5
 
-#define IMU_MIN -90
-#define IMU_MAX 90
+#define IMU_MIN -180
+#define IMU_MAX 180
 
 enum Graph_class {
 	SEMG_MAV,

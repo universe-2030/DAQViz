@@ -162,13 +162,19 @@ void GraphClipping::OnBnClickedBtnRedraw() {
 		m_scrollBar.SetScrollRange(0, m_NumIdx - 1);
 
 		p_ClippedGraph->Delete_Dynamic_Alloc();
-		p_ClippedGraph->Set_Dynamic_Alloc(m_NumIdx);
+		p_ClippedGraph->Set_Dynamic_Alloc(m_StartIdx, m_EndIdx, m_NumIdx);
 
 		p_ClippedGraph_2->Delete_Dynamic_Alloc();
-		p_ClippedGraph_2->Set_Dynamic_Alloc(m_NumIdx);
+		p_ClippedGraph_2->Set_Dynamic_Alloc(m_StartIdx, m_EndIdx, m_NumIdx);
+
+		p_HandMotion->Set_Redraw(m_StartIdx, m_EndIdx, m_NumIdx);
+
+		p_BallControl->Set_Redraw(m_StartIdx, m_EndIdx, m_NumIdx);
 
 		ScrollPos = 0;
 		p_ClippedGraph_2->Set_Current_idx(ScrollPos);
+		p_HandMotion->Set_Current_idx(ScrollPos);
+		p_BallControl->Set_Current_idx(ScrollPos);
 		m_scrollBar.SetScrollPos(ScrollPos);
 
 		CString temp;

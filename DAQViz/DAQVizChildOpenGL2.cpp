@@ -132,6 +132,7 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
 	if (pMainDlg != NULL) {
 		if (pMainDlg->Get_TimerStarted()) {
+			//////////////////////////////////// Fingers ////////////////////////////////////
 			for (int i = 0; i < 5; i++) {
 				if (pMainDlg->Get_Flex_raw_stack()[i].size() > 0) {
 					UINT idx_temp = pMainDlg->Get_Flex_raw_stack()[i].size();
@@ -161,6 +162,13 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 						rightHand.PinkyRotatePos(root_plot, first_plot, second_plot);
 				}
 			}
+			////////////////////////////// Wrist Flexion & Extension //////////////////////////////
+			if (pMainDlg->Get_IMU_raw_stack()[0].size() > 0) {
+				UINT idx_temp = pMainDlg->Get_IMU_raw_stack()[0].size();
+				wrist_FE_plot = pMainDlg->Get_IMU_raw_stack()[0][idx_temp - 1];
+
+				rightHand.WristRotatePos(wrist_FE_plot);
+			}
 		}
 	}
 }
@@ -169,9 +177,9 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
 	if (pMainDlg != NULL) {
 		if (pMainDlg->Get_TimerStarted()) {
-			for (int i = 0; i < 5; i++) {
-				UINT idx_temp = m_Start_idx + _Current_idx;
+			UINT idx_temp = m_Start_idx + _Current_idx;
 
+			for (int i = 0; i < 5; i++) {
 				if (i > 0) {
 					root_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
 					root_animation = rightHand_2.Get_root_init()[4 - i] -
@@ -196,6 +204,11 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 				else if (i == 4)
 					rightHand_2.PinkyRotatePos(root_animation, first_animation, second_animation);
 			}
+
+			////////////////////////////// Wrist Flexion & Extension //////////////////////////////
+			wrist_FE_plot = pMainDlg->Get_IMU_raw_stack()[0][idx_temp - 1];
+
+			rightHand_2.WristRotatePos(wrist_FE_plot);
 		}
 	}
 }
@@ -214,6 +227,12 @@ void DAQVizChildOpenGL2::Set_AnimationTimer() {
 
 void DAQVizChildOpenGL2::Kill_AnimationTimer() {
 	KillTimer(TIMER_ANIMATION);
+}
+
+void DAQVizChildOpenGL2::Set_Redraw(UINT _m_Start_idx, UINT _m_End_idx, UINT _m_Num_idx) {
+	m_Start_idx = _m_Start_idx;
+	m_End_idx = _m_End_idx;
+	m_Num_idx = _m_Num_idx;
 }
 
 void DAQVizChildOpenGL2::OnTimer(UINT_PTR nIDEvent) {

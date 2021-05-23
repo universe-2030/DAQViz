@@ -96,7 +96,18 @@ Hand::Hand(GLFrame* obj) {
 	first_max[4] = 90;
 	second_max[4] = 90;
 
+	/// ///////////////////////////////////////////////////////////////////////
 	armDeg = 0;
+	wrist_RU = 0;
+	
+	wrist_FE_init = armDeg;
+	wrist_RU_init = 0;
+
+	wrist_FE_min = -50;
+	wrist_RU_min = 0;
+
+	wrist_FE_max = 84;
+	wrist_RU_max = 0;
 }
 
 Hand::~Hand() {
@@ -111,10 +122,10 @@ void Hand::WristRotatePos(float pos1) {
 	index = 14;
 	setJointIndex(index); // Wrist index
 	armDeg = pos1;
-	if (armDeg >= 84)
-		armDeg = 84;
-	else if (armDeg <= -50)
-		armDeg = -50;
+	if (armDeg >= wrist_FE_max)
+		armDeg = wrist_FE_max;
+	else if (armDeg <= wrist_FE_min)
+		armDeg = wrist_FE_min;
 }
 
 void Hand::ThumbRotatePos(float pos1, float pos2) {

@@ -85,6 +85,8 @@ public:
 	void Set_AnimationTimer();
 	void Kill_AnimationTimer();
 
+	void Set_Redraw(UINT _m_Start_idx, UINT _m_End_idx, UINT _m_Num_idx);
+
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

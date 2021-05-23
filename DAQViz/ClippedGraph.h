@@ -106,5 +106,5 @@ public:
 	int Get_Current_idx();
 
 	void Delete_Dynamic_Alloc();
-	void Set_Dynamic_Alloc(UINT _m_Num_idx);
+	void Set_Dynamic_Alloc(UINT _m_Start_idx, UINT _m_End_idx, UINT _m_Num_idx);
 };
