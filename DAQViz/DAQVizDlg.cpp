@@ -625,6 +625,9 @@ int CDAQVizDlg::MainStart() {
 			pShared_Data->bFirst = FALSE;
 			m_editStatusBar.SetWindowText(stat += "[USER] Start Timer \r\n");
 			m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+			AI_Flex->ReadOneStep(); // To remove the trash value
+
 			pShared_Data->iNextOwner = THREAD_CALLBACK;
 			ReleaseMutex(hMutex);
 		}
@@ -639,6 +642,7 @@ int CDAQVizDlg::MainStart() {
 			// DAQ Body
 			AI_Flex->ReadOneStep();
 			Flex_data = AI_Flex->Get_m_ReadValue();
+
 			if (CALI_START <= pShared_Data->time && pShared_Data->time <= CALI_END) {
 				if (pShared_Data->count == CALI_START * 1000) {
 					m_editStatusBar.SetWindowText(stat += "[USER] Calibration start \r\n");

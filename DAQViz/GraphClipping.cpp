@@ -167,7 +167,8 @@ void GraphClipping::OnBnClickedBtnRedraw() {
 	UINT m_EndIdx_temp = _ttoi(temp);
 
 	// Exception handler
-	if (m_StartIdx_temp <= m_EndIdx_temp &&
+	if (m_StartIdx_temp > 0 &&
+		m_StartIdx_temp <= m_EndIdx_temp &&
 		m_EndIdx_temp <= m_count) {
 		m_StartIdx = m_StartIdx_temp;
 		m_EndIdx = m_EndIdx_temp;
@@ -194,15 +195,23 @@ void GraphClipping::OnBnClickedBtnRedraw() {
 		CString temp;
 		temp.Format(_T("%d"), ScrollPos + m_StartIdx);
 		m_editAnimationIdx.SetWindowText(temp);
+
+		std::cout << Flex_plot[0][0] << " " << Flex_plot[1][0] << std::endl;
 	}
 	else {
-		if (m_StartIdx_temp > m_EndIdx_temp) {
+		if (m_StartIdx_temp <= 0) {
+			MessageBox(_T("Start index should be same or larger than 1."),
+						_T("Caution"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), m_StartIdx);
+			m_editStartIdx.SetWindowText(temp);
+		}
+		else if (m_StartIdx_temp > m_EndIdx_temp) {
 			MessageBox(_T("Start index is larger than end index."),
 					   _T("Caution"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), m_StartIdx);
 			m_editStartIdx.SetWindowText(temp);
 		}
-		else {
+		else if (m_EndIdx_temp > m_count) {
 			MessageBox(_T("End index is larger than maximum index."),
 					   _T("Caution"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), m_EndIdx);

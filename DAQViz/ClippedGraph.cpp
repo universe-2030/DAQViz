@@ -243,7 +243,7 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		glBegin(GL_LINE_STRIP);
 			for (int j = 0; j < m_Num_idx; j++) {
 				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * temp
-							- GRAPH_Y_LEN_TOTAL * (temp + 1) + GRAPH_Y_LEN_TOTAL * sEMG_plot[i][j + m_Start_idx], 0.0f);
+							- GRAPH_Y_LEN_TOTAL * (temp + 1) + GRAPH_Y_LEN_TOTAL * sEMG_plot[i][j + m_Start_idx - 1], 0.0f);
 			}
 		glEnd();
 	}
@@ -303,7 +303,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * temp
-				- GRAPH_Y_LEN_ANI * (temp + 1) + GRAPH_Y_LEN_ANI * sEMG_plot[i][j + m_Start_idx], 0.0f);
+				- GRAPH_Y_LEN_ANI * (temp + 1) + GRAPH_Y_LEN_ANI * sEMG_plot[i][j + m_Start_idx - 1], 0.0f);
 		}
 		glEnd();
 	}
@@ -319,7 +319,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	/////////////////////////////// Polygon frame ///////////////////////////////
 	double* sEMG_plot_temp = new double[16];
 	for (int i = 0; i < 16; i++)
-		sEMG_plot_temp[i] = sEMG_plot[i][Current_idx + m_Start_idx];
+		sEMG_plot_temp[i] = sEMG_plot[i][Current_idx + m_Start_idx - 1];
 	
 	X_polygon = -2.3f;
 	Y_polygon = -2.3f;
