@@ -51,6 +51,7 @@
 #define IDC_GRAPH_LOGONU_IMU            1037
 #define IDC_PLOT_OPENGL                 1038
 #define IDC_TEXT_CONTROL_TIME           1039
+#define IDC_GRAPH_MOTION_LABEL_EST      1039
 #define IDC_EDIT_CONTROL_TIME           1040
 #define IDC_PLOT_MOTION                 1040
 #define IDC_EDIT_LOAD_NAME              1041

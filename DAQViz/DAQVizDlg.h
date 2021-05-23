@@ -138,6 +138,7 @@ private:
 	std::vector<double> Time_RTGraph_elapse_stack;
 
 	std::vector<double> MotionLabel;
+	std::vector<double> MotionEstimation;
 
 	// TwinCAT variables
 	HANDLE hMutex;
@@ -254,6 +255,9 @@ public:
 	const std::vector<double>* Get_Flex_raw_stack();
 
 	const std::vector<double>* Get_IMU_raw_stack();
+
+	const std::vector<double> Get_MotionLabel;
+	const std::vector<double> Get_MotionEstimation;
 
 	// Stack & Save
 	void StackData (double* _sEMG_raw,

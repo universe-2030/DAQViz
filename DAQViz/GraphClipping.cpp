@@ -92,7 +92,8 @@ void GraphClipping::Initialize_GUI() {
 	m_editEndIdx.SetWindowText(temp);
 	temp.Format(_T("%d"), m_TimeStep);
 	m_editTimeStep.SetWindowText(temp);
-	m_editAnimationIdx.SetWindowText(_T("0"));
+	temp.Format(_T("%d"), m_StartIdx);
+	m_editAnimationIdx.SetWindowText(temp);
 
 	CRect rectofDialogArea;
 	GetDlgItem(IDC_PLOT_CLIPPED_GRAPH)->GetWindowRect(&rectofDialogArea);
@@ -178,7 +179,7 @@ void GraphClipping::OnBnClickedBtnRedraw() {
 		m_scrollBar.SetScrollPos(ScrollPos);
 
 		CString temp;
-		temp.Format(_T("%d"), ScrollPos);
+		temp.Format(_T("%d"), ScrollPos + m_StartIdx);
 		m_editAnimationIdx.SetWindowText(temp);
 	}
 	else {
@@ -258,7 +259,7 @@ void GraphClipping::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
 	}
 
 	CString temp;
-	temp.Format(_T("%d"), scrInfo.nPos);
+	temp.Format(_T("%d"), scrInfo.nPos + m_StartIdx);
 	m_editAnimationIdx.SetWindowText(temp);
 
 	p_ClippedGraph_2->Set_Current_idx(ScrollPos);
@@ -287,7 +288,7 @@ void GraphClipping::OnTimer(UINT_PTR nIDEvent) {
 	case TIMER_GRAPH_CLIPPING:
 		Set_ScrollPos(p_ClippedGraph_2->Get_Current_idx());
 		CString temp;
-		temp.Format(_T("%d"), ScrollPos);
+		temp.Format(_T("%d"), ScrollPos + m_StartIdx);
 		m_editAnimationIdx.SetWindowText(temp);
 		break;
 	}

@@ -664,10 +664,10 @@ int CDAQVizDlg::MainStart() {
 
 				IMU_data[0] = MATCH_Dev->Get_aEuler(3 * (idx_1 - 1)) - MATCH_Dev->Get_aEuler(3 * (idx_2 - 1));
 
-				float IMU_data_RU_1 = MATCH_Dev->Get_aEuler(3 * (idx_1 - 1) + 2);
+				double IMU_data_RU_1 = (double)MATCH_Dev->Get_aEuler(3 * (idx_1 - 1) + 2);
 				if (IMU_data_RU_1 < 0)
 					IMU_data_RU_1 += 360;
-				float IMU_data_RU_2 = MATCH_Dev->Get_aEuler(3 * (idx_2 - 1) + 2);
+				double IMU_data_RU_2 = (double)MATCH_Dev->Get_aEuler(3 * (idx_2 - 1) + 2);
 				if (IMU_data_RU_2 < 0)
 					IMU_data_RU_2 += 360;
 				IMU_data[1] = IMU_data_RU_1 - IMU_data_RU_2;
@@ -682,9 +682,7 @@ int CDAQVizDlg::MainStart() {
 			// Tic
 			QueryPerformanceCounter(&Counter_RTGraph_Start);
 
-			// RTGraph Body
-
-			// For test
+			// sEMG data assignment
 			for (int i = 0; i < Num_sEMG_CH; i++) {
 				sEMG_raw_plot[i] = abs(sin(2 * PI * 0.5 * (i + 1) * m_time));
 				sEMG_abs_plot[i] = abs(sin(2 * PI * 0.5 * (i + 1) * m_time));
@@ -716,7 +714,7 @@ int CDAQVizDlg::MainStart() {
 			// Toc
 			QueryPerformanceCounter(&Counter_RTGraph_End);
 			Time_RTGraph_elapse = (double)(Counter_RTGraph_End.QuadPart - Counter_RTGraph_Start.QuadPart)
-				/ (double)Counter_RTGraph_Frequency.QuadPart * 1000; // ms scale
+														/ (double)Counter_RTGraph_Frequency.QuadPart * 1000; // ms scale
 
 			// Stack the data
 			StackData(sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
