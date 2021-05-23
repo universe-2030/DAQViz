@@ -303,9 +303,9 @@ void BallControl::GLRenderScene_Animation(void) {
 	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
 	if (pMainDlg != NULL) {
 		if (pMainDlg->Get_TimerStarted()) {
-			glTranslatef(X_pos[0][Current_idx], Y_pos[0][Current_idx], -5.0);
+			glTranslatef(X_pos[0][Current_idx + m_Start_idx], Y_pos[0][Current_idx + m_Start_idx], -5.0);
 			// built-in (glut library) function , draw you a sphere.
-			glutSolidSphere(Rad[0][Current_idx], 50, 50);
+			glutSolidSphere(Rad[0][Current_idx + m_Start_idx], 50, 50);
 			// Flush buffers to screen
 
 			////////////////////////////// Axis //////////////////////////////
@@ -315,15 +315,15 @@ void BallControl::GLRenderScene_Animation(void) {
 			glLineWidth(3);
 			glBegin(GL_LINES);
 			glColor3f(1.0f, 1.0f, 1.0f);
-			glVertex3f(Axis_min, -Y_pos[0][Current_idx], 0.0f);
-			glVertex3f(Axis_max, -Y_pos[0][Current_idx], 0.0f);
+			glVertex3f(Axis_min, -Y_pos[0][Current_idx + m_Start_idx], 0.0f);
+			glVertex3f(Axis_max, -Y_pos[0][Current_idx + m_Start_idx], 0.0f);
 			glEnd();
 
 			glLineWidth(3);
 			glBegin(GL_LINES);
 			glColor3f(1.0f, 1.0f, 1.0f);
-			glVertex3f(-X_pos[0][Current_idx], Axis_min, 0.0f);
-			glVertex3f(-X_pos[0][Current_idx], Axis_max, 0.0f);
+			glVertex3f(-X_pos[0][Current_idx + m_Start_idx], Axis_min, 0.0f);
+			glVertex3f(-X_pos[0][Current_idx + m_Start_idx], Axis_max, 0.0f);
 			glEnd();
 		}
 	}
