@@ -409,7 +409,7 @@ void ClippedGraph::Plot_polygon(const double* data, int _m_StartIdx, int _m_EndI
 	// Draw sEMG data (Normalized)
 	double* data_normalized = new double[Num_vertex];
 	double sum_data = 0.0;
-
+	
 	for (int i = 0; i < Num_vertex; i++)
 		sum_data += abs(data[i + _m_StartIdx - 1]);
 
@@ -421,13 +421,13 @@ void ClippedGraph::Plot_polygon(const double* data, int _m_StartIdx, int _m_EndI
 	glBegin(GL_LINE_STRIP);
 	for (int j = 0; j < Num_vertex; j++) {
 		glVertex3f(X_polygon + Rad_max * data_normalized[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
-			Y_polygon + Rad_max / fAspect * data_normalized[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
-			0);
+				Y_polygon + Rad_max / fAspect * data_normalized[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
 
 	}
 	glVertex3f(X_polygon + Rad_max * data_normalized[0] * cos(PI / 2.0),
-		Y_polygon + Rad_max / fAspect * data_normalized[0] * sin(PI / 2.0),
-		0);
+			Y_polygon + Rad_max / fAspect * data_normalized[0] * sin(PI / 2.0),
+			0);
 	glEnd();
 
 	glPopMatrix();

@@ -39,7 +39,7 @@ public:
 	ClippedGraph(int _m_Start_idx, int _m_End_idx,
 				int _m_Num_idx, int _Num_CH,
 				const std::vector<double>* _sEMG_plot,
-				const std::vector<double>* _Flex_plot, 
+				const std::vector<double>* _Flex_plot,
 				Render _species, CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~ClippedGraph();
 
@@ -64,11 +64,6 @@ private:
 	HGLRC	m_hRC;
 	CDC*	m_pDC;
 	HDC		m_hDC;
-
-	int count = 0;
-	int count_horizontal = 0;
-	int count_vertical = 0;
-	double rot = 0.0;
 
 	double fAspect;
 

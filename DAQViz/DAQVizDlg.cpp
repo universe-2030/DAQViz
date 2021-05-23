@@ -222,6 +222,10 @@ void CDAQVizDlg::Initialize_Variable() {
 	isMATCHconnected = FALSE;
 
 	File_loaded_or_not = FALSE;
+
+	X_pos_ball = X_POS_INIT;
+	Y_pos_ball = Y_POS_INIT;
+	Rad_ball = RAD_INIT;
 }
 
 void CDAQVizDlg::Initialize_NI() {
@@ -345,9 +349,8 @@ void CDAQVizDlg::Initialize_LogonU() {
 		pCheck->SetCheck(BST_CHECKED);
 		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES)->EnableWindow(FALSE);
 
-		Num_IMU_CH = 0;
 		CString temp;
-		temp.Format(_T("%d"), Num_IMU_CH);
+		temp.Format(_T("%d"), 0);
 		m_editNumIMUCH.SetWindowText(temp);
 		m_editNumIMUCH.EnableWindow(FALSE);
 	}
@@ -383,6 +386,13 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	Flex_raw_stack = new std::vector<double>[Num_Flex_CH];
 
 	IMU_raw_stack = new std::vector<double>[Num_IMU_CH];
+
+	MotionLabel = new std::vector<double>;
+	MotionEstimation = new std::vector<double>;
+
+	X_pos_ball_stack = new std::vector<double>;
+	Y_pos_ball_stack = new std::vector<double>;
+	Rad_ball_stack = new std::vector<double>;
 
 	SigProc = new SignalProcessor(Num_sEMG_CH, Num_Flex_CH, Num_IMU_CH, TS, Fs, 30);
 }
@@ -680,6 +690,31 @@ int CDAQVizDlg::MainStart() {
 			Label_Est[0] = 1; // Label
 			Label_Est[1] = 2; // Estimation
 
+			// Ball control
+			if (Label_Est[0] == 1)
+				Rad_ball -= RAD_STEP_SIZE;
+			else if (Label_Est[0] == 2)
+				Rad_ball += RAD_STEP_SIZE;
+			else if (Label_Est[0] == 3)
+				Y_pos_ball -= Y_POS_STEP_SIZE;
+			else if (Label_Est[0] == 4)
+				Y_pos_ball += Y_POS_STEP_SIZE;
+
+			if (X_pos_ball <= X_POS_MIN)
+				X_pos_ball = X_POS_MIN;
+			else if (X_pos_ball >= X_POS_MAX)
+				X_pos_ball = X_POS_MAX;
+
+			if (Y_pos_ball <= Y_POS_MIN)
+				Y_pos_ball = Y_POS_MIN;
+			else if (Y_pos_ball >= Y_POS_MAX)
+				Y_pos_ball = Y_POS_MAX;
+
+			if (Rad_ball <= RAD_MIN)
+				Rad_ball = RAD_MIN;
+			else if (Rad_ball >= RAD_MAX)
+				Rad_ball = RAD_MAX;
+
 			// Toc
 			QueryPerformanceCounter(&Counter_DAQ_End);
 			Time_DAQ_elapse = (double)(Counter_DAQ_End.QuadPart - Counter_DAQ_Start.QuadPart)
@@ -728,7 +763,9 @@ int CDAQVizDlg::MainStart() {
 
 			// Stack the data
 			StackData(sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
-					Flex_data, IMU_data, Time_DAQ_elapse, Time_RTGraph_elapse);
+					Flex_data, IMU_data, Label_Est[0], Label_Est[1],
+					X_pos_ball, Y_pos_ball, Rad_ball,
+					Time_DAQ_elapse, Time_RTGraph_elapse);
 
 			pShared_Data->iNextOwner = THREAD_CALLBACK;
 			ReleaseMutex(hMutex);
@@ -977,9 +1014,28 @@ const std::vector<double>* CDAQVizDlg::Get_Flex_raw_stack() {
 	return Flex_raw_stack;
 }
 
-
 const std::vector<double>* CDAQVizDlg::Get_IMU_raw_stack() {
 	return IMU_raw_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_MotionLabel_stack() {
+	return MotionLabel;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_MotionEstimation_stack() {
+	return MotionEstimation;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_X_pos_ball_stack() {
+	return X_pos_ball_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_Y_pos_ball_stack() {
+	return Y_pos_ball_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_Rad_ball_stack() {
+	return Rad_ball_stack;
 }
 
 void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
@@ -1018,6 +1074,11 @@ void CDAQVizDlg::StackData (double* _sEMG_raw,
 							double* _sEMG_MAV,
 							double* _Flex_raw,
 							double* _IMU_raw,
+							double _MotionLabel_current,
+							double _MotionEstimation_current,
+							double _X_pos,
+							double _Y_pos,
+							double _Rad,
 							double _Time_DAQ_elapse,
 							double _Time_RTGraph_elapse) {
 	for (int i = 0; i < Num_sEMG_CH; i++) {
@@ -1033,6 +1094,13 @@ void CDAQVizDlg::StackData (double* _sEMG_raw,
 	for (int i = 0; i < Num_IMU_CH; i++) {
 		IMU_raw_stack[i].push_back(_IMU_raw[i]);
 	}
+
+	MotionLabel[0].push_back(_MotionLabel_current);
+	MotionEstimation[0].push_back(_MotionEstimation_current);
+
+	X_pos_ball_stack[0].push_back(_X_pos);
+	Y_pos_ball_stack[0].push_back(_Y_pos);
+	Rad_ball_stack[0].push_back(_Rad);
 
 	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);
 	Time_RTGraph_elapse_stack.push_back(_Time_RTGraph_elapse);

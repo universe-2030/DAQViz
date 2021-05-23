@@ -19,6 +19,11 @@ GraphClipping::GraphClipping(CWnd* pParent /*=nullptr*/)
 GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
 							const std::vector<double>* _sEMG_plot,
 							const std::vector<double>* _Flex_plot,
+							const std::vector<double>* _MotionLabel_plot,
+							const std::vector<double>* _MotionEstimation_plot,
+							const std::vector<double>* _X_ball_plot,
+							const std::vector<double>* _Y_ball_plot,
+							const std::vector<double>* _Rad_ball_plot,
 							CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, pParent) {
 	m_StartIdx = start_idx;
@@ -28,6 +33,13 @@ GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
 
 	sEMG_plot = _sEMG_plot;
 	Flex_plot = _Flex_plot;
+
+	MotionLabel = _MotionLabel_plot;
+	MotionEstimation = _MotionEstimation_plot;
+
+	X_ball_plot = _X_ball_plot;
+	Y_ball_plot = _Y_ball_plot;
+	Rad_ball_plot = _Rad_ball_plot;
 }
 
 GraphClipping::~GraphClipping() {
@@ -126,7 +138,8 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_ANIMATION_BALL_CONTROL)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_BallControl = new BallControl(m_StartIdx, m_EndIdx, m_NumIdx, Render_Ball::RENDER_BALL);
+	p_BallControl = new BallControl(m_StartIdx, m_EndIdx, m_NumIdx,
+								X_ball_plot, Y_ball_plot, Rad_ball_plot, Render_Ball::RENDER_BALL);
 	p_BallControl->Create(IDD_DAQVIZ_DIALOG_BALL_CONTROL, this);
 	p_BallControl->ShowWindow(SW_SHOW);
 	p_BallControl->MoveWindow(rectofDialogArea);

@@ -43,6 +43,21 @@
 
 #define SAVE_FOLDER_PATH_MACRO "D:/Training-free algorithm/"
 
+#define X_POS_INIT 0.0
+#define X_POS_MIN -0.5
+#define X_POS_MAX 0.5
+#define X_POS_STEP_SIZE 0.001
+
+#define Y_POS_INIT 0.0
+#define Y_POS_MIN -0.5
+#define Y_POS_MAX 0.5
+#define Y_POS_STEP_SIZE 0.001
+
+#define RAD_INIT 0.3
+#define RAD_MIN 0.1
+#define RAD_MAX 0.9
+#define RAD_STEP_SIZE 0.001
+
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
 public:
@@ -129,16 +144,22 @@ private:
 	std::vector<double>* sEMG_MAV_stack;
 
 	std::vector<double>* Flex_raw_stack;
-	std::vector<double>* Flex_LPF_stack;
 
 	std::vector<double>* IMU_raw_stack;
-	std::vector<double>* IMU_LPF_stack;
+
+	std::vector<double>* MotionLabel;
+	std::vector<double>* MotionEstimation;
+
+	double X_pos_ball;
+	double Y_pos_ball;
+	double Rad_ball;
+
+	std::vector<double>* X_pos_ball_stack;
+	std::vector<double>* Y_pos_ball_stack;
+	std::vector<double>* Rad_ball_stack;
 
 	std::vector<double> Time_DAQ_elapse_stack;
 	std::vector<double> Time_RTGraph_elapse_stack;
-
-	std::vector<double> MotionLabel;
-	std::vector<double> MotionEstimation;
 
 	// TwinCAT variables
 	HANDLE hMutex;
@@ -258,8 +279,12 @@ public:
 
 	const std::vector<double>* Get_IMU_raw_stack();
 
-	const std::vector<double> Get_MotionLabel;
-	const std::vector<double> Get_MotionEstimation;
+	const std::vector<double>* Get_MotionLabel_stack();
+	const std::vector<double>* Get_MotionEstimation_stack();
+
+	const std::vector<double>* Get_X_pos_ball_stack();
+	const std::vector<double>* Get_Y_pos_ball_stack();
+	const std::vector<double>* Get_Rad_ball_stack();
 
 	// Stack & Save
 	void StackData (double* _sEMG_raw,
@@ -267,6 +292,11 @@ public:
 					double* _sEMG_MAV,
 					double* _Flex_raw,
 					double* _IMU_raw,
+					double _MotionLabel_current,
+					double _MotionEstimation_current,
+					double _X_pos,
+					double _Y_pos,
+					double _Rad,
 					double _Time_DAQ_elapse,
 					double _Time_RTGraph_elapse);
 	void SaveData(CString SaveFolderName);

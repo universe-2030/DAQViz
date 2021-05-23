@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "DAQViz.h"
+#include "DAQVizDlg.h"
 #include "BallControl.h"
 #include "afxdialogex.h"
 
@@ -16,21 +17,10 @@ BallControl::BallControl(CWnd* pParent /*=nullptr*/)
 }
 
 BallControl::BallControl(int _m_Start_idx,
-						int _m_End_idx, int _m_Num_idx,
-						Render_Ball _species, CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent) {
-
-	m_Start_idx = _m_Start_idx;
-	m_End_idx = _m_End_idx;
-	m_Num_idx = _m_Num_idx;
-
-	species = _species;
-}
-
-BallControl::BallControl(int _m_Start_idx,
 					int _m_End_idx, int _m_Num_idx,
-					const std::vector<double>* _MotionLabel_plot,
-					const std::vector<double>* _Estimation_plot,
+					const std::vector<double>* _X_pos,
+					const std::vector<double>* _Y_pos,
+					const std::vector<double>* _Rad,
 					Render_Ball _species, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent) {
 
@@ -38,8 +28,9 @@ BallControl::BallControl(int _m_Start_idx,
 	m_End_idx = _m_End_idx;
 	m_Num_idx = _m_Num_idx;
 
-	MotionLabel_plot = _MotionLabel_plot;
-	Estimation_plot = _Estimation_plot;
+	X_pos = _X_pos;
+	Y_pos = _Y_pos;
+	Rad = _Rad;
 
 	species = _species;
 }
@@ -51,7 +42,6 @@ BallControl::~BallControl() {
 void BallControl::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
 }
-
 
 BEGIN_MESSAGE_MAP(BallControl, CDialogEx)
 	ON_WM_PAINT()
@@ -69,10 +59,13 @@ BOOL BallControl::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
-	// SetTimer(TIMER_MAIN, TIME_ELAPSE, NULL);
-	// SetTimer(TIMER_RENDER, TIME_ELAPSE, NULL);
 
-	SetWindowPos(NULL, -1920, 0, 500, 500, SWP_NOSIZE);
+	if (species == MAIN_BALL)
+		SetTimer(TIMER_MAIN, TIME_ELAPSE, NULL);
+	else if (species == RENDER_BALL) {
+		KillTimer(TIMER_MAIN);
+		SetTimer(TIMER_RENDER, TIME_ELAPSE, NULL);
+	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
@@ -107,7 +100,6 @@ void BallControl::OnPaint() {
 		SwapBuffers(m_hDC);
 		wglMakeCurrent(m_hDC, NULL);
 	}
-
 }
 
 void BallControl::Set_Current_idx(UINT _Current_idx) {
@@ -139,13 +131,21 @@ void BallControl::OnTimer(UINT_PTR nIDEvent) {
 
 	switch (nIDEvent) {
 	case TIMER_MAIN:
-		
+		/*if (species == MAIN_BALL) {
+			GLRenderScene();
+		}	*/
 		break;
 	case TIMER_RENDER:
-		
+		if (species == RENDER_BALL) {
+			GLRenderScene_Animation();
+		}
 		break;
 	case TIMER_ANIMATION:
-		
+		if (species == RENDER_BALL) {
+			Current_idx += TimeStep;
+			if (Current_idx > m_Num_idx)
+				Current_idx = 0;
+		}
 		break;
 	}
 	this->Invalidate(FALSE);
@@ -237,30 +237,46 @@ void BallControl::GLRenderScene(void) {
 	glLoadIdentity();
 	// Blue color used to draw.
 	glColor3f(0.0, 0.0, 1.0);
+
 	// traslate the draw by z = -4.0
 	// Note this when you decrease z like -8.0 the drawing will looks far , or smaller.
-	glTranslatef(count_horizontal * 0.1, count_vertical * 0.1, -5.0);
-	// built-in (glut library) function , draw you a sphere.
-	glutSolidSphere(0.3 + count * 0.02, 50, 50);
-	// Flush buffers to screen
+	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
+	if (pMainDlg != NULL) {
+		if (pMainDlg->Get_TimerStarted()) {
+			UINT X_idx_temp = pMainDlg->Get_X_pos_ball_stack()[0].size();
+			UINT Y_idx_temp = pMainDlg->Get_Y_pos_ball_stack()[0].size();
+			UINT Rad_idx_temp = pMainDlg->Get_Rad_ball_stack()[0].size();
 
-	////////////////////////////// Axis //////////////////////////////
-	GLfloat Axis_min = -100.0f;
-	GLfloat Axis_max = 100.0f;
+			if (X_idx_temp > 0 && Y_idx_temp > 0 && Rad_idx_temp > 0) {
+				glTranslatef(pMainDlg->Get_X_pos_ball_stack()[0][X_idx_temp - 1],
+							pMainDlg->Get_Y_pos_ball_stack()[0][Y_idx_temp - 1],
+							-5.0);
 
-	glLineWidth(3);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(Axis_min, -count_vertical * 0.1, 0.0f);
-	glVertex3f(Axis_max, -count_vertical * 0.1, 0.0f);
-	glEnd();
+				glutSolidSphere(pMainDlg->Get_Rad_ball_stack()[0][Rad_idx_temp - 1],
+								50,
+								50);
+				// Flush buffers to screen
 
-	glLineWidth(3);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(-count_horizontal * 0.1, Axis_min, 0.0f);
-	glVertex3f(-count_horizontal * 0.1, Axis_max, 0.0f);
-	glEnd();
+				////////////////////////////// Axis //////////////////////////////
+				GLfloat Axis_min = -100.0f;
+				GLfloat Axis_max = 100.0f;
+
+				glLineWidth(3);
+				glBegin(GL_LINES);
+				glColor3f(1.0f, 1.0f, 1.0f);
+				glVertex3f(Axis_min, -pMainDlg->Get_Y_pos_ball_stack()[0][Y_idx_temp - 1], 0.0f);
+				glVertex3f(Axis_max, -pMainDlg->Get_Y_pos_ball_stack()[0][Y_idx_temp - 1], 0.0f);
+				glEnd();
+
+				glLineWidth(3);
+				glBegin(GL_LINES);
+				glColor3f(1.0f, 1.0f, 1.0f);
+				glVertex3f(-pMainDlg->Get_X_pos_ball_stack()[0][X_idx_temp - 1], Axis_min, 0.0f);
+				glVertex3f(-pMainDlg->Get_X_pos_ball_stack()[0][X_idx_temp - 1], Axis_max, 0.0f);
+				glEnd();
+			}
+		}
+	}
 
 	glPopMatrix();
 	glFlush();
@@ -283,70 +299,43 @@ void BallControl::GLRenderScene_Animation(void) {
 	glColor3f(0.0, 0.0, 1.0);
 	// traslate the draw by z = -4.0
 	// Note this when you decrease z like -8.0 the drawing will looks far , or smaller.
-	glTranslatef(count_horizontal * 0.1, count_vertical * 0.1, -5.0);
-	// built-in (glut library) function , draw you a sphere.
-	glutSolidSphere(0.3 + count * 0.02, 50, 50);
-	// Flush buffers to screen
 
-	////////////////////////////// Axis //////////////////////////////
-	GLfloat Axis_min = -100.0f;
-	GLfloat Axis_max = 100.0f;
+	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
+	if (pMainDlg != NULL) {
+		if (pMainDlg->Get_TimerStarted()) {
+			glTranslatef(X_pos[0][Current_idx], Y_pos[0][Current_idx], -5.0);
+			// built-in (glut library) function , draw you a sphere.
+			glutSolidSphere(Rad[0][Current_idx], 50, 50);
+			// Flush buffers to screen
 
-	glLineWidth(3);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(Axis_min, -count_vertical * 0.1, 0.0f);
-	glVertex3f(Axis_max, -count_vertical * 0.1, 0.0f);
-	glEnd();
+			////////////////////////////// Axis //////////////////////////////
+			GLfloat Axis_min = -100.0f;
+			GLfloat Axis_max = 100.0f;
 
-	glLineWidth(3);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(-count_horizontal * 0.1, Axis_min, 0.0f);
-	glVertex3f(-count_horizontal * 0.1, Axis_max, 0.0f);
-	glEnd();
+			glLineWidth(3);
+			glBegin(GL_LINES);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3f(Axis_min, -Y_pos[0][Current_idx], 0.0f);
+			glVertex3f(Axis_max, -Y_pos[0][Current_idx], 0.0f);
+			glEnd();
+
+			glLineWidth(3);
+			glBegin(GL_LINES);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3f(-X_pos[0][Current_idx], Axis_min, 0.0f);
+			glVertex3f(-X_pos[0][Current_idx], Axis_max, 0.0f);
+			glEnd();
+		}
+	}
 
 	glPopMatrix();
 	glFlush();
 }
 
-void BallControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
-	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	switch (nChar) {
-	case 'a':
-	case 'A':
-		count--;
-		break;
-	case 'd':
-	case 'D':
-		count++;
-		break;
-	}
-	CDialogEx::OnKeyDown(nChar, nRepCnt, nFlags);
-}
-
-BOOL BallControl::PreTranslateMessage(MSG* pMsg) {
-	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
-	if (pMsg->message == WM_KEYDOWN) {
-		if (pMsg->wParam == VK_UP) {
-			count_vertical++;
-		}
-		else if (pMsg->wParam == VK_DOWN) {
-			count_vertical--;
-		}
-		else if (pMsg->wParam == VK_LEFT) {
-			count_horizontal--;
-		}
-		else if (pMsg->wParam == VK_RIGHT) {
-			count_horizontal++;
-		}
-	}
-
-	return CDialogEx::PreTranslateMessage(pMsg);
-}
-
 void BallControl::OnClose() {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	KillTimer(TIMER_RENDER);
+	SetTimer(TIMER_MAIN, TIME_ELAPSE, NULL);
 
 	CDialogEx::OnClose();
 }

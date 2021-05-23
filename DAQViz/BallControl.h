@@ -24,10 +24,9 @@ class BallControl : public CDialogEx
 public:
 	BallControl(CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	BallControl(int _m_Start_idx, int _m_End_idx, int _m_Num_idx,
-				Render_Ball _species, CWnd* pParent = nullptr);
-	BallControl(int _m_Start_idx, int _m_End_idx, int _m_Num_idx,
-				const std::vector<double>* _MotionLabel_plot,
-				const std::vector<double>* _Estimation_plot,
+				const std::vector<double>* _X_pos,
+				const std::vector<double>* _Y_pos,
+				const std::vector<double>* _Rad,
 				Render_Ball _species, CWnd* pParent = nullptr);
 	virtual ~BallControl();
 
@@ -43,27 +42,23 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	HGLRC	m_hRC;
+	CDC*	m_pDC;
+	HDC		m_hDC;
+
 	int m_Start_idx;
 	int m_End_idx;
 	int m_Num_idx;
 	Render_Ball species;
 
-	// Vector
-	const std::vector<double>* MotionLabel_plot;
-	const std::vector<double>* Estimation_plot;
-
 	// For animation bar
 	int Current_idx = 0;
 	int TimeStep = 1;
 
-	HGLRC	m_hRC;
-	CDC*	m_pDC;
-	HDC		m_hDC;
-
-	int count = 0;
-	int count_horizontal = 0;
-	int count_vertical = 0;
-	double rot = 0.0;
+	// Vector
+	const std::vector<double>* X_pos;
+	const std::vector<double>* Y_pos;
+	const std::vector<double>* Rad;
 
 	double fAspect;
 
@@ -86,7 +81,4 @@ public:
 	void Kill_AnimationTimer();
 
 	void Set_Redraw(UINT _m_Start_idx, UINT _m_End_idx, UINT _m_Num_idx);
-
-	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

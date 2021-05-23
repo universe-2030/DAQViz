@@ -325,7 +325,6 @@ void DAQVizChildOpenGL2::SetupRC()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//MODEL = glmReadOBJ("hand.obj");
 
-
 	//glEnable(GL_LIGHTING);
 	// Setup and enable light 0
 	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, whiteLight);
