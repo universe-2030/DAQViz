@@ -29,9 +29,7 @@ DAQVizChildKSJ::DAQVizChildKSJ(int _N_sEMG_CH, int _N_Flex_CH, int _N_IMU_CH,
 DAQVizChildKSJ::~DAQVizChildKSJ() {
 	delete sEMG_MAV;
 	delete Flex_raw;
-	delete Flex_LPF;
 	delete IMU_raw;
-	delete IMU_LPF;
 }
 
 void DAQVizChildKSJ::DoDataExchange(CDataExchange* pDX) {
@@ -49,6 +47,7 @@ BEGIN_MESSAGE_MAP(DAQVizChildKSJ, CDialogEx)
 	ON_STN_CLICKED(IDC_GRAPH_SEMG_MAV_4, &DAQVizChildKSJ::OnClickedGraphSemgMav4)
 	ON_STN_CLICKED(IDC_GRAPH_FLEX_SENSOR, &DAQVizChildKSJ::OnClickedGraphFlexSensor)
 	ON_STN_CLICKED(IDC_GRAPH_LOGONU_IMU, &DAQVizChildKSJ::OnClickedGraphLogonuImu)
+	ON_STN_CLICKED(IDC_GRAPH_MOTION_LABEL_EST, &DAQVizChildKSJ::OnStnClickedGraphMotionLabelEst)
 END_MESSAGE_MAP()
 
 // DAQVizChildKSJ 메시지 처리기
@@ -74,12 +73,11 @@ void DAQVizChildKSJ::Initialize_Variable() {
 	rtGraph_sEMG_MAV = new COScopeCtrl*[4];
 	rtGraph_Flex = new COScopeCtrl*;
 	rtGraph_IMU = new COScopeCtrl*;
+	rtGraph_Label_Est = new COScopeCtrl*;
 
 	sEMG_MAV = new double[N_sEMG];
 	Flex_raw = new double[N_Flex];
-	Flex_LPF = new double[N_Flex];
 	IMU_raw = new double[N_IMU];
-	IMU_LPF = new double[N_IMU];
 
 	Pt_forth = 0;
 	Pt_back = 0;
@@ -99,6 +97,8 @@ void DAQVizChildKSJ::Initialize_GUI() {
 	rtGraph_Flex[0] = Initialize_graph(IDC_GRAPH_FLEX_SENSOR, 1, 5, rtGraph_Flex[0], FLEX_SENSOR);
 
 	rtGraph_IMU[0] = Initialize_graph(IDC_GRAPH_LOGONU_IMU, 1, 2, rtGraph_IMU[0], IMU);
+
+	rtGraph_Label_Est[0] = Initialize_graph(IDC_GRAPH_MOTION_LABEL_EST, 1, 2, rtGraph_Label_Est[0], LABEL_EST);
 	
 	// Get m_rectPlot region with graph controls
 	for (int i = 0; i < N_GRAPH; i++) {
@@ -231,7 +231,28 @@ COScopeCtrl* DAQVizChildKSJ::Initialize_graph (int ID, int idx_start, int idx_en
 			if (_idx_rev == 0)
 				rtGraph->SetPlotColor(RGB(255, 0, 0), _idx_rev);
 			else if (_idx_rev == 1)
-				rtGraph->SetPlotColor(RGB(0, 255, 0), _idx_rev);
+				rtGraph->SetPlotColor(RGB(0, 0, 255), _idx_rev);
+
+			rtGraph->InvalidateCtrl();
+		}
+		else if (_class == LABEL_EST) {
+			if (_idx == 1)
+				temp_str = _T("Motion label");
+			else if (_idx == 2)
+				temp_str = _T("Motion estimation");
+
+			rtGraph->SetRanges(LABEL_EST_MIN, LABEL_EST_MAX);
+			rtGraph->autofitYscale = true;
+			rtGraph->SetYUnits(_T("Motion index"));
+			rtGraph->SetXUnits(_T("Time"));
+
+			int _idx_rev = _idx - idx_start;
+			rtGraph->SetLegendLabel(temp_str, _idx_rev);
+
+			if (_idx_rev == 0)
+				rtGraph->SetPlotColor(RGB(255, 0, 0), _idx_rev);
+			else if (_idx_rev == 1)
+				rtGraph->SetPlotColor(RGB(0, 0, 255), _idx_rev);
 
 			rtGraph->InvalidateCtrl();
 		}
@@ -254,6 +275,10 @@ COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Flex() {
 
 COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_IMU() {
 	return rtGraph_IMU;
+}
+
+COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Label_Est() {
+	return rtGraph_Label_Est;
 }
 
 DAQVizChildOpenGL* DAQVizChildKSJ::Get_OpenGLPointer() {
@@ -387,4 +412,9 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 					   _T("Notice"), MB_OK | MB_ICONWARNING);
 		}
 	}
+}
+
+void DAQVizChildKSJ::OnStnClickedGraphMotionLabelEst() {
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
 }

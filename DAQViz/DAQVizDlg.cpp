@@ -373,6 +373,9 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	IMU_data = new double[Num_IMU_CH];
 	memset(IMU_data, 0.0, 2 * sizeof(IMU_data) * Num_IMU_CH);
 
+	Label_Est = new double[2];
+	memset(Label_Est, 0.0, 2 * sizeof(Label_Est) * 2);
+
 	sEMG_raw_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_MAV_stack = new std::vector<double>[Num_sEMG_CH];
@@ -655,7 +658,7 @@ int CDAQVizDlg::MainStart() {
 				}
 			}
 
-			// IMU data
+			// DAQ - IMU data
 			if (isMATCHconnected && m_radioUseIMU == 0) {
 				MATCH_Dev->GetSensorData();
 				int idx_1, idx_2;
@@ -672,6 +675,10 @@ int CDAQVizDlg::MainStart() {
 					IMU_data_RU_2 += 360;
 				IMU_data[1] = IMU_data_RU_1 - IMU_data_RU_2;
 			}
+
+			// Motion classification
+			Label_Est[0] = 1; // Label
+			Label_Est[1] = 2; // Estimation
 
 			// Toc
 			QueryPerformanceCounter(&Counter_DAQ_End);
@@ -709,6 +716,9 @@ int CDAQVizDlg::MainStart() {
 			}
 			else if (pShared_Data->count % N_GRAPH == 5) {
 				p_ChildDlg_KSJ->Plot_graph(IMU_data, p_ChildDlg_KSJ->Get_rtGraph_IMU()[0]);
+			}
+			else if (pShared_Data->count % N_GRAPH == 6) {
+				p_ChildDlg_KSJ->Plot_graph(Label_Est, p_ChildDlg_KSJ->Get_rtGraph_Label_Est()[0]);
 			}
 
 			// Toc
@@ -1022,35 +1032,6 @@ void CDAQVizDlg::StackData (double* _sEMG_raw,
 
 	for (int i = 0; i < Num_IMU_CH; i++) {
 		IMU_raw_stack[i].push_back(_IMU_raw[i]);
-	}
-
-	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);
-	Time_RTGraph_elapse_stack.push_back(_Time_RTGraph_elapse);
-}
-
-void CDAQVizDlg::StackData (double* _sEMG_raw,
-							double* _sEMG_abs,
-							double* _sEMG_MAV,
-							double* _Flex_raw,
-							double* _Flex_LPF,
-							double* _IMU_raw,
-							double* _IMU_LPF,
-							double _Time_DAQ_elapse,
-							double _Time_RTGraph_elapse) {
-	for (int i = 0; i < Num_sEMG_CH; i++) {
-		sEMG_raw_stack[i].push_back(_sEMG_raw[i]);
-		sEMG_abs_stack[i].push_back(_sEMG_abs[i]);
-		sEMG_MAV_stack[i].push_back(_sEMG_MAV[i]);
-	}
-
-	for (int i = 0; i < Num_Flex_CH; i++) {
-		Flex_raw_stack[i].push_back(_Flex_raw[i]);
-		Flex_LPF_stack[i].push_back(_Flex_LPF[i]);
-	}
-
-	for (int i = 0; i < Num_IMU_CH; i++) {
-		IMU_raw_stack[i].push_back(_IMU_raw[i]);
-		IMU_LPF_stack[i].push_back(_IMU_LPF[i]);
 	}
 
 	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);

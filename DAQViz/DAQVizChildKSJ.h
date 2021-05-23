@@ -23,10 +23,14 @@
 #define IMU_MIN -180
 #define IMU_MAX 180
 
+#define LABEL_EST_MIN -1
+#define LABEL_EST_MAX 7
+
 enum Graph_class {
 	SEMG_MAV,
 	FLEX_SENSOR,
-	IMU
+	IMU,
+	LABEL_EST
 };
 
 class DAQVizChildKSJ : public CDialogEx {
@@ -57,6 +61,7 @@ private:
 	COScopeCtrl** rtGraph_sEMG_MAV;
 	COScopeCtrl** rtGraph_Flex;
 	COScopeCtrl** rtGraph_IMU;
+	COScopeCtrl** rtGraph_Label_Est;
 
 	DAQVizChildOpenGL* p_ChildOpenGL;
 	DAQVizChildOpenGL2* p_ChildOpenGL_2;
@@ -70,9 +75,7 @@ private:
 	// Data containers
 	double* sEMG_MAV;
 	double* Flex_raw;
-	double* Flex_LPF;
 	double* IMU_raw;
-	double* IMU_LPF;
 
 	// Clipping window
 	int Pt_forth;
@@ -94,6 +97,7 @@ public:
 	COScopeCtrl** Get_rtGraph_sEMG_MAV();
 	COScopeCtrl** Get_rtGraph_Flex();
 	COScopeCtrl** Get_rtGraph_IMU();
+	COScopeCtrl** Get_rtGraph_Label_Est();
 	DAQVizChildOpenGL* Get_OpenGLPointer();
 
 	void Set_sEMG_MAV(double* _sEMG_MAV);
@@ -105,5 +109,6 @@ public:
 	afx_msg void OnClickedGraphSemgMav4();
 	afx_msg void OnClickedGraphFlexSensor();
 	afx_msg void OnClickedGraphLogonuImu();
+	afx_msg void OnStnClickedGraphMotionLabelEst();
 	CStatic m_textBallControl;
 };

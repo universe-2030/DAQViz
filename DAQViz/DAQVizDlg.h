@@ -32,7 +32,7 @@
 #define CALI_START 0.300
 #define CALI_END 1.500
 
-#define N_GRAPH 6
+#define N_GRAPH 7
 
 #define DELSYS_CH_MAX 16
 #define FRANKFURT_CH_MAX 8
@@ -196,6 +196,8 @@ private:
 
 	double* IMU_data;
 
+	double* Label_Est;
+
 	// Calibration
 	int cali_count = 0;
 
@@ -265,15 +267,6 @@ public:
 					double* _sEMG_MAV,
 					double* _Flex_raw,
 					double* _IMU_raw,
-					double _Time_DAQ_elapse,
-					double _Time_RTGraph_elapse);
-	void StackData (double* _sEMG_raw,
-					double* _sEMG_abs,
-					double* _sEMG_MAV,
-					double* _Flex_raw,
-					double* _Flex_LPF,
-					double* _IMU_raw,
-					double* _IMU_LPF,
 					double _Time_DAQ_elapse,
 					double _Time_RTGraph_elapse);
 	void SaveData(CString SaveFolderName);

@@ -98,6 +98,8 @@ public:
 	void GLResize(int cx, int cy);
 	void GLRenderScene_Total();
 	void GLRenderScene_Animation();
+	void Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
+					double _X_center, double _Y_center, double _Rad);
 
 	void Set_Current_idx(UINT _Current_idx);
 	void Set_TimeStep(UINT _TimeStep);

@@ -45,6 +45,10 @@ private:
 	CDC*	m_pDC;
 	HDC		m_hDC;
 
+	double X_polygon;
+	double Y_polygon;
+	double Rad_max;
+
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
@@ -56,6 +60,9 @@ public:
 
 	void GLResize(int cx, int cy);
 	void GLRenderScene();
+
+	void Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
+					double _X_center, double _Y_center, double _Rad);
 
 	void initialize_Variable();
 
