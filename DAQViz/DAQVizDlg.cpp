@@ -1127,6 +1127,8 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 	ofstream f_Flex_raw, f_Flex_LPF;
 	ofstream f__raw, f_IMU_LPF;
 	ofstream f_sEMG_pattern_num, f_sEMG_pattern_idx, f_sEMG_pattern_log_prob;
+	ofstream f_model_parameters;
+	
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	m_editStatusBar.SetWindowText(stat += "[USER] Save End!");
