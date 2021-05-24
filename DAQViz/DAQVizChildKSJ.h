@@ -20,8 +20,8 @@
 #define FINGER_MIN -1.5
 #define FINGER_MAX 0.5
 
-#define FINGER_SLOPE_MIN -1.5
-#define FINGER_SLOPE_MAX 0.5
+#define FINGER_SLOPE_MIN -10.0
+#define FINGER_SLOPE_MAX 10.0
 
 #define WRIST_MIN -1.5
 #define WRIST_MAX 0.5

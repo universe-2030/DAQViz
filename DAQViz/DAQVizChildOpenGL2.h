@@ -34,7 +34,8 @@ public:
 	DAQVizChildOpenGL2(CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	DAQVizChildOpenGL2(int _m_Start_idx,
 					int _m_End_idx, int _m_Num_idx,
-					const std::vector<double>* _Flex_plot,
+					const std::vector<double>* _Finger_plot,
+					const std::vector<double>* _Wrist_plot,
 					Render_Hand _species, bool _b_glutInit,
 					CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~DAQVizChildOpenGL2();
@@ -57,7 +58,8 @@ private:
 	Render_Hand species;
 
 	// Vector
-	const std::vector<double>* Flex_plot;
+	const std::vector<double>* Finger_plot;
+	const std::vector<double>* Wrist_plot;
 
 	// For animation bar
 	int Current_idx = 0;

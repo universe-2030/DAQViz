@@ -25,10 +25,6 @@
 
 #define	TIMER_EDIT 1
 
-#define N_SEMG_CH 16
-#define N_FLEX_CH 5
-#define N_IMU_CH 2
-
 #define CALI_START 0.300
 #define CALI_END 1.500
 
@@ -36,8 +32,8 @@
 
 #define DELSYS_CH_MAX 16
 #define FRANKFURT_CH_MAX 8
-#define FLEX_CH_MAX 5
-#define IMU_CH_MAX 2
+#define FINGER_CH_MAX 5
+#define WRIST_CH_MAX 2
 
 #define FLEX_ANALOG_ABS_MAX 0.75
 
@@ -86,7 +82,8 @@ private:
 	// The number of channels
 	UINT Num_sEMG_CH;
 	UINT Num_Flex_CH;
-	UINT Num_IMU_CH;
+	UINT Num_Finger_CH;
+	UINT Num_Wrist_CH;
 
 	// MFC control variables
 	CButton m_btnSwitch;
@@ -143,9 +140,10 @@ private:
 	std::vector<double>* sEMG_abs_stack;
 	std::vector<double>* sEMG_MAV_stack;
 
-	std::vector<double>* Flex_raw_stack;
-
-	std::vector<double>* IMU_raw_stack;
+	std::vector<double>* Finger_raw_stack;
+	std::vector<double>* Finger_slope_stack;
+	std::vector<double>* Wrist_raw_stack;
+	std::vector<double>* Wrist_slope_stack;
 
 	std::vector<double>* MotionLabel;
 	std::vector<double>* MotionEstimation;
@@ -219,10 +217,13 @@ private:
 	float64* Flex_data;
 	float64* Flex_data_calib;
 	float64* Flex_data_prev;
-	float64* Flex_slope_data;
+	float64* Flex_slope;
 	float64* Flex_slope_prev;
 
-	double* IMU_data;
+	float64* Finger_data;
+	float64* Finger_slope;
+	float64* Wrist_data;
+	float64* Wrist_slope;
 
 	double* Label_Est;
 
@@ -282,9 +283,10 @@ public:
 	const std::vector<double>* Get_sEMG_abs_stack();
 	const std::vector<double>* Get_sEMG_MAV_stack();
 
-	const std::vector<double>* Get_Flex_raw_stack();
-
-	const std::vector<double>* Get_IMU_raw_stack();
+	const std::vector<double>* Get_Finger_raw_stack();
+	const std::vector<double>* Get_Finger_slope_stack();
+	const std::vector<double>* Get_Wrist_raw_stack();
+	const std::vector<double>* Get_Wrist_slope_stack();
 
 	const std::vector<double>* Get_MotionLabel_stack();
 	const std::vector<double>* Get_MotionEstimation_stack();
@@ -297,8 +299,10 @@ public:
 	void StackData (double* _sEMG_raw,
 					double* _sEMG_abs,
 					double* _sEMG_MAV,
-					double* _Flex_raw,
-					double* _IMU_raw,
+					double* _Finger_raw,
+					double* _Finger_slope,
+					double* _Wrist_raw,
+					double* _Wrist_slope,
 					double _MotionLabel_current,
 					double _MotionEstimation_current,
 					double _X_pos,

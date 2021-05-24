@@ -45,8 +45,10 @@ public:
 	ClippedGraph(int _m_Start_idx, int _m_End_idx,
 				int _m_Num_idx, int _Num_CH,
 				const std::vector<double>* _sEMG_plot,
-				const std::vector<double>* _Flex_plot,
-				const std::vector<double>* _IMU_plot,
+				const std::vector<double>* _Finger_plot,
+				const std::vector<double>* _Finger_slope_plot,
+				const std::vector<double>* _Wrist_plot,
+				const std::vector<double>* _Wrist_slope_plot,
 				const std::vector<double>* _MotionLabel_plot,
 				const std::vector<double>* _MotionEstimation_plot,
 				Render _species, CWnd* pParent = nullptr);   // 표준 생성자입니다.
@@ -84,8 +86,11 @@ private:
 
 	// Vector
 	const std::vector<double>* sEMG_plot;
-	const std::vector<double>* Flex_plot;
-	const std::vector<double>* IMU_plot;
+
+	const std::vector<double>* Finger_plot;
+	const std::vector<double>* Finger_slope_plot;
+	const std::vector<double>* Wrist_plot;
+	const std::vector<double>* Wrist_slope_plot;
 
 	const std::vector<double>* MotionLabel_plot;
 	const std::vector<double>* MotionEstimation_plot;

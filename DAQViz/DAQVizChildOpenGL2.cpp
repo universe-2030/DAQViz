@@ -36,7 +36,8 @@ DAQVizChildOpenGL2::DAQVizChildOpenGL2(CWnd* pParent /*=nullptr*/)
 
 DAQVizChildOpenGL2::DAQVizChildOpenGL2(int _m_Start_idx,
 								int _m_End_idx, int _m_Num_idx,
-								const std::vector<double>* _Flex_plot,
+								const std::vector<double>* _Finger_plot,
+								const std::vector<double>* _Wrist_plot,
 								Render_Hand _species, bool _b_glutInit,
 								CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent) {
@@ -45,7 +46,8 @@ DAQVizChildOpenGL2::DAQVizChildOpenGL2(int _m_Start_idx,
 	m_End_idx = _m_End_idx;
 	m_Num_idx = _m_Num_idx;
 
-	Flex_plot = _Flex_plot;
+	Finger_plot = _Finger_plot;
+	Wrist_plot = _Wrist_plot;
 
 	species = _species;
 
@@ -134,19 +136,19 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 		if (pMainDlg->Get_TimerStarted()) {
 			//////////////////////////////////// Fingers ////////////////////////////////////
 			for (int i = 0; i < 5; i++) {
-				if (pMainDlg->Get_Flex_raw_stack()[i].size() > 0) {
-					UINT idx_temp = pMainDlg->Get_Flex_raw_stack()[i].size();
+				if (pMainDlg->Get_Finger_raw_stack()[i].size() > 0) {
+					UINT idx_temp = pMainDlg->Get_Finger_raw_stack()[i].size();
 
 					if (i > 0) {
-						root_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+						root_plot = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 						root_plot = rightHand.Get_root_init()[4 - i] -
 							(rightHand.Get_root_max()[4 - i] - rightHand.Get_root_init()[4 - i]) * root_plot / FLEX_ANALOG_ABS_MAX;
 					}
 
-					first_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+					first_plot = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 					first_plot = rightHand.Get_first_init()[4 - i] -
 						(rightHand.Get_first_max()[4 - i] - rightHand.Get_first_init()[4 - i]) * first_plot / FLEX_ANALOG_ABS_MAX;
-					second_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+					second_plot = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 					second_plot = rightHand.Get_second_init()[4 - i] -
 						(rightHand.Get_second_max()[4 - i] - rightHand.Get_second_init()[4 - i]) * second_plot / FLEX_ANALOG_ABS_MAX;
 
@@ -163,9 +165,9 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 				}
 			}
 			////////////////////////////// Wrist Flexion & Extension //////////////////////////////
-			if (pMainDlg->Get_IMU_raw_stack()[0].size() > 0) {
-				UINT idx_temp = pMainDlg->Get_IMU_raw_stack()[0].size();
-				wrist_FE_plot = pMainDlg->Get_IMU_raw_stack()[0][idx_temp - 1];
+			if (pMainDlg->Get_Wrist_raw_stack()[0].size() > 0) {
+				UINT idx_temp = pMainDlg->Get_Wrist_raw_stack()[0].size();
+				wrist_FE_plot = pMainDlg->Get_Wrist_raw_stack()[0][idx_temp - 1];
 
 				rightHand.WristRotatePos(wrist_FE_plot);
 			}
@@ -181,15 +183,15 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 
 			for (int i = 0; i < 5; i++) {
 				if (i > 0) {
-					root_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+					root_animation = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 					root_animation = rightHand_2.Get_root_init()[4 - i] -
 						(rightHand_2.Get_root_max()[4 - i] - rightHand_2.Get_root_init()[4 - i]) * root_animation / FLEX_ANALOG_ABS_MAX;
 				}
 
-				first_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+				first_animation = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 				first_animation = rightHand_2.Get_first_init()[4 - i] -
 					(rightHand_2.Get_first_max()[4 - i] - rightHand_2.Get_first_init()[4 - i]) * first_animation / FLEX_ANALOG_ABS_MAX;
-				second_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+				second_animation = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 				second_animation = rightHand_2.Get_second_init()[4 - i] -
 					(rightHand_2.Get_second_max()[4 - i] - rightHand_2.Get_second_init()[4 - i]) * second_animation / FLEX_ANALOG_ABS_MAX;
 
@@ -206,7 +208,7 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 			}
 
 			////////////////////////////// Wrist Flexion & Extension //////////////////////////////
-			wrist_FE_plot = pMainDlg->Get_IMU_raw_stack()[0][idx_temp - 1];
+			wrist_FE_plot = pMainDlg->Get_Wrist_raw_stack()[0][idx_temp - 1];
 
 			rightHand_2.WristRotatePos(wrist_FE_plot);
 		}

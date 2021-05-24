@@ -13,9 +13,9 @@ IMPLEMENT_DYNAMIC(DAQVizChildKSJ, CDialogEx)
 
 DAQVizChildKSJ::DAQVizChildKSJ(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_KSJ, pParent) {
-	N_sEMG = N_SEMG_CH;
-	N_Flex = N_FLEX_CH;
-	N_IMU = N_IMU_CH;
+	N_sEMG = DELSYS_CH_MAX;
+	N_Flex = FINGER_CH_MAX;
+	N_IMU = WRIST_CH_MAX;
 }
 
 DAQVizChildKSJ::DAQVizChildKSJ(int _N_sEMG_CH, int _N_Flex_CH, int _N_IMU_CH,
@@ -454,8 +454,9 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 					if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {
 						// 2. Generate new window
 						Clip_window = new GraphClipping(Pt_forth, Pt_back, pMainDlg->Get_m_count(),
-									pMainDlg->Get_sEMG_MAV_stack(), pMainDlg->Get_Flex_raw_stack(),
-									pMainDlg->Get_IMU_raw_stack(),	pMainDlg->Get_MotionLabel_stack(),
+									pMainDlg->Get_sEMG_MAV_stack(), pMainDlg->Get_Finger_raw_stack(),
+									pMainDlg->Get_Finger_slope_stack(), pMainDlg->Get_Wrist_raw_stack(),
+									pMainDlg->Get_Wrist_slope_stack(), pMainDlg->Get_MotionLabel_stack(),
 									pMainDlg->Get_MotionEstimation_stack(), pMainDlg->Get_X_pos_ball_stack(),
 									pMainDlg->Get_Y_pos_ball_stack(), pMainDlg->Get_Rad_ball_stack());
 						Clip_window->Create(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, this);

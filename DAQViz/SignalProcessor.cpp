@@ -31,7 +31,8 @@ double SignalProcessor::FilteredDerivative(double Prev_input,
 	return ((1 / A1) * (A2 * Prev_output + B1 * Current_input - B2 * Prev_input));
 }
 
-UINT SignalProcessor::MotionClassification(const double* _Flex_data, const double* _IMU_data) {
+UINT SignalProcessor::MotionClassification (const double* _Flex_data,
+											const double* _IMU_data) {
 	bool* isFingerFlex = new bool[N_Flex_CH];
 	memset(isFingerFlex, FALSE, N_Flex_CH);
 	for (int i = 0; i < N_Flex_CH; i++) {
@@ -67,6 +68,11 @@ UINT SignalProcessor::MotionClassification(const double* _Flex_data, const doubl
 	}
 	else
 		return 0;
+}
+
+UINT SignalProcessor::MotionClassification_Slope(const double* _Flex_slope,
+												const double* _IMU_slope) {
+	return 0;
 }
 
 int SignalProcessor::Factorial(int n) {

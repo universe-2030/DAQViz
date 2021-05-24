@@ -230,10 +230,10 @@ void CDAQVizDlg::Initialize_Variable() {
 }
 
 void CDAQVizDlg::Initialize_NI() {
-	AI_sEMG = new NI_AI_sEMG("Dev1/ai0:15", 16);
+	AI_sEMG = new NI_AI_sEMG("Dev1/ai0:15", DELSYS_CH_MAX);
 	NI_AI_sEMG::InitializeNI();
 
-	AI_Flex = new NI_AI_Flex("Dev2/ai0:4", N_FLEX_CH);
+	AI_Flex = new NI_AI_Flex("Dev2/ai0:6", FINGER_CH_MAX + WRIST_CH_MAX);
 	NI_AI_Flex::InitializeNI();
 }
 
@@ -276,9 +276,9 @@ void CDAQVizDlg::Initialize_GUI() {
 	CString temp;
 	temp.Format(_T("%d"), DELSYS_CH_MAX);
 	m_editNumsEMGCH.SetWindowTextW(temp);
-	temp.Format(_T("%d"), FLEX_CH_MAX);
+	temp.Format(_T("%d"), FINGER_CH_MAX);
 	m_editNumFlexCH.SetWindowTextW(temp);
-	temp.Format(_T("%d"), IMU_CH_MAX);
+	temp.Format(_T("%d"), WRIST_CH_MAX);
 	m_editNumIMUCH.SetWindowTextW(temp);
 
 	if (m_radioTrainingMode == 0 || m_radioTrainingMode == 1)
@@ -295,7 +295,7 @@ void CDAQVizDlg::Initialize_GUI() {
 	GetDlgItem(IDC_SLOT_CHILDDLG)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ChildDlg_KSJ = new DAQVizChildKSJ(N_SEMG_CH, N_FLEX_CH, N_IMU_CH);
+	p_ChildDlg_KSJ = new DAQVizChildKSJ(DELSYS_CH_MAX, FINGER_CH_MAX, WRIST_CH_MAX);
 	p_ChildDlg_KSJ->Create(IDD_DAQVIZ_DIALOG_CHILD_KSJ, this);
 	p_ChildDlg_KSJ->ShowWindow(SW_SHOW);
 	p_ChildDlg_KSJ->MoveWindow(rectofDialogArea);
@@ -375,13 +375,19 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * Num_Flex_CH);
 	Flex_data_prev = new float64[Num_Flex_CH];
 	memset(Flex_data_prev, 0.0, 2 * sizeof(Flex_data_prev) * Num_Flex_CH);
-	Flex_slope_data = new float64[Num_Flex_CH];
-	memset(Flex_slope_data, 0.0, 2 * sizeof(Flex_slope_data) * Num_Flex_CH);
+	Flex_slope = new float64[Num_Flex_CH];
+	memset(Flex_slope, 0.0, 2 * sizeof(Flex_slope) * Num_Flex_CH);
 	Flex_slope_prev = new float64[Num_Flex_CH];
 	memset(Flex_slope_prev, 0.0, 2 * sizeof(Flex_slope_prev) * Num_Flex_CH);
 
-	IMU_data = new double[Num_IMU_CH];
-	memset(IMU_data, 0.0, 2 * sizeof(IMU_data) * Num_IMU_CH);
+	Finger_data = new float64[Num_Finger_CH];
+	memset(Finger_data, 0.0, 2 * sizeof(Finger_data) * Num_Finger_CH);
+	Finger_slope = new float64[Num_Finger_CH];
+	memset(Finger_slope, 0.0, 2 * sizeof(Finger_slope) * Num_Finger_CH);
+	Wrist_data = new float64[Num_Wrist_CH];
+	memset(Wrist_data, 0.0, 2 * sizeof(Wrist_data) * Num_Wrist_CH);
+	Wrist_slope = new float64[Num_Wrist_CH];
+	memset(Wrist_slope, 0.0, 2 * sizeof(Wrist_slope) * Num_Wrist_CH);
 
 	Label_Est = new double[2];
 	memset(Label_Est, 0.0, 2 * sizeof(Label_Est) * 2);
@@ -390,9 +396,10 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_MAV_stack = new std::vector<double>[Num_sEMG_CH];
 	
-	Flex_raw_stack = new std::vector<double>[Num_Flex_CH];
-
-	IMU_raw_stack = new std::vector<double>[Num_IMU_CH];
+	Finger_raw_stack = new std::vector<double>[Num_Finger_CH];
+	Finger_slope_stack = new std::vector<double>[Num_Finger_CH];
+	Wrist_raw_stack = new std::vector<double>[Num_Wrist_CH];
+	Wrist_slope_stack = new std::vector<double>[Num_Wrist_CH];
 
 	MotionLabel = new std::vector<double>;
 	MotionEstimation = new std::vector<double>;
@@ -401,7 +408,7 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	Y_pos_ball_stack = new std::vector<double>;
 	Rad_ball_stack = new std::vector<double>;
 
-	SigProc = new SignalProcessor(Num_sEMG_CH, Num_Flex_CH, Num_IMU_CH, TS, Fs, 30);
+	SigProc = new SignalProcessor(Num_sEMG_CH, Num_Finger_CH, Num_Wrist_CH, TS, Fs, 30);
 }
 
 void CDAQVizDlg::Dynamic_Free() {
@@ -410,8 +417,14 @@ void CDAQVizDlg::Dynamic_Free() {
 	delete sEMG_MAV_plot;
 
 	delete Flex_data_calib;
+	delete Flex_data_prev;
+	delete Flex_slope;
+	delete Flex_slope_prev;
 
-	delete IMU_data;
+	delete Finger_data;
+	delete Finger_slope;
+	delete Wrist_data;
+	delete Wrist_slope;
 }
 
 void CDAQVizDlg::Set_Font(CButton& Btn_, UINT Height_, UINT Width_) {
@@ -661,49 +674,60 @@ int CDAQVizDlg::MainStart() {
 
 				// Calibration DAQ - Flex
 				cali_count++;
-				for (int i = 0; i < N_FLEX_CH; i++)
+				for (int i = 0; i < Num_Flex_CH; i++)
 					Flex_data_calib[i] += Flex_data[i];
 
 				if (pShared_Data->count == CALI_END * 1000) {
 					m_editStatusBar.SetWindowText(stat += "[USER] Calibration end \r\n");
 					m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 
-					for (int i = 0; i < N_FLEX_CH; i++)
+					for (int i = 0; i < Num_Flex_CH; i++)
 						Flex_data_calib[i] /= (double)cali_count;
 				}
 
 			}
 			else {
-				for (int i = 0; i < N_FLEX_CH; i++) {
+				for (int i = 0; i < Num_Flex_CH; i++) {
 					Flex_data[i] -= Flex_data_calib[i];
 				}
 			}
 
+			// Finger & wrist data
+			for (int i = 0; i < Num_Flex_CH; i++) {
+				if (0 <= i && i < Num_Finger_CH)
+					Finger_data[i] = Flex_data[i];
+				else if (Num_Finger_CH <= i && i < Num_Flex_CH)
+					Wrist_data[i - Num_Finger_CH] = Flex_data[i];
+			}
+
 			// Flex slope data
-			
+			if (m_count == 1) {
+				for (int i = 0; i < Num_Flex_CH; i++) {
+					Flex_slope[i] = SigProc->FilteredDerivative(Flex_data[i],
+															Flex_data[i], Flex_slope_prev[i]);
+					Flex_data_prev[i] = Flex_data[i];
+					Flex_slope_prev[i] = Flex_slope[i];
+				}
+			}
+			else {
+				for (int i = 0; i < Num_Flex_CH; i++) {
+					Flex_slope[i] = SigProc->FilteredDerivative(Flex_data[i],
+															Flex_data_prev[i] , Flex_slope_prev[i]);
+					Flex_data_prev[i] = Flex_data[i];
+					Flex_slope_prev[i] = Flex_slope[i];
+				}
+			}
 
-			// DAQ - IMU data
-			if (isMATCHconnected && m_radioUseIMU == 0) {
-				MATCH_Dev->GetSensorData();
-				int idx_1, idx_2;
-				idx_1 = MATCH_Dev->Get_aEmg_channel_idx(2);
-				idx_2 = MATCH_Dev->Get_aEmg_channel_idx(1);
-
-				IMU_data[0] = MATCH_Dev->Get_aEuler(3 * (idx_1 - 1))
-								- MATCH_Dev->Get_aEuler(3 * (idx_2 - 1));
-
-				/*double IMU_data_RU_1 = (double)MATCH_Dev->Get_aEuler(3 * (idx_1 - 1) + 2);
-				if (IMU_data_RU_1 < 0)
-					IMU_data_RU_1 += 360;
-				double IMU_data_RU_2 = (double)MATCH_Dev->Get_aEuler(3 * (idx_2 - 1) + 2);
-				if (IMU_data_RU_2 < 0)
-					IMU_data_RU_2 += 360;
-				IMU_data[1] = IMU_data_RU_1 - IMU_data_RU_2;*/
-				IMU_data[1] = 0.0;
+			// Finger & wrist slope
+			for (int i = 0; i < Num_Flex_CH; i++) {
+				if (0 <= i && i < Num_Finger_CH)
+					Finger_slope[i] = Flex_slope[i];
+				else if (Num_Finger_CH <= i && i < Num_Flex_CH)
+					Wrist_slope[i - Num_Finger_CH] = Flex_slope[i];
 			}
 
 			// Motion classification
-			Label_Est[0] = SigProc->MotionClassification(Flex_data, IMU_data); // Label
+			Label_Est[0] = SigProc->MotionClassification(Finger_data, Wrist_data); // Label
 			Label_Est[1] = 2; // Estimation
 
 			// Ball control
@@ -760,16 +784,16 @@ int CDAQVizDlg::MainStart() {
 				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 3) {
-				p_ChildDlg_KSJ->Plot_graph(Flex_data, p_ChildDlg_KSJ->Get_rtGraph_Finger()[0]);
+				p_ChildDlg_KSJ->Plot_graph(Finger_data, p_ChildDlg_KSJ->Get_rtGraph_Finger()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 4) {
-				p_ChildDlg_KSJ->Plot_graph(Flex_data, p_ChildDlg_KSJ->Get_rtGraph_Finger_slope()[0]);
+				p_ChildDlg_KSJ->Plot_graph(Finger_slope, p_ChildDlg_KSJ->Get_rtGraph_Finger_slope()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 5) {
-				p_ChildDlg_KSJ->Plot_graph(IMU_data, p_ChildDlg_KSJ->Get_rtGraph_Wrist()[0]);
+				p_ChildDlg_KSJ->Plot_graph(Wrist_data, p_ChildDlg_KSJ->Get_rtGraph_Wrist()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 6) {
-				p_ChildDlg_KSJ->Plot_graph(IMU_data, p_ChildDlg_KSJ->Get_rtGraph_Wrist_slope()[0]);
+				p_ChildDlg_KSJ->Plot_graph(Wrist_slope, p_ChildDlg_KSJ->Get_rtGraph_Wrist_slope()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 7) {
 				p_ChildDlg_KSJ->Plot_graph(Label_Est, p_ChildDlg_KSJ->Get_rtGraph_Label_Est()[0]);
@@ -782,7 +806,8 @@ int CDAQVizDlg::MainStart() {
 
 			// Stack the data
 			StackData(sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
-					Flex_data, IMU_data, Label_Est[0], Label_Est[1],
+					Finger_data, Finger_slope, Wrist_data, Wrist_slope,
+					Label_Est[0], Label_Est[1],
 					X_pos_ball, Y_pos_ball, Rad_ball,
 					Time_DAQ_elapse, Time_RTGraph_elapse);
 
@@ -928,12 +953,14 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 		CString temp;
 		switch (m_radioUseFlexSensor) {
 		case 0:
-			Num_Flex_CH = FLEX_CH_MAX;
+			Num_Finger_CH = FINGER_CH_MAX;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 			m_editNumFlexCH.EnableWindow(TRUE);
-			temp.Format(_T("%d"), Num_Flex_CH);
+			temp.Format(_T("%d"), Num_Finger_CH);
 			break;
 		case 1:
-			Num_Flex_CH = FLEX_CH_MAX;
+			Num_Finger_CH = FINGER_CH_MAX;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 			m_editNumFlexCH.EnableWindow(FALSE);
 			temp.Format(_T("%d"), 0);
 			break;
@@ -949,12 +976,14 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 		CString temp;
 		switch (m_radioUseIMU) {
 		case 0:
-			Num_IMU_CH = IMU_CH_MAX;
+			Num_Wrist_CH = WRIST_CH_MAX;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 			m_editNumIMUCH.EnableWindow(TRUE);
-			temp.Format(_T("%d"), Num_IMU_CH);
+			temp.Format(_T("%d"), Num_Wrist_CH);
 			break;
 		case 1:
-			Num_IMU_CH = IMU_CH_MAX;
+			Num_Wrist_CH = WRIST_CH_MAX;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 			m_editNumIMUCH.EnableWindow(FALSE);
 			temp.Format(_T("%d"), 0);
 			break;
@@ -1029,12 +1058,20 @@ const std::vector<double>* CDAQVizDlg::Get_sEMG_MAV_stack() {
 	return sEMG_MAV_stack;
 }
 
-const std::vector<double>* CDAQVizDlg::Get_Flex_raw_stack() {
-	return Flex_raw_stack;
+const std::vector<double>* CDAQVizDlg::Get_Finger_raw_stack() {
+	return Finger_raw_stack;
 }
 
-const std::vector<double>* CDAQVizDlg::Get_IMU_raw_stack() {
-	return IMU_raw_stack;
+const std::vector<double>* CDAQVizDlg::Get_Finger_slope_stack() {
+	return Finger_slope_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_Wrist_raw_stack() {
+	return Wrist_raw_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_Wrist_slope_stack() {
+	return Wrist_slope_stack;
 }
 
 const std::vector<double>* CDAQVizDlg::Get_MotionLabel_stack() {
@@ -1091,8 +1128,10 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 void CDAQVizDlg::StackData (double* _sEMG_raw,
 							double* _sEMG_abs,
 							double* _sEMG_MAV,
-							double* _Flex_raw,
-							double* _IMU_raw,
+							double* _Finger_raw,
+							double* _Finger_slope,
+							double* _Wrist_raw,
+							double* _Wrist_slope,
 							double _MotionLabel_current,
 							double _MotionEstimation_current,
 							double _X_pos,
@@ -1106,12 +1145,14 @@ void CDAQVizDlg::StackData (double* _sEMG_raw,
 		sEMG_MAV_stack[i].push_back(_sEMG_MAV[i]);
 	}
 
-	for (int i = 0; i < Num_Flex_CH; i++) {
-		Flex_raw_stack[i].push_back(_Flex_raw[i]);
+	for (int i = 0; i < Num_Finger_CH; i++) {
+		Finger_raw_stack[i].push_back(_Finger_raw[i]);
+		Finger_slope_stack[i].push_back(_Finger_slope[i]);
 	}
 
-	for (int i = 0; i < Num_IMU_CH; i++) {
-		IMU_raw_stack[i].push_back(_IMU_raw[i]);
+	for (int i = 0; i < Num_Wrist_CH; i++) {
+		Wrist_raw_stack[i].push_back(_Wrist_raw[i]);
+		Wrist_slope_stack[i].push_back(_Wrist_slope[i]);
 	}
 
 	MotionLabel[0].push_back(_MotionLabel_current);
@@ -1202,24 +1243,27 @@ void CDAQVizDlg::OnEnChangeEditNumFlexCh() {
 	CString temp;
 
 	m_editNumFlexCH.GetWindowText(temp);
-	int Num_Flex_CH = _ttoi(temp);
+	int Num_finger_CH = _ttoi(temp);
 	if (m_radioUseFlexSensor == 0) {
-		if (Num_Flex_CH > FLEX_CH_MAX) {
+		if (Num_finger_CH > FINGER_CH_MAX) {
 			MessageBox(_T("Flex sensor channel should be smaller than 5."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
-			temp.Format(_T("%d"), FLEX_CH_MAX);
+			temp.Format(_T("%d"), FINGER_CH_MAX);
 			m_editNumFlexCH.SetWindowText(temp);
-			Num_Flex_CH = FLEX_CH_MAX;
+			Num_Finger_CH = FINGER_CH_MAX;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
-		else if (Num_Flex_CH < 1) {
+		else if (Num_finger_CH < 1) {
 			MessageBox(_T("Flex sensor channel should be larger than 1."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), 1);
 			m_editNumFlexCH.SetWindowText(temp);
-			Num_Flex_CH = 1;
+			Num_Finger_CH = 1;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
 		else {
-			this->Num_Flex_CH = Num_Flex_CH;
+			Num_Finger_CH = Num_finger_CH;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
 	}
 }
@@ -1229,24 +1273,27 @@ void CDAQVizDlg::OnEnChangeEditNumImuCh() {
 	CString temp;
 
 	m_editNumIMUCH.GetWindowText(temp);
-	int Num_IMU_CH = _ttoi(temp);
+	int Num_wrist_CH = _ttoi(temp);
 	if (m_radioUseIMU == 0) {
-		if (Num_IMU_CH > IMU_CH_MAX) {
+		if (Num_wrist_CH > WRIST_CH_MAX) {
 			MessageBox(_T("IMU sensor channel should be smaller than 2."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
-			temp.Format(_T("%d"), IMU_CH_MAX);
+			temp.Format(_T("%d"), WRIST_CH_MAX);
 			m_editNumIMUCH.SetWindowText(temp);
-			Num_IMU_CH = IMU_CH_MAX;
+			Num_Wrist_CH = WRIST_CH_MAX;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
-		else if (Num_IMU_CH < 1) {
+		else if (Num_wrist_CH < 1) {
 			MessageBox(_T("IMU sensor channel should be larger than 1."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), 1);
 			m_editNumIMUCH.SetWindowText(temp);
-			Num_IMU_CH = 1;
+			Num_Wrist_CH = 1;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
 		else {
-			this->Num_IMU_CH = Num_IMU_CH;
+			Num_Wrist_CH = Num_wrist_CH;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
 	}
 }

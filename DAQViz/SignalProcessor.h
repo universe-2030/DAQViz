@@ -44,6 +44,7 @@ public:
 	double FilteredDerivative(double Prev_input, double Current_input, double Prev_output);
 
 	UINT MotionClassification(const double* _Flex_data, const double* _IMU_data);
+	UINT MotionClassification_Slope(const double* _Flex_slope, const double* _IMU_slope);
 
 	int Factorial(int n);
 

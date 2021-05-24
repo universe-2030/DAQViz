@@ -17,8 +17,10 @@ public:
 	GraphClipping(CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
 					const std::vector<double>* _sEMG_plot,
-					const std::vector<double>* _Flex_plot,
-					const std::vector<double>* _IMU_plot,
+					const std::vector<double>* _Finger_plot,
+					const std::vector<double>* _Finger_slope_plot,
+					const std::vector<double>* _Wrist_plot,
+					const std::vector<double>* _Wrist_slope_plot,
 					const std::vector<double>* _MotionLabel_plot,
 					const std::vector<double>* _MotionEstimation_plot,
 					const std::vector<double>* _X_ball_plot,
@@ -45,8 +47,11 @@ private:
 
 	// Clipped sEMG data
 	const std::vector<double>* sEMG_plot;
-	const std::vector<double>* Flex_plot;
-	const std::vector<double>* IMU_plot;
+
+	const std::vector<double>* Finger_plot;
+	const std::vector<double>* Finger_slope_plot;
+	const std::vector<double>* Wrist_plot;
+	const std::vector<double>* Wrist_slope_plot;
 
 	const std::vector<double>* MotionLabel_plot;
 	const std::vector<double>* MotionEstimation_plot;

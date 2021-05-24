@@ -19,8 +19,10 @@ ClippedGraph::ClippedGraph(CWnd* pParent /*=nullptr*/)
 ClippedGraph::ClippedGraph(int _m_Start_idx, int _m_End_idx,
 						int _m_Num_idx, int _Num_CH, 
 						const std::vector<double>* _sEMG_plot,
-						const std::vector<double>* _Flex_plot,
-						const std::vector<double>* _IMU_plot,
+						const std::vector<double>* _Finger_plot,
+						const std::vector<double>* _Finger_slope_plot,
+						const std::vector<double>* _Wrist_plot,
+						const std::vector<double>* _Wrist_slope_plot,
 						const std::vector<double>* _MotionLabel_plot,
 						const std::vector<double>* _MotionEstimation_plot,
 						Render _species, CWnd* pParent /*=nullptr*/)
@@ -29,14 +31,18 @@ ClippedGraph::ClippedGraph(int _m_Start_idx, int _m_End_idx,
 	m_End_idx = _m_End_idx;
 	m_Num_idx = _m_Num_idx;
 	Num_CH = _Num_CH;
-	species = _species;
 
 	sEMG_plot = _sEMG_plot;
-	Flex_plot = _Flex_plot;
-	IMU_plot = _IMU_plot;
+
+	Finger_plot = _Finger_plot;
+	Finger_slope_plot = _Finger_slope_plot;
+	Wrist_plot = _Wrist_plot;
+	Wrist_slope_plot = _Wrist_slope_plot;
 
 	MotionLabel_plot = _MotionLabel_plot;
 	MotionEstimation_plot = _MotionEstimation_plot;
+
+	species = _species;
 }
 
 ClippedGraph::~ClippedGraph() {
@@ -301,7 +307,7 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
-				- GRAPH_Y_LEN_TOTAL * N_Y_len - 0.8 * GRAPH_Y_LEN_TOTAL * Flex_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_TOTAL * N_Y_len - 0.8 * GRAPH_Y_LEN_TOTAL * Finger_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
 		}
 		glEnd();
 	}
@@ -319,7 +325,7 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
-				- GRAPH_Y_LEN_TOTAL * N_Y_len + 0.5 * GRAPH_Y_LEN_TOTAL * IMU_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_TOTAL * N_Y_len + 0.5 * GRAPH_Y_LEN_TOTAL * Wrist_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
 		}
 		glEnd();
 	}
@@ -433,7 +439,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glEnd();
 	}
 
-	/////////////////////////////// Flex sensor graph ///////////////////////////////
+	/////////////////////////////// Finger graph ///////////////////////////////
 	glLineWidth(1.5);
 	double N_Y_interval = 3;
 	double N_Y_len = 3.8;
@@ -452,15 +458,39 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
-				- GRAPH_Y_LEN_ANI * N_Y_len - 0.8 * GRAPH_Y_LEN_ANI * Flex_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_ANI * N_Y_len - 0.8 * GRAPH_Y_LEN_ANI * Finger_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
 		}
 		glEnd();
 	}
 
-	/////////////////////////////////// IMU graph ///////////////////////////////////
+	/////////////////////////////// Finger slope graph ///////////////////////////////
 	glLineWidth(1.5);
 	N_Y_interval = 4;
 	N_Y_len = 4.5;
+	for (int i = 0; i < 5; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 1.0f, 0.0f);
+		else if (i == 2)
+			glColor3f(0.0f, 0.0f, 1.0f);
+		else if (i == 3)
+			glColor3f(1.0f, 1.0f, 0.0f);
+		else if (i == 4)
+			glColor3f(1.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
+				- GRAPH_Y_LEN_ANI * N_Y_len - 0.5 * GRAPH_Y_LEN_ANI * Finger_slope_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////////// Wrist graph ///////////////////////////////////
+	glLineWidth(1.5);
+	N_Y_interval = 5;
+	N_Y_len = 5.5;
 	for (int i = 0; i < 2; i++) {
 		if (i == 0)
 			glColor3f(1.0f, 0.0f, 0.0f);
@@ -470,15 +500,33 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
-				- GRAPH_Y_LEN_ANI * N_Y_len + 0.5 * GRAPH_Y_LEN_ANI * IMU_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_ANI * N_Y_len + 0.5 * GRAPH_Y_LEN_ANI * Wrist_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////////// Wrist slope graph ///////////////////////////////////
+	glLineWidth(1.5);
+	N_Y_interval = 6;
+	N_Y_len = 6.5;
+	for (int i = 0; i < 2; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
+				- GRAPH_Y_LEN_ANI * N_Y_len + 0.5 * GRAPH_Y_LEN_ANI * Wrist_slope_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
 		}
 		glEnd();
 	}
 
 	/////////////////////////////// Motion index graph ///////////////////////////////
 	glLineWidth(1.5);
-	N_Y_interval = 5;
-	N_Y_len = 6;
+	N_Y_interval = 7;
+	N_Y_len = 8;
 	for (int i = 0; i < 2; i++) {
 		if (i == 0)
 			glColor3f(1.0f, 0.0f, 0.0f);
