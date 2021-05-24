@@ -58,13 +58,15 @@ UINT SignalProcessor::MotionClassification(const double* _Flex_data, const doubl
 		return LABEL_WRIST_EXTENSION;
 	}
 	else if (isFingerFlex[0] && isFingerFlex[1] &&
-			isFingerFlex[2] && isFingerFlex[3] && isFingerFlex[4]) { // Power grip
+		isFingerFlex[2] && isFingerFlex[3] && isFingerFlex[4]) { // Power grip
 		return LABEL_POWER_GRIP;
 	}
 	else if (!isFingerFlex[0] && !isFingerFlex[1] &&
 		!isFingerFlex[2] && !isFingerFlex[3] && !isFingerFlex[4]) { // Hand open
 		return LABEL_HAND_OPEN;
 	}
+	else
+		return 0;
 }
 
 int SignalProcessor::Factorial(int n) {

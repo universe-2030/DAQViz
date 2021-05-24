@@ -373,6 +373,12 @@ void CDAQVizDlg::Dynamic_Allocation() {
 
 	Flex_data_calib = new float64[Num_Flex_CH];
 	memset(Flex_data_calib, 0.0, 2 * sizeof(Flex_data_calib) * Num_Flex_CH);
+	Flex_data_prev = new float64[Num_Flex_CH];
+	memset(Flex_data_prev, 0.0, 2 * sizeof(Flex_data_prev) * Num_Flex_CH);
+	Flex_slope_data = new float64[Num_Flex_CH];
+	memset(Flex_slope_data, 0.0, 2 * sizeof(Flex_slope_data) * Num_Flex_CH);
+	Flex_slope_prev = new float64[Num_Flex_CH];
+	memset(Flex_slope_prev, 0.0, 2 * sizeof(Flex_slope_prev) * Num_Flex_CH);
 
 	IMU_data = new double[Num_IMU_CH];
 	memset(IMU_data, 0.0, 2 * sizeof(IMU_data) * Num_IMU_CH);
@@ -673,6 +679,9 @@ int CDAQVizDlg::MainStart() {
 				}
 			}
 
+			// Flex slope data
+			
+
 			// DAQ - IMU data
 			if (isMATCHconnected && m_radioUseIMU == 0) {
 				MATCH_Dev->GetSensorData();
@@ -694,7 +703,7 @@ int CDAQVizDlg::MainStart() {
 			}
 
 			// Motion classification
-			Label_Est[0] = 2; // Label
+			Label_Est[0] = SigProc->MotionClassification(Flex_data, IMU_data); // Label
 			Label_Est[1] = 2; // Estimation
 
 			// Ball control
@@ -751,15 +760,18 @@ int CDAQVizDlg::MainStart() {
 				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 3) {
-				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[3]);
+				p_ChildDlg_KSJ->Plot_graph(Flex_data, p_ChildDlg_KSJ->Get_rtGraph_Finger()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 4) {
-				p_ChildDlg_KSJ->Plot_graph(Flex_data, p_ChildDlg_KSJ->Get_rtGraph_Flex()[0]);
+				p_ChildDlg_KSJ->Plot_graph(Flex_data, p_ChildDlg_KSJ->Get_rtGraph_Finger_slope()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 5) {
-				p_ChildDlg_KSJ->Plot_graph(IMU_data, p_ChildDlg_KSJ->Get_rtGraph_IMU()[0]);
+				p_ChildDlg_KSJ->Plot_graph(IMU_data, p_ChildDlg_KSJ->Get_rtGraph_Wrist()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 6) {
+				p_ChildDlg_KSJ->Plot_graph(IMU_data, p_ChildDlg_KSJ->Get_rtGraph_Wrist_slope()[0]);
+			}
+			else if (pShared_Data->count % N_GRAPH == 7) {
 				p_ChildDlg_KSJ->Plot_graph(Label_Est, p_ChildDlg_KSJ->Get_rtGraph_Label_Est()[0]);
 			}
 

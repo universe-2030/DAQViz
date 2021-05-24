@@ -32,7 +32,7 @@
 #define CALI_START 0.300
 #define CALI_END 1.500
 
-#define N_GRAPH 7
+#define N_GRAPH 8
 
 #define DELSYS_CH_MAX 16
 #define FRANKFURT_CH_MAX 8
@@ -218,6 +218,9 @@ private:
 
 	float64* Flex_data;
 	float64* Flex_data_calib;
+	float64* Flex_data_prev;
+	float64* Flex_slope_data;
+	float64* Flex_slope_prev;
 
 	double* IMU_data;
 

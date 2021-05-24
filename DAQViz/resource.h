@@ -43,15 +43,8 @@
 #define IDC_RADIO_USE_FLEX_SENSOR_YES   1025
 #define IDC_RADIO_USE_FLEX_SENSOR_NO    1026
 #define IDC_EDIT_TEST                   1027
-#define IDC_GRAPH_SEMG_MAV_1            1032
-#define IDC_GRAPH_SEMG_MAV_2            1033
-#define IDC_GRAPH_SEMG_MAV_3            1034
-#define IDC_GRAPH_SEMG_MAV_4            1035
-#define IDC_GRAPH_FLEX_SENSOR           1036
-#define IDC_GRAPH_LOGONU_IMU            1037
-#define IDC_PLOT_OPENGL                 1038
+#define IDC_PLOT_OPENGL                 1039
 #define IDC_TEXT_CONTROL_TIME           1039
-#define IDC_GRAPH_MOTION_LABEL_EST      1039
 #define IDC_EDIT_CONTROL_TIME           1040
 #define IDC_PLOT_MOTION                 1040
 #define IDC_EDIT_LOAD_NAME              1041
@@ -88,6 +81,14 @@
 #define IDC_PLOT_ANIMATION_HAND         1069
 #define IDC_EDIT_PARAMETER_LOAD_NAME    1070
 #define IDC_PLOT_ANIMATION_BALL_CONTROL 1070
+#define IDC_GRAPH_SEMG_MAV_1            1071
+#define IDC_GRAPH_SEMG_MAV_2            1072
+#define IDC_GRAPH_SEMG_MAV_3            1073
+#define IDC_GRAPH_FINGER_FLEX           1074
+#define IDC_GRAPH_FINGER_FLEX_SLOPE     1075
+#define IDC_GRAPH_WRIST_FLEX            1076
+#define IDC_GRAPH_WRIST_FLEX_SLOPE      1077
+#define IDC_GRAPH_MOTION_LABEL_EST      1078
 
 // Next default values for new objects
 // 
