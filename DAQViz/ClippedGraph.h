@@ -20,8 +20,10 @@
 #define GRAPH_Y_INTERVAL_ANI 0.1
 
 #define SEMG_VAL_MAX 1.0
-#define FLEX_VAL_MAX 1.5
-#define IMU_VAL_MAX 90.0
+#define FINGER_VAL_MAX 1.2
+#define FINGER_SLOPE_MAX 10
+#define WRIST_VAL_MAX 1.2
+#define WRIST_SLOPE_MAX 10
 #define MOTION_IDX_MAX 5.0
 
 #define NUM_CH 16

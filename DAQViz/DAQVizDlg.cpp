@@ -711,8 +711,8 @@ int CDAQVizDlg::MainStart() {
 			}
 			else {
 				for (int i = 0; i < Num_Flex_CH; i++) {
-					Flex_slope[i] = SigProc->FilteredDerivative(Flex_data[i],
-															Flex_data_prev[i] , Flex_slope_prev[i]);
+					Flex_slope[i] = SigProc->FilteredDerivative(Flex_data_prev[i],
+															Flex_data[i], Flex_slope_prev[i]);
 					Flex_data_prev[i] = Flex_data[i];
 					Flex_slope_prev[i] = Flex_slope[i];
 				}

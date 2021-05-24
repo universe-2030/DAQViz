@@ -227,15 +227,15 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		// X axis
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
-		if (i != 3 && i != 4) {
+		if (i != 3 && i != 4 && i != 5 && i != 6) {
 			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
 			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
 		}
 		else if (i == 3) {
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.8, 0.0f);
-			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.8, 0.0f);
+			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.2, 0.0f);
+			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.2, 0.0f);
 		}
-		else if (i == 4) {
+		else if (i == 4 || i == 5 || i == 6) {
 			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.5, 0.0f);
 			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.5, 0.0f);
 		}
@@ -288,10 +288,10 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		glEnd();
 	}
 
-	/////////////////////////////// Flex sensor graph ///////////////////////////////
+	/////////////////////////////// Finger graph ///////////////////////////////
 	glLineWidth(1.5);
 	double N_Y_interval = 3;
-	double N_Y_len = 3.8;
+	double N_Y_len = 3.2;
 	for (int i = 0; i < 5; i++) {
 		if (i == 0)
 			glColor3f(1.0f, 0.0f, 0.0f);
@@ -307,15 +307,39 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
-				- GRAPH_Y_LEN_TOTAL * N_Y_len - 0.8 * GRAPH_Y_LEN_TOTAL * Finger_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_TOTAL * N_Y_len + 0.8 * GRAPH_Y_LEN_TOTAL * Finger_plot[i][j + m_Start_idx - 1] / FINGER_VAL_MAX, 0.0f);
 		}
 		glEnd();
 	}
 
-	/////////////////////////////////// IMU graph ///////////////////////////////////
+	/////////////////////////////// Finger slope graph ///////////////////////////////
 	glLineWidth(1.5);
 	N_Y_interval = 4;
 	N_Y_len = 4.5;
+	for (int i = 0; i < 5; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 1.0f, 0.0f);
+		else if (i == 2)
+			glColor3f(0.0f, 0.0f, 1.0f);
+		else if (i == 3)
+			glColor3f(1.0f, 1.0f, 0.0f);
+		else if (i == 4)
+			glColor3f(1.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
+				- GRAPH_Y_LEN_TOTAL * N_Y_len + 0.5 * GRAPH_Y_LEN_TOTAL * Finger_slope_plot[i][j + m_Start_idx - 1] / FINGER_SLOPE_MAX, 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////////// Wrist graph ///////////////////////////////////
+	glLineWidth(1.5);
+	N_Y_interval = 5;
+	N_Y_len = 5.5;
 	for (int i = 0; i < 2; i++) {
 		if (i == 0)
 			glColor3f(1.0f, 0.0f, 0.0f);
@@ -325,15 +349,33 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
-				- GRAPH_Y_LEN_TOTAL * N_Y_len + 0.5 * GRAPH_Y_LEN_TOTAL * Wrist_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_TOTAL * N_Y_len + 0.5 * GRAPH_Y_LEN_TOTAL * Wrist_plot[i][j + m_Start_idx - 1] / WRIST_VAL_MAX, 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////////// Wrist slope graph ///////////////////////////////////
+	glLineWidth(1.5);
+	N_Y_interval = 6;
+	N_Y_len = 6.5;
+	for (int i = 0; i < 2; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
+				- GRAPH_Y_LEN_TOTAL * N_Y_len + 0.5 * GRAPH_Y_LEN_TOTAL * Wrist_slope_plot[i][j + m_Start_idx - 1] / WRIST_SLOPE_MAX, 0.0f);
 		}
 		glEnd();
 	}
 
 	/////////////////////////////// Motion index graph ///////////////////////////////
 	glLineWidth(1.5);
-	N_Y_interval = 5;
-	N_Y_len = 6;
+	N_Y_interval = 7;
+	N_Y_len = 8;
 	for (int i = 0; i < 2; i++) {
 		if (i == 0)
 			glColor3f(1.0f, 0.0f, 0.0f);
@@ -378,15 +420,15 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		// X axis
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
-		if (i != 3 && i != 4) {
+		if (i != 3 && i != 4 && i != 5 && i != 6) {
 			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
 			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
 		}
 		else if (i == 3) {
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.8, 0.0f);
-			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.8, 0.0f);
+			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.2, 0.0f);
+			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.2, 0.0f);
 		}
-		else if (i == 4) {
+		else if (i == 4 || i == 5 || i == 6) {
 			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.5, 0.0f);
 			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.5, 0.0f);
 		}
@@ -434,7 +476,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
-				- GRAPH_Y_LEN_ANI * N_Y_len + GRAPH_Y_LEN_ANI * sEMG_plot[i][j + m_Start_idx - 1], 0.0f);
+				- GRAPH_Y_LEN_ANI * N_Y_len + GRAPH_Y_LEN_ANI * sEMG_plot[i][j + m_Start_idx - 1] / SEMG_VAL_MAX, 0.0f);
 		}
 		glEnd();
 	}
@@ -442,7 +484,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	/////////////////////////////// Finger graph ///////////////////////////////
 	glLineWidth(1.5);
 	double N_Y_interval = 3;
-	double N_Y_len = 3.8;
+	double N_Y_len = 3.2;
 	for (int i = 0; i < 5; i++) {
 		if (i == 0)
 			glColor3f(1.0f, 0.0f, 0.0f);
@@ -458,7 +500,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
-				- GRAPH_Y_LEN_ANI * N_Y_len - 0.8 * GRAPH_Y_LEN_ANI * Finger_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_ANI * N_Y_len + 0.8 * GRAPH_Y_LEN_ANI * Finger_plot[i][j + m_Start_idx - 1] / FINGER_VAL_MAX, 0.0f);
 		}
 		glEnd();
 	}
@@ -482,7 +524,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
-				- GRAPH_Y_LEN_ANI * N_Y_len - 0.5 * GRAPH_Y_LEN_ANI * Finger_slope_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_ANI * N_Y_len + 0.5 * GRAPH_Y_LEN_ANI * Finger_slope_plot[i][j + m_Start_idx - 1] / FINGER_SLOPE_MAX, 0.0f);
 		}
 		glEnd();
 	}
@@ -500,7 +542,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
-				- GRAPH_Y_LEN_ANI * N_Y_len + 0.5 * GRAPH_Y_LEN_ANI * Wrist_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_ANI * N_Y_len + 0.5 * GRAPH_Y_LEN_ANI * Wrist_plot[i][j + m_Start_idx - 1] / WRIST_VAL_MAX, 0.0f);
 		}
 		glEnd();
 	}
@@ -518,7 +560,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
 			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
-				- GRAPH_Y_LEN_ANI * N_Y_len + 0.5 * GRAPH_Y_LEN_ANI * Wrist_slope_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
+				- GRAPH_Y_LEN_ANI * N_Y_len + 0.5 * GRAPH_Y_LEN_ANI * Wrist_slope_plot[i][j + m_Start_idx - 1] / WRIST_SLOPE_MAX, 0.0f);
 		}
 		glEnd();
 	}
