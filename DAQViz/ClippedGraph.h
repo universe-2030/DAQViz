@@ -12,11 +12,17 @@
 
 #define MOVE_SCALE 0.002
 
-#define NUM_GRAPH_ANALYSIS 5
-#define GRAPH_Y_LEN_TOTAL 0.9
+#define NUM_GRAPH_ANALYSIS 6
+
+#define GRAPH_Y_LEN_TOTAL 0.75
 #define GRAPH_Y_INTERVAL_TOTAL 0.2
-#define GRAPH_Y_LEN_ANI 0.6
+#define GRAPH_Y_LEN_ANI 0.5
 #define GRAPH_Y_INTERVAL_ANI 0.15
+
+#define SEMG_VAL_MAX 1.0
+#define FLEX_VAL_MAX 1.5
+#define IMU_VAL_MAX 90.0
+#define MOTION_IDX_MAX 5.0
 
 #define NUM_CH 16
 
@@ -40,6 +46,9 @@ public:
 				int _m_Num_idx, int _Num_CH,
 				const std::vector<double>* _sEMG_plot,
 				const std::vector<double>* _Flex_plot,
+				const std::vector<double>* _IMU_plot,
+				const std::vector<double>* _MotionLabel_plot,
+				const std::vector<double>* _MotionEstimation_plot,
 				Render _species, CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~ClippedGraph();
 
@@ -76,6 +85,10 @@ private:
 	// Vector
 	const std::vector<double>* sEMG_plot;
 	const std::vector<double>* Flex_plot;
+	const std::vector<double>* IMU_plot;
+
+	const std::vector<double>* MotionLabel_plot;
+	const std::vector<double>* MotionEstimation_plot;
 
 	// For animation bar
 	int Current_idx = 0;

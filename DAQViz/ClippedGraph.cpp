@@ -20,6 +20,9 @@ ClippedGraph::ClippedGraph(int _m_Start_idx, int _m_End_idx,
 						int _m_Num_idx, int _Num_CH, 
 						const std::vector<double>* _sEMG_plot,
 						const std::vector<double>* _Flex_plot,
+						const std::vector<double>* _IMU_plot,
+						const std::vector<double>* _MotionLabel_plot,
+						const std::vector<double>* _MotionEstimation_plot,
 						Render _species, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, pParent) {
 	m_Start_idx = _m_Start_idx;
@@ -30,6 +33,10 @@ ClippedGraph::ClippedGraph(int _m_Start_idx, int _m_End_idx,
 
 	sEMG_plot = _sEMG_plot;
 	Flex_plot = _Flex_plot;
+	IMU_plot = _IMU_plot;
+
+	MotionLabel_plot = _MotionLabel_plot;
+	MotionEstimation_plot = _MotionEstimation_plot;
 }
 
 ClippedGraph::~ClippedGraph() {
@@ -214,37 +221,128 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		// X axis
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
-		glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
+		if (i != 3 && i != 4) {
+			glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
+			glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
+		}
+		else if (i == 3) {
+			glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.8, 0.0f);
+			glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.8, 0.0f);
+		}
+		else if (i == 4) {
+			glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.5, 0.0f);
+			glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.5, 0.0f);
+		}
 		glEnd();
 
 		// Y axis
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i, 0.0f);
-		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
+			glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i, 0.0f);
+			glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
 		glEnd();
 	}
 
-	/////////////////////////////// Graph ///////////////////////////////
+	/////////////////////////////// sEMG Graph ///////////////////////////////
 	glLineWidth(1.5);
 	for (int i = 0; i < Num_CH; i++) {
-		int temp = i / NUM_GRAPH_ANALYSIS;
+		int N_Y_interval;
+		int N_Y_len;
+		if (0 <= i && i < 5) { // CH 1 - 5
+			N_Y_interval = 0;
+			N_Y_len = 1;
+		}
+		else if (5 <= i && i < 10) { // CH 6 - 10
+			N_Y_interval = 1;
+			N_Y_len = 2;
+		}
+		else if (10 <= i && i < 16) { // CH 11 - 16
+			N_Y_interval = 2;
+			N_Y_len = 3;
+		}
 
-		if (i % NUM_GRAPH_ANALYSIS == 0)
+		if (i == 0 || i == 5 || i == 10)
 			glColor3f(1.0f, 0.0f, 0.0f);
-		else if (i % NUM_GRAPH_ANALYSIS == 1)
+		else if (i == 1 || i == 6 || i == 11)
 			glColor3f(0.0f, 1.0f, 0.0f);
-		else if (i % NUM_GRAPH_ANALYSIS == 2)
+		else if (i == 2 || i == 7 || i == 12)
 			glColor3f(0.0f, 0.0f, 1.0f);
-		else if (i % NUM_GRAPH_ANALYSIS == 3)
+		else if (i == 3 || i == 8 || i == 13)
 			glColor3f(1.0f, 1.0f, 0.0f);
+		else if (i == 4 || i == 9 || i == 14)
+			glColor3f(1.0f, 0.0f, 1.0f);
+		else if (i == 15)
+			glColor3f(0.0f, 1.0f, 1.0f);
 
 		glBegin(GL_LINE_STRIP);
 			for (int j = 0; j < m_Num_idx; j++) {
-				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * temp
-							- GRAPH_Y_LEN_TOTAL * (temp + 1) + GRAPH_Y_LEN_TOTAL * sEMG_plot[i][j + m_Start_idx - 1], 0.0f);
+				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
+							- GRAPH_Y_LEN_TOTAL * N_Y_len + GRAPH_Y_LEN_TOTAL * sEMG_plot[i][j + m_Start_idx - 1] / SEMG_VAL_MAX, 0.0f);
 			}
+		glEnd();
+	}
+
+	/////////////////////////////// Flex sensor graph ///////////////////////////////
+	glLineWidth(1.5);
+	double N_Y_interval = 3;
+	double N_Y_len = 3.8;
+	for (int i = 0; i < 5; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 1.0f, 0.0f);
+		else if (i == 2)
+			glColor3f(0.0f, 0.0f, 1.0f);
+		else if (i == 3)
+			glColor3f(1.0f, 1.0f, 0.0f);
+		else if (i == 4)
+			glColor3f(1.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
+				- GRAPH_Y_LEN_TOTAL * N_Y_len - 0.8 * GRAPH_Y_LEN_TOTAL * Flex_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////////// IMU graph ///////////////////////////////////
+	glLineWidth(1.5);
+	N_Y_interval = 4;
+	N_Y_len = 4.5;
+	for (int i = 0; i < 2; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
+				- GRAPH_Y_LEN_TOTAL * N_Y_len + 0.5 * GRAPH_Y_LEN_TOTAL * IMU_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////// Motion index graph ///////////////////////////////
+	glLineWidth(1.5);
+	N_Y_interval = 5;
+	N_Y_len = 6;
+	for (int i = 0; i < 2; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			if (i == 0)
+				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
+					- GRAPH_Y_LEN_TOTAL * N_Y_len + GRAPH_Y_LEN_TOTAL * MotionLabel_plot[0][j + m_Start_idx - 1] / MOTION_IDX_MAX, 0.0f);
+			else if (i == 1)
+				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_TOTAL * N_Y_interval
+					- GRAPH_Y_LEN_TOTAL * N_Y_len + GRAPH_Y_LEN_TOTAL * MotionEstimation_plot[0][j + m_Start_idx - 1] / MOTION_IDX_MAX, 0.0f);
+		}
 		glEnd();
 	}
 
@@ -274,8 +372,18 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		// X axis
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
-		glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
+		if (i != 3 && i != 4) {
+			glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
+			glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
+		}
+		else if (i == 3) {
+			glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.8, 0.0f);
+			glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.8, 0.0f);
+		}
+		else if (i == 4) {
+			glVertex3f(-2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.5, 0.0f);
+			glVertex3f(2.5f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.5, 0.0f);
+		}
 		glEnd();
 
 		// Y axis
@@ -286,24 +394,105 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glEnd();
 	}
 
-	/////////////////////////////// Graph ///////////////////////////////
+	/////////////////////////////// sEMG Graph ///////////////////////////////
 	glLineWidth(1.5);
 	for (int i = 0; i < Num_CH; i++) {
-		int temp = i / NUM_GRAPH_ANALYSIS;
+		int N_Y_interval;
+		int N_Y_len;
+		if (0 <= i && i < 5) { // CH 1 - 5
+			N_Y_interval = 0;
+			N_Y_len = 1;
+		}
+		else if (5 <= i && i < 10) { // CH 6 - 10
+			N_Y_interval = 1;
+			N_Y_len = 2;
+		}
+		else if (10 <= i && i < 16) { // CH 11 - 16
+			N_Y_interval = 2;
+			N_Y_len = 3;
+		}
 
-		if (i % NUM_GRAPH_ANALYSIS == 0)
+		if (i == 0 || i == 5 || i == 10)
 			glColor3f(1.0f, 0.0f, 0.0f);
-		else if (i % NUM_GRAPH_ANALYSIS == 1)
+		else if (i == 1 || i == 6 || i == 11)
 			glColor3f(0.0f, 1.0f, 0.0f);
-		else if (i % NUM_GRAPH_ANALYSIS == 2)
+		else if (i == 2 || i == 7 || i == 12)
 			glColor3f(0.0f, 0.0f, 1.0f);
-		else if (i % NUM_GRAPH_ANALYSIS == 3)
+		else if (i == 3 || i == 8 || i == 13)
 			glColor3f(1.0f, 1.0f, 0.0f);
+		else if (i == 4 || i == 9 || i == 14)
+			glColor3f(1.0f, 0.0f, 1.0f);
+		else if (i == 15)
+			glColor3f(0.0f, 1.0f, 1.0f);
 
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < m_Num_idx; j++) {
-			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * temp
-				- GRAPH_Y_LEN_ANI * (temp + 1) + GRAPH_Y_LEN_ANI * sEMG_plot[i][j + m_Start_idx - 1], 0.0f);
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
+				- GRAPH_Y_LEN_ANI * N_Y_len + GRAPH_Y_LEN_ANI * sEMG_plot[i][j + m_Start_idx - 1], 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////// Flex sensor graph ///////////////////////////////
+	glLineWidth(1.5);
+	double N_Y_interval = 3;
+	double N_Y_len = 3.8;
+	for (int i = 0; i < 5; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 1.0f, 0.0f);
+		else if (i == 2)
+			glColor3f(0.0f, 0.0f, 1.0f);
+		else if (i == 3)
+			glColor3f(1.0f, 1.0f, 0.0f);
+		else if (i == 4)
+			glColor3f(1.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
+				- GRAPH_Y_LEN_ANI * N_Y_len - 0.8 * GRAPH_Y_LEN_ANI * Flex_plot[i][j + m_Start_idx - 1] / FLEX_VAL_MAX, 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////////// IMU graph ///////////////////////////////////
+	glLineWidth(1.5);
+	N_Y_interval = 4;
+	N_Y_len = 4.5;
+	for (int i = 0; i < 2; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
+				- GRAPH_Y_LEN_ANI * N_Y_len + 0.5 * GRAPH_Y_LEN_ANI * IMU_plot[i][j + m_Start_idx - 1] / IMU_VAL_MAX, 0.0f);
+		}
+		glEnd();
+	}
+
+	/////////////////////////////// Motion index graph ///////////////////////////////
+	glLineWidth(1.5);
+	N_Y_interval = 5;
+	N_Y_len = 6;
+	for (int i = 0; i < 2; i++) {
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f);
+		else if (i == 1)
+			glColor3f(0.0f, 0.0f, 1.0f);
+
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < m_Num_idx; j++) {
+			if (i == 0)
+				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
+					- GRAPH_Y_LEN_ANI * N_Y_len + GRAPH_Y_LEN_ANI * MotionLabel_plot[0][j + m_Start_idx - 1] / MOTION_IDX_MAX, 0.0f);
+			else if (i == 1)
+				glVertex3f(X_pos[j], 2.7f - GRAPH_Y_INTERVAL_ANI * N_Y_interval
+					- GRAPH_Y_LEN_ANI * N_Y_len + GRAPH_Y_LEN_ANI * MotionEstimation_plot[0][j + m_Start_idx - 1] / MOTION_IDX_MAX, 0.0f);
 		}
 		glEnd();
 	}
@@ -313,7 +502,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	glColor3f(0.0f, 0.0f, 0.0f);
 	glBegin(GL_LINES);
 		glVertex3f(X_pos[Current_idx], 3.0f, 0.0f);
-		glVertex3f(X_pos[Current_idx], -1.0f, 0.0f);
+		glVertex3f(X_pos[Current_idx], -1.2f, 0.0f);
 	glEnd();
 
 	/////////////////////////////// Polygon frame ///////////////////////////////
@@ -321,20 +510,20 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	for (int i = 0; i < 16; i++)
 		sEMG_plot_temp[i] = sEMG_plot[i][Current_idx + m_Start_idx - 1];
 	
-	X_polygon = -2.3f;
-	Y_polygon = -2.3f;
+	X_polygon = -2.4f;
+	Y_polygon = -2.4f;
 	Rad_max = 0.9;
 
 	Plot_polygon(sEMG_plot_temp, 1, 5, X_polygon, Y_polygon, Rad_max);
 
 	X_polygon = 0.0f;
-	Y_polygon = -2.3f;
+	Y_polygon = -2.4f;
 	Rad_max = 0.9;
 
 	Plot_polygon(sEMG_plot_temp, 6, 10, X_polygon, Y_polygon, Rad_max);
 
-	X_polygon = 2.3f;
-	Y_polygon = -2.3f;
+	X_polygon = 2.4f;
+	Y_polygon = -2.4f;
 	Rad_max = 0.9;
 
 	Plot_polygon(sEMG_plot_temp, 11, 16, X_polygon, Y_polygon, Rad_max);

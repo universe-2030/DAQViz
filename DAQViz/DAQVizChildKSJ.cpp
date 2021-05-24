@@ -379,9 +379,9 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 						// 2. Generate new window
 						Clip_window = new GraphClipping(Pt_forth, Pt_back, pMainDlg->Get_m_count(),
 									pMainDlg->Get_sEMG_MAV_stack(), pMainDlg->Get_Flex_raw_stack(),
-									pMainDlg->Get_MotionLabel_stack(), pMainDlg->Get_MotionEstimation_stack(),
-									pMainDlg->Get_X_pos_ball_stack(), pMainDlg->Get_Y_pos_ball_stack(),
-									pMainDlg->Get_Rad_ball_stack());
+									pMainDlg->Get_IMU_raw_stack(),	pMainDlg->Get_MotionLabel_stack(),
+									pMainDlg->Get_MotionEstimation_stack(), pMainDlg->Get_X_pos_ball_stack(),
+									pMainDlg->Get_Y_pos_ball_stack(), pMainDlg->Get_Rad_ball_stack());
 						Clip_window->Create(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, this);
 						Clip_window->ShowWindow(SW_SHOW);
 					}

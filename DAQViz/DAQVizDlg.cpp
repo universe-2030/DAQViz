@@ -221,7 +221,8 @@ void CDAQVizDlg::Initialize_Variable() {
 
 	isMATCHconnected = FALSE;
 
-	File_loaded_or_not = FALSE;
+	isModelParamLoaded = FALSE;
+	isDataLoaded = FALSE;
 
 	X_pos_ball = X_POS_INIT;
 	Y_pos_ball = Y_POS_INIT;
@@ -484,14 +485,14 @@ void CDAQVizDlg::OnBnClickedBtnLoad() {
 		m_filename = read_file.GetFileName();
 		m_filedir = read_file.GetPathName();
 
-		if (!File_loaded_or_not) {
-			File_loaded_or_not = TRUE;
-			inFile.open(m_filedir);
+		if (!isDataLoaded) {
+			isDataLoaded = TRUE;
+			inFile_data.open(m_filedir);
 			m_editLoadName.SetWindowText(m_filename);
 		}
 		else {
-			inFile.close();
-			inFile.open(m_filedir);
+			inFile_data.close();
+			inFile_data.open(m_filedir);
 			m_editLoadName.SetWindowText(m_filename);
 		}
 	}
@@ -676,22 +677,24 @@ int CDAQVizDlg::MainStart() {
 			if (isMATCHconnected && m_radioUseIMU == 0) {
 				MATCH_Dev->GetSensorData();
 				int idx_1, idx_2;
-				idx_1 = MATCH_Dev->Get_aEmg_channel_idx(0);
+				idx_1 = MATCH_Dev->Get_aEmg_channel_idx(2);
 				idx_2 = MATCH_Dev->Get_aEmg_channel_idx(1);
 
-				IMU_data[0] = MATCH_Dev->Get_aEuler(3 * (idx_1 - 1)) - MATCH_Dev->Get_aEuler(3 * (idx_2 - 1));
+				IMU_data[0] = MATCH_Dev->Get_aEuler(3 * (idx_1 - 1))
+								- MATCH_Dev->Get_aEuler(3 * (idx_2 - 1));
 
-				double IMU_data_RU_1 = (double)MATCH_Dev->Get_aEuler(3 * (idx_1 - 1) + 2);
+				/*double IMU_data_RU_1 = (double)MATCH_Dev->Get_aEuler(3 * (idx_1 - 1) + 2);
 				if (IMU_data_RU_1 < 0)
 					IMU_data_RU_1 += 360;
 				double IMU_data_RU_2 = (double)MATCH_Dev->Get_aEuler(3 * (idx_2 - 1) + 2);
 				if (IMU_data_RU_2 < 0)
 					IMU_data_RU_2 += 360;
-				IMU_data[1] = IMU_data_RU_1 - IMU_data_RU_2;
+				IMU_data[1] = IMU_data_RU_1 - IMU_data_RU_2;*/
+				IMU_data[1] = 0.0;
 			}
 
 			// Motion classification
-			Label_Est[0] = 1; // Label
+			Label_Est[0] = 2; // Label
 			Label_Est[1] = 2; // Estimation
 
 			// Ball control
@@ -1249,14 +1252,14 @@ void CDAQVizDlg::OnBnClickedBtnParameterLoad() {
 		m_filename = read_file.GetFileName();
 		m_filedir = read_file.GetPathName();
 
-		if (!File_loaded_or_not) {
-			File_loaded_or_not = TRUE;
-			inFile.open(m_filedir);
+		if (!isModelParamLoaded) {
+			isModelParamLoaded = TRUE;
+			inFile_model_param.open(m_filedir);
 			m_editLoadName.SetWindowText(m_filename);
 		}
 		else {
-			inFile.close();
-			inFile.open(m_filedir);
+			inFile_model_param.close();
+			inFile_model_param.open(m_filedir);
 			m_editLoadName.SetWindowText(m_filename);
 		}
 	}

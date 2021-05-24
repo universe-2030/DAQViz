@@ -23,8 +23,8 @@
 #define IMU_MIN -180
 #define IMU_MAX 180
 
-#define LABEL_EST_MIN -1
-#define LABEL_EST_MAX 7
+#define LABEL_EST_MIN 0
+#define LABEL_EST_MAX 5
 
 enum Graph_class {
 	SEMG_MAV,

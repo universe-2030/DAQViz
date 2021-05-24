@@ -194,9 +194,13 @@ private:
 	double Time_DAQ_elapse;
 	double Time_RTGraph_elapse;
 
-	// Load the txt file
-	ifstream inFile;
-	bool File_loaded_or_not;
+	// Load the model parameter file
+	ifstream inFile_model_param;
+	bool isModelParamLoaded;
+
+	// Load the previously saved file
+	ifstream inFile_data;
+	bool isDataLoaded;
 
 	// DAQ device
 	DELSYSDAQ* DELSYS_Dev;

@@ -19,6 +19,7 @@ GraphClipping::GraphClipping(CWnd* pParent /*=nullptr*/)
 GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
 							const std::vector<double>* _sEMG_plot,
 							const std::vector<double>* _Flex_plot,
+							const std::vector<double>* _IMU_plot,
 							const std::vector<double>* _MotionLabel_plot,
 							const std::vector<double>* _MotionEstimation_plot,
 							const std::vector<double>* _X_ball_plot,
@@ -33,9 +34,10 @@ GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
 
 	sEMG_plot = _sEMG_plot;
 	Flex_plot = _Flex_plot;
+	IMU_plot = _IMU_plot;
 
-	MotionLabel = _MotionLabel_plot;
-	MotionEstimation = _MotionEstimation_plot;
+	MotionLabel_plot = _MotionLabel_plot;
+	MotionEstimation_plot = _MotionEstimation_plot;
 
 	X_ball_plot = _X_ball_plot;
 	Y_ball_plot = _Y_ball_plot;
@@ -111,8 +113,10 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_CLIPPED_GRAPH)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx,
-									NUM_CH, sEMG_plot, Flex_plot, Render::TOTAL);
+	p_ClippedGraph = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx, NUM_CH,
+									sEMG_plot, Flex_plot, IMU_plot,
+									MotionLabel_plot, MotionEstimation_plot,
+									Render::TOTAL);
 	p_ClippedGraph->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph->ShowWindow(SW_SHOW);
 	p_ClippedGraph->MoveWindow(rectofDialogArea);
@@ -120,8 +124,10 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_ANIMATION)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph_2 = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx,
-										NUM_CH, sEMG_plot, Flex_plot, Render::ANIMATION);
+	p_ClippedGraph_2 = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx, NUM_CH,
+									sEMG_plot, Flex_plot, IMU_plot,
+									MotionLabel_plot, MotionEstimation_plot,
+									Render::ANIMATION);
 	p_ClippedGraph_2->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
 	p_ClippedGraph_2->ShowWindow(SW_SHOW);
 	p_ClippedGraph_2->MoveWindow(rectofDialogArea);
