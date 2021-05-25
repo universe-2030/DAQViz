@@ -389,8 +389,11 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	Wrist_slope = new float64[Num_Wrist_CH];
 	memset(Wrist_slope, 0.0, 2 * sizeof(Wrist_slope) * Num_Wrist_CH);
 
-	Label_Est = new double[2];
-	memset(Label_Est, 0.0, 2 * sizeof(Label_Est) * 2);
+	Label_Est = new double*[2];
+	for (int i = 0; i < 2; i++) {
+		Label_Est[i] = new double[3];
+		memset(Label_Est[i], 0.0, 2 * sizeof(Label_Est[i]) * 2);
+	}
 
 	sEMG_raw_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
@@ -727,18 +730,28 @@ int CDAQVizDlg::MainStart() {
 			}
 
 			// Motion classification
-			Label_Est[0] = SigProc->MotionClassification(Finger_data, Wrist_data); // Label
-			Label_Est[1] = 2; // Estimation
+			Label_Est[0][0] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[0]; // Label
+			Label_Est[0][1] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[1]; // Label
+			Label_Est[0][2] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[2]; // Label
+			Label_Est[1][0] = 0; // Estimation
+			Label_Est[1][1] = 0; // Estimation
+			Label_Est[1][2] = 0; // Estimation
 
 			// Ball control
-			if (Label_Est[0] == 1)
+			if (Label_Est[0][0] == LABEL_POWER_GRIP)
 				Rad_ball -= RAD_STEP_SIZE;
-			else if (Label_Est[0] == 2)
+			else if (Label_Est[0][0] == LABEL_HAND_OPEN)
 				Rad_ball += RAD_STEP_SIZE;
-			else if (Label_Est[0] == 3)
-				Y_pos_ball -= Y_POS_STEP_SIZE;
-			else if (Label_Est[0] == 4)
+
+			if (Label_Est[0][1] == LABEL_WRIST_FLEXION)
+				X_pos_ball -= X_POS_STEP_SIZE;
+			else if (Label_Est[0][1] == LABEL_WRIST_EXTENSION)
+				X_pos_ball += X_POS_STEP_SIZE;
+
+			if (Label_Est[0][2] == LABEL_WRIST_RADIAL)
 				Y_pos_ball += Y_POS_STEP_SIZE;
+			else if (Label_Est[0][2] == LABEL_WRIST_ULNAR)
+				Y_pos_ball -= Y_POS_STEP_SIZE;
 
 			if (X_pos_ball <= X_POS_MIN)
 				X_pos_ball = X_POS_MIN;
@@ -796,7 +809,7 @@ int CDAQVizDlg::MainStart() {
 				p_ChildDlg_KSJ->Plot_graph(Wrist_slope, p_ChildDlg_KSJ->Get_rtGraph_Wrist_slope()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 7) {
-				p_ChildDlg_KSJ->Plot_graph(Label_Est, p_ChildDlg_KSJ->Get_rtGraph_Label_Est()[0]);
+				p_ChildDlg_KSJ->Plot_graph(Label_Est[0], p_ChildDlg_KSJ->Get_rtGraph_Label_Est()[0]);
 			}
 
 			// Toc
@@ -807,7 +820,7 @@ int CDAQVizDlg::MainStart() {
 			// Stack the data
 			StackData(sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
 					Finger_data, Finger_slope, Wrist_data, Wrist_slope,
-					Label_Est[0], Label_Est[1],
+					Label_Est[0][0], Label_Est[1][0],
 					X_pos_ball, Y_pos_ball, Rad_ball,
 					Time_DAQ_elapse, Time_RTGraph_elapse);
 

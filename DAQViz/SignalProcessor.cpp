@@ -5,11 +5,11 @@ SignalProcessor::SignalProcessor() { // Niave initialization
 
 }
 
-SignalProcessor::SignalProcessor(int Num_sEMG, int Num_Flex, int Num_IMU,
+SignalProcessor::SignalProcessor(int Num_sEMG, int Num_Finger, int Num_Wrist,
 								double time_step, double sampling_rate, double cutoff_LPF) {
 	N_sEMG_CH = Num_sEMG;
-	N_Flex_CH = Num_Flex;
-	N_IMU_CH = Num_IMU;
+	N_Finger_CH = Num_Finger;
+	N_Wrist_CH = Num_Wrist;
 
 	T_S = time_step;
 	Fs = sampling_rate;
@@ -31,47 +31,58 @@ double SignalProcessor::FilteredDerivative(double Prev_input,
 	return ((1 / A1) * (A2 * Prev_output + B1 * Current_input - B2 * Prev_input));
 }
 
-UINT SignalProcessor::MotionClassification (const double* _Flex_data,
-											const double* _IMU_data) {
-	bool* isFingerFlex = new bool[N_Flex_CH];
-	memset(isFingerFlex, FALSE, N_Flex_CH);
-	for (int i = 0; i < N_Flex_CH; i++) {
-		if (_Flex_data[i] < -FINGER_FLEX_THRES_ABS) {
+UINT* SignalProcessor::MotionClassification_Flex (const double* _Finger_data,
+												const double* _Wrist_data) {
+	bool* isFingerFlex = new bool[N_Finger_CH];
+	memset(isFingerFlex, FALSE, N_Finger_CH);
+	for (int i = 0; i < N_Finger_CH; i++) {
+		if (_Finger_data[i] < -FINGER_FLEX_THRES_ABS) {
 			isFingerFlex[i] = TRUE;
 		}
 	}
 
-	int* isWristFlex = new int[N_IMU_CH];
-	memset(isWristFlex, 0, sizeof(int) * N_IMU_CH);
-	for (int i = 0; i < N_IMU_CH; i++) {
-		if (_IMU_data[i] < -WRIST_FE_THRES_ABS) {
+	int* isWristFlex = new int[N_Wrist_CH];
+	memset(isWristFlex, 0, sizeof(int) * N_Wrist_CH);
+	for (int i = 0; i < N_Wrist_CH; i++) {
+		if (_Wrist_data[i] < -WRIST_FE_THRES_ABS) {
 			isWristFlex[i] = 1;
 		}
-		else if (_IMU_data[i] > WRIST_FE_THRES_ABS) {
+		else if (_Wrist_data[i] > WRIST_FE_THRES_ABS) {
 			isWristFlex[i] = -1;
 		}
 	}
 
-	if (isWristFlex[0] == 1) { // Wrist flexion
-		return LABEL_WRIST_FLEXION;
+	UINT* Motion_idx = new UINT[3];
+	memset(Motion_idx, 0.0, sizeof(Motion_idx) * 3);
+
+	if (isWristFlex[0] == 1) { // Wrist - Flexion
+		Motion_idx[1] = LABEL_WRIST_FLEXION;
 	}
-	else if (isWristFlex[0] == -1) { // Wrist extension
-		return LABEL_WRIST_EXTENSION;
+	else if (isWristFlex[0] == -1) { // Wrist - Extension
+		Motion_idx[1] = LABEL_WRIST_EXTENSION;
 	}
-	else if (isFingerFlex[0] && isFingerFlex[1] &&
+	
+	if (isWristFlex[1] == 1) { // Wrist - Radial deviation
+		Motion_idx[2] = LABEL_WRIST_RADIAL;
+	}
+	else if (isWristFlex[1] == -1) { // Wrist - Ulnar deviation
+		Motion_idx[2] = LABEL_WRIST_ULNAR;
+	}
+	
+	if (isFingerFlex[0] && isFingerFlex[1] &&
 		isFingerFlex[2] && isFingerFlex[3] && isFingerFlex[4]) { // Power grip
-		return LABEL_POWER_GRIP;
+		Motion_idx[0] = LABEL_POWER_GRIP;
 	}
 	else if (!isFingerFlex[0] && !isFingerFlex[1] &&
 		!isFingerFlex[2] && !isFingerFlex[3] && !isFingerFlex[4]) { // Hand open
-		return LABEL_HAND_OPEN;
+		Motion_idx[0] = LABEL_HAND_OPEN;
 	}
-	else
-		return 0;
+
+	return Motion_idx;
 }
 
-UINT SignalProcessor::MotionClassification_Slope(const double* _Flex_slope,
-												const double* _IMU_slope) {
+UINT SignalProcessor::MotionClassification_Flex_Slope(const double* _Flex_slope,
+													const double* _IMU_slope) {
 	return 0;
 }
 

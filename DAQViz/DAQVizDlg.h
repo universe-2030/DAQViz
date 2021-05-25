@@ -42,18 +42,18 @@
 #define SAVE_FOLDER_PATH_MACRO "D:/Training-free algorithm/"
 
 #define X_POS_INIT 0.0
-#define X_POS_MIN -0.5
-#define X_POS_MAX 0.5
+#define X_POS_MIN -2.0
+#define X_POS_MAX 2.0
 #define X_POS_STEP_SIZE 0.001
 
 #define Y_POS_INIT 0.0
-#define Y_POS_MIN -0.5
-#define Y_POS_MAX 0.5
+#define Y_POS_MIN -2.0
+#define Y_POS_MAX 2.0
 #define Y_POS_STEP_SIZE 0.001
 
-#define RAD_INIT 0.3
+#define RAD_INIT 0.4
 #define RAD_MIN 0.1
-#define RAD_MAX 0.9
+#define RAD_MAX 1.2
 #define RAD_STEP_SIZE 0.001
 
 // CDAQVizDlg 대화 상자
@@ -227,7 +227,7 @@ private:
 	float64* Wrist_data;
 	float64* Wrist_slope;
 
-	double* Label_Est;
+	double** Label_Est;
 
 	// Calibration
 	int cali_count = 0;

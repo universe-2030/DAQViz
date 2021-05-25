@@ -30,7 +30,7 @@
 #define WRIST_SLOPE_MAX 5.0
 
 #define LABEL_EST_MIN 0
-#define LABEL_EST_MAX 5
+#define LABEL_EST_MAX 7
 
 enum Graph_class {
 	SEMG_MAV,
