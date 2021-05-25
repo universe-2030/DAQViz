@@ -47,7 +47,7 @@ CDAQVizDlg::CDAQVizDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG, pParent), 
 	m_radioTrainingMode(1), m_radioStreamingMode(0),
 	m_radioSaveMode(1), m_radiosEMGDAQDev(0),
-	m_radioUseFlexSensor(0), m_radioUseIMU(0) {
+	m_radioUseFingerFlex(0), m_radioUseWristFlex(0) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -78,11 +78,11 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_TEXT_SEMG_DAQ_DEVICE, m_textsEMGDAQDev);
 	DDX_Radio(pDX, IDC_RADIO_DEVICE_DELSYS, (int&)m_radiosEMGDAQDev);
 
-	DDX_Control(pDX, IDC_TEXT_USE_LOGONU_IMU, m_textUseIMU);
-	DDX_Radio(pDX, IDC_RADIO_USE_IMU_LOGONU_YES, (int&)m_radioUseIMU);
+	DDX_Control(pDX, IDC_TEXT_USE_FINGER_FLEX, m_textUseFingerFlex);
+	DDX_Radio(pDX, IDC_RADIO_USE_FINGER_FLEX_YES, (int&)m_radioUseFingerFlex);
 
-	DDX_Control(pDX, IDC_TEXT_USE_FLEX_SENSOR, m_textUseFlexSensor);
-	DDX_Radio(pDX, IDC_RADIO_USE_FLEX_SENSOR_YES, (int&)m_radioUseFlexSensor);
+	DDX_Control(pDX, IDC_TEXT_USE_WRIST_FLEX, m_textUseWristFlex);
+	DDX_Radio(pDX, IDC_RADIO_USE_WRIST_FLEX_YES, (int&)m_radioUseWristFlex);
 
 	DDX_Control(pDX, IDC_EDIT_STATUS_BAR, m_editStatusBar);
 
@@ -94,10 +94,10 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_EDIT_TIME_END_IDX, m_editEndIdx);
 	DDX_Control(pDX, IDC_TEXT_NUM_SEMG_CH, m_textNumsEMGCH);
 	DDX_Control(pDX, IDC_EDIT_NUM_SEMG_CH, m_editNumsEMGCH);
-	DDX_Control(pDX, IDC_TEXT_NUM_FLEX_CH, m_textNumFlexCH);
-	DDX_Control(pDX, IDC_TEXT_NUM_IMU_CH, m_textNumIMUCH);
-	DDX_Control(pDX, IDC_EDIT_NUM_FLEX_CH, m_editNumFlexCH);
-	DDX_Control(pDX, IDC_EDIT_NUM_IMU_CH, m_editNumIMUCH);
+	DDX_Control(pDX, IDC_TEXT_NUM_FINGER_FLEX_CH, m_textNumFingerFlexCH);
+	DDX_Control(pDX, IDC_TEXT_NUM_WRIST_FLEX_CH, m_textNumWristFlexCH);
+	DDX_Control(pDX, IDC_EDIT_NUM_FINGER_FLEX_CH, m_editNumFingerFlexCH);
+	DDX_Control(pDX, IDC_EDIT_NUM_WRIST_FLEX_CH, m_editNumWristFlexCH);
 }
 
 BEGIN_MESSAGE_MAP(CDAQVizDlg, CDialogEx)
@@ -109,8 +109,8 @@ BEGIN_MESSAGE_MAP(CDAQVizDlg, CDialogEx)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_DATA_STREAMING_RT, IDC_RADIO_DATA_STREAMING_LOAD, RadioCtrl)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_SAVE_IMMEDIATE, IDC_RADIO_STOP_AND_RUN_STACK_OFF, RadioCtrl)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_DEVICE_DELSYS, IDC_RADIO_DEVICE_FRANKFURT, RadioCtrl)
-	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_USE_IMU_LOGONU_YES, IDC_RADIO_USE_IMU_LOGONU_NO, RadioCtrl)
-	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_USE_FLEX_SENSOR_YES, IDC_RADIO_USE_FLEX_SENSOR_NO, RadioCtrl)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_USE_WRIST_FLEX_YES, IDC_RADIO_USE_WRIST_FLEX_NO, RadioCtrl)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_USE_FINGER_FLEX_YES, IDC_RADIO_USE_FINGER_FLEX_NO, RadioCtrl)
 	ON_BN_CLICKED(IDC_BTN_LOAD, &CDAQVizDlg::OnBnClickedBtnLoad)
 	ON_CBN_SELCHANGE(IDC_COMBO_DLG_SELECT, &CDAQVizDlg::OnCbnSelchangeComboDlgSelect)
 //	ON_WM_SIZING()
@@ -118,8 +118,8 @@ ON_WM_SIZE()
 ON_WM_TIMER()
 ON_WM_DESTROY()
 ON_EN_CHANGE(IDC_EDIT_NUM_SEMG_CH, &CDAQVizDlg::OnEnChangeEditNumSemgCh)
-ON_EN_CHANGE(IDC_EDIT_NUM_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumFlexCh)
-ON_EN_CHANGE(IDC_EDIT_NUM_IMU_CH, &CDAQVizDlg::OnEnChangeEditNumImuCh)
+ON_EN_CHANGE(IDC_EDIT_NUM_FINGER_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumFlexCh)
+ON_EN_CHANGE(IDC_EDIT_NUM_WRIST_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumImuCh)
 ON_BN_CLICKED(IDC_BTN_PARAMETER_LOAD, &CDAQVizDlg::OnBnClickedBtnParameterLoad)
 END_MESSAGE_MAP()
 
@@ -249,8 +249,8 @@ void CDAQVizDlg::Initialize_GUI() {
 	Set_Font(m_textDataStreamingMode, 20, 8);
 	Set_Font(m_textSaveMode, 20, 8);
 	Set_Font(m_textsEMGDAQDev, 20, 8);
-	Set_Font(m_textUseIMU, 20, 8);
-	Set_Font(m_textUseFlexSensor, 20, 8);
+	Set_Font(m_textUseWristFlex, 20, 8);
+	Set_Font(m_textUseFingerFlex, 20, 8);
 	Set_Font(m_textControlTime, 20, 8);
 	Set_Font(m_editControlTime, 20, 8);
 	Set_Font(m_textStartIdx, 20, 8);
@@ -259,10 +259,10 @@ void CDAQVizDlg::Initialize_GUI() {
 	Set_Font(m_editEndIdx, 20, 8);
 	Set_Font(m_textNumsEMGCH, 20, 8);
 	Set_Font(m_editNumsEMGCH, 20, 8);
-	Set_Font(m_textNumFlexCH, 20, 8);
-	Set_Font(m_editNumFlexCH, 20, 8);
-	Set_Font(m_textNumIMUCH, 20, 8);
-	Set_Font(m_editNumIMUCH, 20, 8);
+	Set_Font(m_textNumFingerFlexCH, 20, 8);
+	Set_Font(m_editNumFingerFlexCH, 20, 8);
+	Set_Font(m_textNumWristFlexCH, 20, 8);
+	Set_Font(m_editNumWristFlexCH, 20, 8);
 
 	m_comboSelectDlg.AddString(_T("1. Sejin Kim"));
 	// m_comboSelectDlg.AddString(_T("2. Another users"));
@@ -277,9 +277,9 @@ void CDAQVizDlg::Initialize_GUI() {
 	temp.Format(_T("%d"), DELSYS_CH_MAX);
 	m_editNumsEMGCH.SetWindowTextW(temp);
 	temp.Format(_T("%d"), FINGER_CH_MAX);
-	m_editNumFlexCH.SetWindowTextW(temp);
+	m_editNumFingerFlexCH.SetWindowTextW(temp);
 	temp.Format(_T("%d"), WRIST_CH_MAX);
-	m_editNumIMUCH.SetWindowTextW(temp);
+	m_editNumWristFlexCH.SetWindowTextW(temp);
 
 	if (m_radioTrainingMode == 0 || m_radioTrainingMode == 1)
 		m_btnParameterLoad.EnableWindow(FALSE);
@@ -342,25 +342,9 @@ void CDAQVizDlg::Initialize_LogonU() {
 		MATCH_Dev->CloseMATCH();
 
 		GetDlgItem(IDC_RADIO_DEVICE_FRANKFURT)->EnableWindow(FALSE);
-
-		m_radioUseIMU = 1;
-		CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES);
-		pCheck->SetCheck(BST_UNCHECKED);
-		pCheck = (CButton*)GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_NO);
-		pCheck->SetCheck(BST_CHECKED);
-		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES)->EnableWindow(FALSE);
-
-		CString temp;
-		temp.Format(_T("%d"), 0);
-		m_editNumIMUCH.SetWindowText(temp);
-		m_editNumIMUCH.EnableWindow(FALSE);
 	}
-	else {
+	else
 		isMATCHconnected = TRUE;
-		m_radioUseIMU = 0;
-		CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES);
-		pCheck->SetCheck(BST_CHECKED);
-	}
 }
 
 void CDAQVizDlg::Dynamic_Allocation() {
@@ -989,51 +973,51 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 		temp.Format(_T("%d"), Num_sEMG_CH);
 		m_editNumsEMGCH.SetWindowText(temp);
 	}
-	else if (IDC_RADIO_USE_FLEX_SENSOR_YES <= ID && ID <= IDC_RADIO_USE_FLEX_SENSOR_NO) {
+	else if (IDC_RADIO_USE_FINGER_FLEX_YES <= ID && ID <= IDC_RADIO_USE_FINGER_FLEX_NO) {
 		if (TEST_FLAG) {
 			CString radio_val;
-			radio_val.Format(_T("%d"), m_radioUseFlexSensor);
+			radio_val.Format(_T("%d"), m_radioUseFingerFlex);
 			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
 		}
 		CString temp;
-		switch (m_radioUseFlexSensor) {
+		switch (m_radioUseFingerFlex) {
 		case 0:
 			Num_Finger_CH = FINGER_CH_MAX;
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
-			m_editNumFlexCH.EnableWindow(TRUE);
+			m_editNumFingerFlexCH.EnableWindow(TRUE);
 			temp.Format(_T("%d"), Num_Finger_CH);
 			break;
 		case 1:
 			Num_Finger_CH = FINGER_CH_MAX;
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
-			m_editNumFlexCH.EnableWindow(FALSE);
+			m_editNumFingerFlexCH.EnableWindow(FALSE);
 			temp.Format(_T("%d"), 0);
 			break;
 		}
-		m_editNumFlexCH.SetWindowText(temp);
+		m_editNumFingerFlexCH.SetWindowText(temp);
 	}
-	else if (IDC_RADIO_USE_IMU_LOGONU_YES <= ID && ID <= IDC_RADIO_USE_IMU_LOGONU_NO) {
+	else if (IDC_RADIO_USE_WRIST_FLEX_YES <= ID && ID <= IDC_RADIO_USE_WRIST_FLEX_NO) {
 		if (TEST_FLAG) {
 			CString radio_val;
-			radio_val.Format(_T("%d"), m_radioUseIMU);
+			radio_val.Format(_T("%d"), m_radioUseWristFlex);
 			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
 		}
 		CString temp;
-		switch (m_radioUseIMU) {
+		switch (m_radioUseWristFlex) {
 		case 0:
 			Num_Wrist_CH = WRIST_CH_MAX;
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
-			m_editNumIMUCH.EnableWindow(TRUE);
+			m_editNumWristFlexCH.EnableWindow(TRUE);
 			temp.Format(_T("%d"), Num_Wrist_CH);
 			break;
 		case 1:
 			Num_Wrist_CH = WRIST_CH_MAX;
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
-			m_editNumIMUCH.EnableWindow(FALSE);
+			m_editNumWristFlexCH.EnableWindow(FALSE);
 			temp.Format(_T("%d"), 0);
 			break;
 		}
-		m_editNumIMUCH.SetWindowText(temp);
+		m_editNumWristFlexCH.SetWindowText(temp);
 	}
 }
 
@@ -1154,15 +1138,15 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 		GetDlgItem(IDC_RADIO_DEVICE_DELSYS)->EnableWindow(_isAvailable);
 		GetDlgItem(IDC_RADIO_DEVICE_FRANKFURT)->EnableWindow(_isAvailable);
 
-		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_YES)->EnableWindow(_isAvailable);
-		GetDlgItem(IDC_RADIO_USE_IMU_LOGONU_NO)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_USE_WRIST_FLEX_YES)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_USE_WRIST_FLEX_NO)->EnableWindow(_isAvailable);
 
-		GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_YES)->EnableWindow(_isAvailable);
-		GetDlgItem(IDC_RADIO_USE_FLEX_SENSOR_NO)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_USE_FINGER_FLEX_YES)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_USE_FINGER_FLEX_NO)->EnableWindow(_isAvailable);
 
 		m_editNumsEMGCH.EnableWindow(_isAvailable);
-		m_editNumFlexCH.EnableWindow(_isAvailable);
-		m_editNumIMUCH.EnableWindow(_isAvailable);
+		m_editNumFingerFlexCH.EnableWindow(_isAvailable);
+		m_editNumWristFlexCH.EnableWindow(_isAvailable);
 	}
 
 	GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE)->EnableWindow(_isAvailable);
@@ -1469,22 +1453,22 @@ void CDAQVizDlg::OnEnChangeEditNumFlexCh() {
 	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString temp;
 
-	m_editNumFlexCH.GetWindowText(temp);
+	m_editNumFingerFlexCH.GetWindowText(temp);
 	int Num_finger_CH = _ttoi(temp);
-	if (m_radioUseFlexSensor == 0) {
+	if (m_radioUseFingerFlex == 0) {
 		if (Num_finger_CH > FINGER_CH_MAX) {
-			MessageBox(_T("Flex sensor channel should be smaller than 5."),
+			MessageBox(_T("Finger flex sensor channel should be smaller than 5."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), FINGER_CH_MAX);
-			m_editNumFlexCH.SetWindowText(temp);
+			m_editNumFingerFlexCH.SetWindowText(temp);
 			Num_Finger_CH = FINGER_CH_MAX;
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
 		else if (Num_finger_CH < 1) {
-			MessageBox(_T("Flex sensor channel should be larger than 1."),
+			MessageBox(_T("Finger flex sensor channel should be larger than 1."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), 1);
-			m_editNumFlexCH.SetWindowText(temp);
+			m_editNumFingerFlexCH.SetWindowText(temp);
 			Num_Finger_CH = 1;
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
@@ -1499,22 +1483,22 @@ void CDAQVizDlg::OnEnChangeEditNumImuCh() {
 	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString temp;
 
-	m_editNumIMUCH.GetWindowText(temp);
+	m_editNumWristFlexCH.GetWindowText(temp);
 	int Num_wrist_CH = _ttoi(temp);
-	if (m_radioUseIMU == 0) {
+	if (m_radioUseWristFlex == 0) {
 		if (Num_wrist_CH > WRIST_CH_MAX) {
-			MessageBox(_T("IMU sensor channel should be smaller than 2."),
+			MessageBox(_T("Wrist flex sensor channel should be smaller than 2."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), WRIST_CH_MAX);
-			m_editNumIMUCH.SetWindowText(temp);
+			m_editNumWristFlexCH.SetWindowText(temp);
 			Num_Wrist_CH = WRIST_CH_MAX;
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
 		else if (Num_wrist_CH < 1) {
-			MessageBox(_T("IMU sensor channel should be larger than 1."),
+			MessageBox(_T("Wrist flex sensor channel should be larger than 1."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), 1);
-			m_editNumIMUCH.SetWindowText(temp);
+			m_editNumWristFlexCH.SetWindowText(temp);
 			Num_Wrist_CH = 1;
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}

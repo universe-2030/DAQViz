@@ -118,11 +118,11 @@ private:
 	CStatic m_textsEMGDAQDev;
 	UINT m_radiosEMGDAQDev;
 	
-	CStatic m_textUseFlexSensor;
-	UINT    m_radioUseFlexSensor;
+	CStatic m_textUseFingerFlex;
+	UINT    m_radioUseFingerFlex;
 	
-	CStatic m_textUseIMU;
-	UINT m_radioUseIMU;
+	CStatic m_textUseWristFlex;
+	UINT m_radioUseWristFlex;
 
 	CEdit m_editStatusBar;
 
@@ -136,10 +136,10 @@ private:
 
 	CStatic		m_textNumsEMGCH;
 	CEdit		m_editNumsEMGCH;
-	CStatic		m_textNumFlexCH;
-	CEdit		m_editNumFlexCH;
-	CStatic		m_textNumIMUCH;
-	CEdit		m_editNumIMUCH;
+	CStatic		m_textNumFingerFlexCH;
+	CEdit		m_editNumFingerFlexCH;
+	CStatic		m_textNumWristFlexCH;
+	CEdit		m_editNumWristFlexCH;
 
 	// Container variables
 	std::vector<double> Time_stack;
