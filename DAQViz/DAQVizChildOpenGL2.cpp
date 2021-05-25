@@ -169,10 +169,18 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 				UINT idx_temp = pMainDlg->Get_Wrist_raw_stack()[0].size();
 
 				wrist_FE_plot = pMainDlg->Get_Wrist_raw_stack()[0][idx_temp - 1];
-				wrist_FE_plot = rightHand_2.Get_wrist_FE_init() -
-					(rightHand_2.Get_wrist_FE_max() - rightHand_2.Get_wrist_FE_init()) * wrist_FE_plot / WRIST_FE_ANALOG_ABS_MAX;
+				wrist_FE_plot = rightHand.Get_wrist_FE_init() -
+					(rightHand.Get_wrist_FE_max() - rightHand.Get_wrist_FE_init()) * wrist_FE_plot / WRIST_FE_ANALOG_ABS_MAX;
 
-				rightHand.WristRotatePos(wrist_FE_plot);
+				rightHand.WristFERotatePos(wrist_FE_plot);
+
+				idx_temp = pMainDlg->Get_Wrist_raw_stack()[1].size();
+
+				wrist_RU_plot = pMainDlg->Get_Wrist_raw_stack()[1][idx_temp - 1];
+				wrist_RU_plot = rightHand.Get_wrist_RU_init() -
+					(rightHand.Get_wrist_RU_max() - rightHand.Get_wrist_RU_init()) * wrist_RU_plot / WRIST_RU_ANALOG_ABS_MAX;
+
+				rightHand.WristRURotatePos(wrist_RU_plot);
 			}
 		}
 	}
@@ -215,7 +223,13 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 			wrist_FE_plot = rightHand_2.Get_wrist_FE_init() -
 				(rightHand_2.Get_wrist_FE_max() - rightHand_2.Get_wrist_FE_init()) * wrist_FE_plot / WRIST_FE_ANALOG_ABS_MAX;
 
-			rightHand_2.WristRotatePos(wrist_FE_plot);
+			rightHand_2.WristFERotatePos(wrist_FE_plot);
+
+			wrist_RU_plot = pMainDlg->Get_Wrist_raw_stack()[1][idx_temp - 1];
+			wrist_RU_plot = rightHand_2.Get_wrist_RU_init() -
+				(rightHand_2.Get_wrist_RU_max() - rightHand_2.Get_wrist_RU_init()) * wrist_RU_plot / WRIST_RU_ANALOG_ABS_MAX;
+
+			rightHand_2.WristRURotatePos(wrist_RU_plot);
 		}
 	}
 }

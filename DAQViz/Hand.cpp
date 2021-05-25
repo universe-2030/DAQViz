@@ -97,17 +97,17 @@ Hand::Hand(GLFrame* obj) {
 	second_max[4] = 90;
 
 	/// ///////////////////////////////////////////////////////////////////////
-	armDeg = 0;
+	wrist_FE = 0;
 	wrist_RU = 0;
 	
-	wrist_FE_init = armDeg;
+	wrist_FE_init = 0;
 	wrist_RU_init = 0;
 
 	wrist_FE_min = -50;
-	wrist_RU_min = 0;
+	wrist_RU_min = -40;
 
 	wrist_FE_max = 84;
-	wrist_RU_max = 0;
+	wrist_RU_max = 30;
 }
 
 Hand::~Hand() {
@@ -118,14 +118,24 @@ void Hand::setJointIndex(int num) {
 	index = num;
 }
 
-void Hand::WristRotatePos(float pos1) {
+void Hand::WristFERotatePos(float pos) {
 	index = 14;
 	setJointIndex(index); // Wrist index
-	armDeg = pos1;
-	if (armDeg >= wrist_FE_max)
-		armDeg = wrist_FE_max;
-	else if (armDeg <= wrist_FE_min)
-		armDeg = wrist_FE_min;
+	wrist_FE = pos;
+	if (wrist_FE >= wrist_FE_max)
+		wrist_FE = wrist_FE_max;
+	else if (wrist_FE <= wrist_FE_min)
+		wrist_FE = wrist_FE_min;
+}
+
+void Hand::WristRURotatePos(float pos) {
+	index = 15;
+	setJointIndex(index); // Wrist index
+	wrist_RU = pos;
+	if (wrist_RU >= wrist_RU_max)
+		wrist_RU = wrist_RU_max;
+	else if (wrist_RU <= wrist_RU_min)
+		wrist_RU = wrist_RU_min;
 }
 
 void Hand::ThumbRotatePos(float pos1, float pos2) {
@@ -271,11 +281,11 @@ void Hand::fingerRotatePos(float pos) {
 			second[4] = 0;
 	}
 	else if (index == 14) {
-		armDeg = pos;
-		if (armDeg >= 84)
-			armDeg = 84;
-		if (armDeg <= -50)
-			armDeg = -50;
+		wrist_FE = pos;
+		if (wrist_FE >= 84)
+			wrist_FE = 84;
+		if (wrist_FE <= -50)
+			wrist_FE = -50;
 	}
 	else if (index % 3 == 0) {
 		root[index / 3] = pos;
@@ -312,9 +322,9 @@ void Hand::fingerRotateDown() {
 			second[4] = 90;
 	}
 	else if (index == 14) {
-		armDeg += 3;
-		if (armDeg >= 84)
-			armDeg = 84;
+		wrist_FE += 3;
+		if (wrist_FE >= 84)
+			wrist_FE = 84;
 	}
 	else if (index % 3 == 0) {
 		root[index / 3] += 3;
@@ -346,9 +356,9 @@ void Hand::fingerRotateUp() {
 			second[4] = 0;
 	}
 	else if (index == 14) {
-		armDeg -= 3;
-		if (armDeg <= -50)
-			armDeg = -50;
+		wrist_FE -= 3;
+		if (wrist_FE <= -50)
+			wrist_FE = -50;
 	}
 	else if (index % 3 == 0) {
 		root[index / 3] -= 3;
@@ -398,8 +408,10 @@ void Hand::Render() {
 	glLineWidth(1);
 	glScalef(1.5, 1.5, -1.5);
 	glTranslatef(0, 0, -3.2);
-	glRotatef(armDeg, 1, 0, 0);
+	glRotatef(wrist_FE, 1, 0, 0);
 	index == 14 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.5, 50, 50);
+	glRotatef(wrist_RU, 0, -1, 0);
+	index == 15 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.5, 50, 50);
 
 	glTranslatef(0, 0, 0.5);
 	glColor3ub(0, 200, 0); glmDraw(palm, GL_SMOOTH);
@@ -648,6 +660,10 @@ float Hand::Get_wrist_FE_init() {
 	return wrist_FE_init;
 }
 
+float Hand::Get_wrist_RU_init() {
+	return wrist_RU_init;
+}
+
 const float* Hand::Get_root_min() {
 	return root_min;
 }
@@ -664,6 +680,10 @@ float Hand::Get_wrist_FE_min() {
 	return wrist_FE_min;
 }
 
+float Hand::Get_wrist_RU_min() {
+	return wrist_RU_min;
+}
+
 const float* Hand::Get_root_max() {
 	return root_max;
 }
@@ -677,5 +697,9 @@ const float* Hand::Get_second_max() {
 }
 
 float Hand::Get_wrist_FE_max() {
+	return wrist_FE_max;
+}
+
+float Hand::Get_wrist_RU_max() {
 	return wrist_FE_max;
 }
