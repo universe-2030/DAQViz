@@ -8,7 +8,7 @@
 
 #define FINGER_FLEX_THRES_ABS 0.05
 #define WRIST_FE_THRES_ABS 0.05
-#define WRIST_UR_THRES_ABS 0.05
+#define WRIST_RU_THRES_ABS 0.05
 
 #define LABEL_POWER_GRIP 1
 #define LABEL_HAND_OPEN 2
@@ -16,6 +16,7 @@
 #define LABEL_WRIST_EXTENSION 4
 #define LABEL_WRIST_RADIAL 5
 #define LABEL_WRIST_ULNAR 6
+#define LABEL_OTHERS 0
 
 class SignalProcessor {
 private:

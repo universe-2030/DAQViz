@@ -43,14 +43,16 @@ UINT* SignalProcessor::MotionClassification_Flex (const double* _Finger_data,
 
 	int* isWristFlex = new int[N_Wrist_CH];
 	memset(isWristFlex, 0, sizeof(int) * N_Wrist_CH);
-	for (int i = 0; i < N_Wrist_CH; i++) {
-		if (_Wrist_data[i] < -WRIST_FE_THRES_ABS) {
-			isWristFlex[i] = 1;
-		}
-		else if (_Wrist_data[i] > WRIST_FE_THRES_ABS) {
-			isWristFlex[i] = -1;
-		}
-	}
+
+	if (_Wrist_data[0] < -WRIST_FE_THRES_ABS)
+		isWristFlex[0] = 1;
+	else if (_Wrist_data[0] > WRIST_FE_THRES_ABS)
+		isWristFlex[0] = -1;
+
+	if (_Wrist_data[1] < -WRIST_RU_THRES_ABS)
+		isWristFlex[1] = 1;
+	else if (_Wrist_data[1] > WRIST_RU_THRES_ABS)
+		isWristFlex[1] = -1;
 
 	UINT* Motion_idx = new UINT[3];
 	memset(Motion_idx, 0.0, sizeof(Motion_idx) * 3);

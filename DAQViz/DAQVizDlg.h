@@ -30,6 +30,8 @@
 
 #define N_GRAPH 8
 
+#define WIN_SIZE 250
+
 #define DELSYS_CH_MAX 16
 #define FRANKFURT_CH_MAX 8
 #define FINGER_CH_MAX 5
@@ -39,7 +41,9 @@
 #define WRIST_FE_ANALOG_ABS_MAX 0.3
 #define WRIST_RU_ANALOG_ABS_MAX 0.3
 
-#define SAVE_FOLDER_PATH_MACRO "D:/Training-free algorithm/"
+#define MOTION_DOF 3
+
+#define SAVE_FOLDER_PATH_MACRO _T("E:/OneDrive - postech.ac.kr/연구/### 데이터/Finger + Wrist sEMG & Motion data/")
 
 #define X_POS_INIT 0.0
 #define X_POS_MIN -2.0
@@ -138,6 +142,11 @@ private:
 	CEdit		m_editNumIMUCH;
 
 	// Container variables
+	std::vector<double> Time_stack;
+	std::vector<double> Time_DAQ_elapse_stack;
+	std::vector<double> Time_RTGraph_elapse_stack;
+
+	double** sEMG_raw_window;
 	std::vector<double>* sEMG_raw_stack;
 	std::vector<double>* sEMG_abs_stack;
 	std::vector<double>* sEMG_MAV_stack;
@@ -157,9 +166,6 @@ private:
 	std::vector<double>* X_pos_ball_stack;
 	std::vector<double>* Y_pos_ball_stack;
 	std::vector<double>* Rad_ball_stack;
-
-	std::vector<double> Time_DAQ_elapse_stack;
-	std::vector<double> Time_RTGraph_elapse_stack;
 
 	// TwinCAT variables
 	HANDLE hMutex;
@@ -203,7 +209,6 @@ private:
 	bool isDataLoaded;
 
 	// DAQ device
-	DELSYSDAQ* DELSYS_Dev;
 	MatchDevice* MATCH_Dev;
 	bool isMATCHconnected;
 
@@ -298,21 +303,34 @@ public:
 	const std::vector<double>* Get_Rad_ball_stack();
 
 	// Stack & Save
-	void StackData (double* _sEMG_raw,
+	void StackData (double _m_time,
+					double _Time_DAQ_elapse,
+					double _Time_RTGraph_elapse,
+					double* _sEMG_raw,
 					double* _sEMG_abs,
 					double* _sEMG_MAV,
 					double* _Finger_raw,
 					double* _Finger_slope,
 					double* _Wrist_raw,
 					double* _Wrist_slope,
-					double _MotionLabel_current,
-					double _MotionEstimation_current,
+					double* _MotionLabel_current,
+					double* _MotionEstimation_current,
 					double _X_pos,
 					double _Y_pos,
-					double _Rad,
-					double _Time_DAQ_elapse,
-					double _Time_RTGraph_elapse);
+					double _Rad);
 	void SaveData(CString SaveFolderName);
+	void SaveParameters(CString SaveFolderName);
+	void SaveModel(CString SaveFolderName);
+
+	ofstream f_time, f_time_elapsed_DAQ, f_time_elapsed_RTGraph;
+	ofstream f_sEMG_raw, f_sEMG_abs, f_sEMG_MAV;
+	ofstream f_Finger_raw, f_Finger_slope;
+	ofstream f_Wrist_raw, f_Wrist_slope;
+	ofstream f_MotionLabel, f_MotionEstimation;
+	ofstream f_X_pos_ball, f_Y_pos_ball, f_Rad_ball;
+	ofstream f_parameters;
+	ofstream f_model_sEMG_mean, f_model_sEMG_std;
+
 	afx_msg void OnEnChangeEditNumSemgCh();
 	afx_msg void OnEnChangeEditNumFlexCh();
 	afx_msg void OnEnChangeEditNumImuCh();

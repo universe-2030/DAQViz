@@ -395,6 +395,11 @@ void CDAQVizDlg::Dynamic_Allocation() {
 		memset(Label_Est[i], 0.0, 2 * sizeof(Label_Est[i]) * 2);
 	}
 
+	sEMG_raw_window = new double* [Num_sEMG_CH];
+	for (int i = 0; i < Num_sEMG_CH; i++) {
+		sEMG_raw_window[i] = new double[WIN_SIZE];
+		memset(sEMG_raw_window[i], 0.0, 2 * sizeof(sEMG_raw_window[i]) * WIN_SIZE);
+	}
 	sEMG_raw_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_MAV_stack = new std::vector<double>[Num_sEMG_CH];
@@ -404,8 +409,8 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	Wrist_raw_stack = new std::vector<double>[Num_Wrist_CH];
 	Wrist_slope_stack = new std::vector<double>[Num_Wrist_CH];
 
-	MotionLabel = new std::vector<double>;
-	MotionEstimation = new std::vector<double>;
+	MotionLabel = new std::vector<double>[MOTION_DOF];
+	MotionEstimation = new std::vector<double>[MOTION_DOF];
 
 	X_pos_ball_stack = new std::vector<double>;
 	Y_pos_ball_stack = new std::vector<double>;
@@ -663,6 +668,34 @@ int CDAQVizDlg::MainStart() {
 			QueryPerformanceCounter(&Counter_DAQ_Start);
 
 			// DAQ Body
+			AI_sEMG->ReadOneStep();
+			sEMG_raw_plot = AI_sEMG->Get_m_ReadValue();
+			for (int i = 0; i < Num_sEMG_CH; i++) {
+				sEMG_abs_plot[i] = abs(sEMG_raw_plot[i]);
+
+				double sEMG_MAV_temp = 0.0;
+				if (m_count <= WIN_SIZE) {
+					sEMG_raw_window[i][m_count - 1] = sEMG_raw_plot[i];
+
+					for (int j = 0; j < m_count; j++) {
+						sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
+					}
+				}
+				else {
+					for (int j = 0; j < WIN_SIZE - 1; j++) {
+						sEMG_raw_window[i][j] = sEMG_raw_window[i][j + 1];
+					}
+					sEMG_raw_window[i][WIN_SIZE - 1] = sEMG_raw_plot[i];
+
+					for (int j = 0; j < WIN_SIZE; j++) {
+						sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
+					}
+				}
+				
+				sEMG_MAV_temp /= WIN_SIZE;
+				sEMG_MAV_plot[i] = sEMG_MAV_temp;
+			}
+
 			AI_Flex->ReadOneStep();
 			Flex_data = AI_Flex->Get_m_ReadValue();
 
@@ -672,11 +705,11 @@ int CDAQVizDlg::MainStart() {
 					m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 				}
 
+				cali_count++;
 				// Calibration DAQ - sEMG
 
 
 				// Calibration DAQ - Flex
-				cali_count++;
 				for (int i = 0; i < Num_Flex_CH; i++)
 					Flex_data_calib[i] += Flex_data[i];
 
@@ -687,7 +720,6 @@ int CDAQVizDlg::MainStart() {
 					for (int i = 0; i < Num_Flex_CH; i++)
 						Flex_data_calib[i] /= (double)cali_count;
 				}
-
 			}
 			else {
 				for (int i = 0; i < Num_Flex_CH; i++) {
@@ -730,12 +762,12 @@ int CDAQVizDlg::MainStart() {
 			}
 
 			// Motion classification
-			Label_Est[0][0] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[0]; // Label
-			Label_Est[0][1] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[1]; // Label
-			Label_Est[0][2] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[2]; // Label
-			Label_Est[1][0] = 0; // Estimation
-			Label_Est[1][1] = 0; // Estimation
-			Label_Est[1][2] = 0; // Estimation
+			Label_Est[0][0] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[0]; // Finger motion label (w/ flex sensor)
+			Label_Est[0][1] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[1]; // Wrist F/E label (w/ flex sensor)
+			Label_Est[0][2] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[2]; // Wrist R/U Label (w/ flex sensor)
+			Label_Est[1][0] = 0; // Finger motion estimation (Classifier necessary)
+			Label_Est[1][1] = 0; // Wrist F/E estimation (Classifier necessary)
+			Label_Est[1][2] = 0; // Wrist R/U estimation (Classifier necessary)
 
 			// Ball control
 			if (Label_Est[0][0] == LABEL_POWER_GRIP)
@@ -779,7 +811,7 @@ int CDAQVizDlg::MainStart() {
 
 			// sEMG data assignment
 			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_raw_plot[i] = abs(sin(2 * PI * 0.5 * (i + 1) * m_time));
+				// sEMG_raw_plot[i] = abs(sin(2 * PI * 0.5 * (i + 1) * m_time));
 				sEMG_abs_plot[i] = abs(sin(2 * PI * 0.5 * (i + 1) * m_time));
 				sEMG_MAV_plot[i] = abs(sin(2 * PI * 0.5 * (i + 1) * m_time));
 			}
@@ -788,7 +820,7 @@ int CDAQVizDlg::MainStart() {
 			p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_MAV_plot);
 
 			if (pShared_Data->count % N_GRAPH == 0) {
-				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
+				p_ChildDlg_KSJ->Plot_graph(sEMG_raw_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 1) {
 				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
@@ -818,11 +850,11 @@ int CDAQVizDlg::MainStart() {
 														/ (double)Counter_RTGraph_Frequency.QuadPart * 1000; // ms scale
 
 			// Stack the data
-			StackData(sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
+			StackData(m_time, Time_DAQ_elapse, Time_RTGraph_elapse,
+					sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
 					Finger_data, Finger_slope, Wrist_data, Wrist_slope,
-					Label_Est[0][0], Label_Est[1][0],
-					X_pos_ball, Y_pos_ball, Rad_ball,
-					Time_DAQ_elapse, Time_RTGraph_elapse);
+					Label_Est[0], Label_Est[1],
+					X_pos_ball, Y_pos_ball, Rad_ball);
 
 			pShared_Data->iNextOwner = THREAD_CALLBACK;
 			ReleaseMutex(hMutex);
@@ -1138,20 +1170,25 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_OFF)->EnableWindow(_isAvailable);
 }
 
-void CDAQVizDlg::StackData (double* _sEMG_raw,
+void CDAQVizDlg::StackData (double _m_time,
+							double _Time_DAQ_elapse,
+							double _Time_RTGraph_elapse,
+							double* _sEMG_raw,
 							double* _sEMG_abs,
 							double* _sEMG_MAV,
 							double* _Finger_raw,
 							double* _Finger_slope,
 							double* _Wrist_raw,
 							double* _Wrist_slope,
-							double _MotionLabel_current,
-							double _MotionEstimation_current,
+							double* _MotionLabel_current,
+							double* _MotionEstimation_current,
 							double _X_pos,
 							double _Y_pos,
-							double _Rad,
-							double _Time_DAQ_elapse,
-							double _Time_RTGraph_elapse) {
+							double _Rad) {
+	Time_stack.push_back(_m_time);
+	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);
+	Time_RTGraph_elapse_stack.push_back(_Time_RTGraph_elapse);
+
 	for (int i = 0; i < Num_sEMG_CH; i++) {
 		sEMG_raw_stack[i].push_back(_sEMG_raw[i]);
 		sEMG_abs_stack[i].push_back(_sEMG_abs[i]);
@@ -1168,15 +1205,14 @@ void CDAQVizDlg::StackData (double* _sEMG_raw,
 		Wrist_slope_stack[i].push_back(_Wrist_slope[i]);
 	}
 
-	MotionLabel[0].push_back(_MotionLabel_current);
-	MotionEstimation[0].push_back(_MotionEstimation_current);
+	for (int i = 0; i < MOTION_DOF; i++) {
+		MotionLabel[i].push_back(_MotionLabel_current[i]);
+		MotionEstimation[i].push_back(_MotionEstimation_current[i]);
+	}
 
 	X_pos_ball_stack[0].push_back(_X_pos);
 	Y_pos_ball_stack[0].push_back(_Y_pos);
 	Rad_ball_stack[0].push_back(_Rad);
-
-	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);
-	Time_RTGraph_elapse_stack.push_back(_Time_RTGraph_elapse);
 }
 
 void CDAQVizDlg::SaveData(CString SaveFolderName) {
@@ -1191,18 +1227,196 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 	CString prefix = SaveFolderName;
 	prefix += "/";
 
-	ofstream f_time, f_time_elapsed_DAQ, f_time_elapsed_RTGraph;
-	ofstream f_sEMG_raw, f_sEMG_abs, f_sEMG_MAV;
-	ofstream f_Flex_raw, f_Flex_LPF;
-	ofstream f__raw, f_IMU_LPF;
-	ofstream f_sEMG_pattern_num, f_sEMG_pattern_idx, f_sEMG_pattern_log_prob;
-	ofstream f_model_parameters;
-	
+	f_time.open(prefix + _T("Time.txt"));
+	f_time_elapsed_DAQ.open(prefix + _T("Time_elapsed_DAQ.txt"));
+	f_time_elapsed_RTGraph.open(prefix + _T("Time_elapsed_RTGraph.txt"));
+
+	f_sEMG_raw.open(prefix + _T("sEMG_raw.txt"));
+	f_sEMG_abs.open(prefix + _T("sEMG_abs.txt"));
+	f_sEMG_MAV.open(prefix + _T("sEMG_MAV.txt"));
+
+	f_Finger_raw.open(prefix + _T("Finger_flex_raw.txt"));
+	f_Finger_slope.open(prefix + _T("Finger_flex_slope.txt"));
+	f_Wrist_raw.open(prefix + _T("Wrist_flex_raw.txt"));
+	f_Wrist_slope.open(prefix + _T("Wrist_flex_slope.txt"));
+
+	f_MotionLabel.open(prefix + _T("Motion_label.txt"));
+	f_MotionEstimation.open(prefix + _T("Motion_estimation.txt"));
+
+	f_X_pos_ball.open(prefix + _T("X_pos_ball.txt"));
+	f_Y_pos_ball.open(prefix + _T("Y_pos_ball.txt"));
+	f_Rad_ball.open(prefix + _T("Rad_ball.txt"));
+
+	m_editStatusBar.SetWindowText(stat += _T("[USER] Save Start \r\n"));
+	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+	m_editStatusBar.SetWindowText(stat += _T("[USER] Saving... \r\n"));
+	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+	// Time Data Size Log
+	ofstream size_log;
+	size_log.open(prefix + _T("size_log.txt"));
+
+	size_log << "The length of 'Time_stack' : " << Time_stack.size() << endl;
+	size_log << "The length of 'Time_DAQ_elapse_stack' : " << Time_DAQ_elapse_stack.size() << endl;
+	size_log << "The length of 'Time_RTGraph_elapse_stack' : " << Time_RTGraph_elapse_stack.size() << endl;
+	size_log << endl;
+
+	size_log << "The length of 'sEMG_raw' : " << sEMG_raw_stack[0].size() << endl;
+	size_log << "The length of 'sEMG_abs' : " << sEMG_abs_stack[0].size() << endl;
+	size_log << "The length of 'sEMG_MAV' : " << sEMG_MAV_stack[0].size() << endl;
+	size_log << endl;
+
+	size_log << "The length of 'Finger_raw' : " << Finger_raw_stack[0].size() << endl;
+	size_log << "The length of 'Finger_slope' : " << Finger_slope_stack[0].size() << endl;
+	size_log << "The length of 'Wrist_raw' : " << Wrist_raw_stack[0].size() << endl;
+	size_log << "The length of 'Wrist_slope' : " << Wrist_slope_stack[0].size() << endl;
+	size_log << endl;
+
+	size_log << "The length of 'MotionLabel' : " << MotionLabel[0].size() << endl;
+	size_log << "The length of 'MotionEstimation' : " << MotionEstimation[0].size() << endl;
+	size_log << endl;
+
+	size_log << "The length of 'X_pos_ball_stack' : " << X_pos_ball_stack[0].size() << endl;
+	size_log << "The length of 'Y_pos_ball_stack' : " << Y_pos_ball_stack[0].size() << endl;
+	size_log << "The length of 'Rad_ball_stack' : " << Rad_ball_stack[0].size() << endl;
+	size_log << endl;
+
+	// Saving...
+	for (int i = 0; i < (int)Time_stack.size(); i++) {
+		f_time << Time_stack[i] << endl;
+		f_time_elapsed_DAQ << Time_DAQ_elapse_stack[i] << endl;
+		f_time_elapsed_RTGraph << Time_RTGraph_elapse_stack[i] << endl;
+
+		for (int j = 0; j < Num_sEMG_CH; j++) {
+			f_sEMG_raw << sEMG_raw_stack[j][i];
+			f_sEMG_abs << sEMG_abs_stack[j][i];
+			f_sEMG_MAV << sEMG_MAV_stack[j][i];
+			if (j != Num_sEMG_CH - 1) {
+				f_sEMG_raw << " ";
+				f_sEMG_abs << " ";
+				f_sEMG_MAV << " ";
+			}
+			else {
+				f_sEMG_raw << endl;
+				f_sEMG_abs << endl;
+				f_sEMG_MAV << endl;
+			}
+		}
+
+		for (int j = 0; j < Num_Finger_CH; j++) {
+			f_Finger_raw << Finger_raw_stack[j][i];
+			f_Finger_slope << Finger_slope_stack[j][i];
+			if (j != Num_Finger_CH - 1) {
+				f_Finger_raw << " ";
+				f_Finger_slope << " ";
+			}
+			else {
+				f_Finger_raw << endl;
+				f_Finger_slope << endl;
+			}
+		}
+
+		for (int j = 0; j < Num_Wrist_CH; j++) {
+			f_Wrist_raw << Wrist_raw_stack[j][i];
+			f_Wrist_slope << Wrist_slope_stack[j][i];
+			if (j != Num_Wrist_CH - 1) {
+				f_Wrist_raw << " ";
+				f_Wrist_slope << " ";
+			}
+			else {
+				f_Wrist_raw << endl;
+				f_Wrist_slope << endl;
+			}
+		}
+		
+		for (int j = 0; j < MOTION_DOF; j++) {
+			f_MotionLabel << MotionLabel[j][i];
+			f_MotionEstimation << MotionEstimation[j][i];
+			if (j != MOTION_DOF - 1) {
+				f_MotionLabel << " ";
+				f_MotionEstimation << " ";
+			}
+			else {
+				f_MotionLabel << endl;
+				f_MotionEstimation << endl;
+			}
+		}
+
+		f_X_pos_ball << X_pos_ball_stack[0][i] << endl;
+		f_Y_pos_ball << Y_pos_ball_stack[0][i] << endl;
+		f_Rad_ball << Rad_ball_stack[0][i] << endl;
+	}
+
+	SaveParameters(SaveFolderName);
+	if (m_radioTrainingMode == 1) // Corresponding to training mode
+		SaveModel(SaveFolderName);
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	m_editStatusBar.SetWindowText(stat += "[USER] Save End!");
 	m_editStatusBar.SetWindowText(stat += "\r\n");
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+}
+
+void CDAQVizDlg::SaveParameters(CString SaveFolderName) {
+	CString prefix = SaveFolderName;
+	prefix += "/";
+
+	f_parameters.open(prefix + _T("Parameters.txt"));
+
+	f_parameters << "Sensor calibration start time : " << CALI_START << endl;
+	f_parameters << "Sensor calibration end time : " << CALI_END << endl;
+	f_parameters << endl;
+
+	f_parameters << "MAV window size : " << WIN_SIZE << endl;
+	f_parameters << endl;
+
+	f_parameters << "The number of sEMG channels : " << Num_sEMG_CH <<  endl;
+	f_parameters << "The number of total flex channels : " << Num_Flex_CH << endl;
+	f_parameters << "The number of finger flex channels : " << Num_Finger_CH << endl;
+	f_parameters << "The number of wrist flex channels : " << Num_Wrist_CH << endl;
+	f_parameters << endl;
+
+	f_parameters << "Finger flex sensor threshold : " << FINGER_FLEX_THRES_ABS << endl;
+	f_parameters << "Wrist Flexion / Extension flex sensor threshold : " << WRIST_FE_THRES_ABS << endl;
+	f_parameters << "Wrist Radial / Ulnar flex sensor threshold : " << WRIST_RU_THRES_ABS << endl;
+	f_parameters << endl;
+
+	f_parameters << "The number of motions on interest : " << N_MOTIONS << endl;
+	f_parameters << "Power grip label : " << LABEL_POWER_GRIP << endl;
+	f_parameters << "Hand open label : " << LABEL_HAND_OPEN << endl;
+	f_parameters << "Wrist flexion label : " << LABEL_WRIST_FLEXION << endl;
+	f_parameters << "Wrist extension label : " << LABEL_WRIST_EXTENSION << endl;
+	f_parameters << "Wrist radial deviation label : " << LABEL_WRIST_RADIAL << endl;
+	f_parameters << "Wrist ulnar deviation label : " << LABEL_WRIST_ULNAR << endl;
+	f_parameters << "Others : " << LABEL_OTHERS << endl;
+	f_parameters << endl;
+
+	f_parameters << "X_pos initial value : " << X_POS_INIT << endl;
+	f_parameters << "X_pos minimal value : " << X_POS_MIN << endl;
+	f_parameters << "X_pos maximal value : " << X_POS_MAX << endl;
+	f_parameters << "X_pos step size : " << X_POS_STEP_SIZE << endl;
+	f_parameters << endl;
+
+	f_parameters << "Y_pos initial value : " << Y_POS_INIT << endl;
+	f_parameters << "Y_pos minimal value : " << Y_POS_MIN << endl;
+	f_parameters << "Y_pos maximal value : " << Y_POS_MAX << endl;
+	f_parameters << "Y_pos step size : " << Y_POS_STEP_SIZE << endl;
+	f_parameters << endl;
+
+	f_parameters << "Rad initial value : " << RAD_INIT << endl;
+	f_parameters << "Rad minimal value : " << RAD_MIN << endl;
+	f_parameters << "Rad maximal value : " << RAD_MAX << endl;
+	f_parameters << "Rad step size : " << RAD_STEP_SIZE << endl;
+	f_parameters << endl;
+}
+
+void CDAQVizDlg::SaveModel(CString SaveFolderName) {
+	CString prefix = SaveFolderName;
+	prefix += "/";
+
+	f_model_sEMG_mean.open(prefix + _T("Model_sEMG_mean.txt"));
+	f_model_sEMG_std.open(prefix + _T("Model_sEMG_std.txt"));
 }
 
 void CDAQVizDlg::OnEnChangeEditNumSemgCh() {

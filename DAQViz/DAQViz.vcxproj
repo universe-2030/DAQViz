@@ -187,7 +187,6 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Animation.h" />
     <ClInclude Include="BallControl.h" />
     <ClInclude Include="ClippedGraph.h" />
     <ClInclude Include="DAQViz.h" />
@@ -195,7 +194,6 @@
     <ClInclude Include="DAQVizChildOpenGL.h" />
     <ClInclude Include="DAQVizChildOpenGL2.h" />
     <ClInclude Include="DAQVizDlg.h" />
-    <ClInclude Include="DELSYSDAQ.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="glm.h" />
     <ClInclude Include="GraphClipping.h" />
@@ -211,7 +209,6 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="BallControl.cpp" />
     <ClCompile Include="ClippedGraph.cpp" />
     <ClCompile Include="DAQViz.cpp" />
@@ -219,7 +216,6 @@
     <ClCompile Include="DAQVizChildOpenGL.cpp" />
     <ClCompile Include="DAQVizChildOpenGL2.cpp" />
     <ClCompile Include="DAQVizDlg.cpp" />
-    <ClCompile Include="DELSYSDAQ.cpp" />
     <ClCompile Include="glm.cpp" />
     <ClCompile Include="gltools.cpp" />
     <ClCompile Include="GraphClipping.cpp" />

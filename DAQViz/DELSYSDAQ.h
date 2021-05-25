@@ -15,9 +15,9 @@ public:
 private:
 	UINT Win_size;
 
-	std::queue<double>* sEMG_raw_window;
+	const std::queue<double>* sEMG_raw_window;
 
-	std::vector<double>* sEMG_raw;
-	std::vector<double>* sEMG_MAV;
-	std::vector<double>* sEMG_RMS;
+	const std::vector<double>* sEMG_raw;
+	const std::vector<double>* sEMG_MAV;
+	const std::vector<double>* sEMG_RMS;
 };
