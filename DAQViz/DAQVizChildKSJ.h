@@ -23,11 +23,11 @@
 #define FINGER_SLOPE_MIN -10.0
 #define FINGER_SLOPE_MAX 10.0
 
-#define WRIST_MIN -1.5
+#define WRIST_MIN -0.5
 #define WRIST_MAX 0.5
 
-#define WRIST_SLOPE_MIN -1.5
-#define WRIST_SLOPE_MAX 0.5
+#define WRIST_SLOPE_MIN -5.0
+#define WRIST_SLOPE_MAX 5.0
 
 #define LABEL_EST_MIN 0
 #define LABEL_EST_MAX 5

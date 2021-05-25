@@ -31,14 +31,17 @@ public:
 	const float* Get_root_init();
 	const float* Get_first_init();
 	const float* Get_second_init();
+	float Get_wrist_FE_init();
 
 	const float* Get_root_min();
 	const float* Get_first_min();
 	const float* Get_second_min();
+	float Get_wrist_FE_min();
 
 	const float* Get_root_max();
 	const float* Get_first_max();
 	const float* Get_second_max();
+	float Get_wrist_FE_max();
 
 private:
 	GLFrame* object;

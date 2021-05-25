@@ -644,6 +644,10 @@ const float* Hand::Get_second_init() {
 	return second_init;
 }
 
+float Hand::Get_wrist_FE_init() {
+	return wrist_FE_init;
+}
+
 const float* Hand::Get_root_min() {
 	return root_min;
 }
@@ -656,6 +660,10 @@ const float* Hand::Get_second_min() {
 	return second_min;
 }
 
+float Hand::Get_wrist_FE_min() {
+	return wrist_FE_min;
+}
+
 const float* Hand::Get_root_max() {
 	return root_max;
 }
@@ -666,4 +674,8 @@ const float* Hand::Get_first_max() {
 
 const float* Hand::Get_second_max() {
 	return second_max;
+}
+
+float Hand::Get_wrist_FE_max() {
+	return wrist_FE_max;
 }

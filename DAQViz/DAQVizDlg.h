@@ -35,7 +35,9 @@
 #define FINGER_CH_MAX 5
 #define WRIST_CH_MAX 2
 
-#define FLEX_ANALOG_ABS_MAX 0.75
+#define FINGER_ANALOG_ABS_MAX 0.75
+#define WRIST_FE_ANALOG_ABS_MAX 0.3
+#define WRIST_RU_ANALOG_ABS_MAX 0.3
 
 #define SAVE_FOLDER_PATH_MACRO "D:/Training-free algorithm/"
 
