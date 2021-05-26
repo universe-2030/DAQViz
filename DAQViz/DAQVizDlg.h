@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <vector>
 #include <queue>
 #include <cstdlib>
@@ -43,7 +44,7 @@
 
 #define MOTION_DOF 3
 
-#define SAVE_FOLDER_PATH_MACRO _T("E:/OneDrive - postech.ac.kr/연구/### 데이터/Finger + Wrist sEMG & Motion data/")
+#define SAVE_FOLDER_PATH_MACRO _T("E:/OneDrive - postech.ac.kr/연구/### 데이터/DAQViz data/")
 
 #define X_POS_INIT 0.0
 #define X_POS_MIN -2.0
@@ -59,6 +60,11 @@
 #define RAD_MIN 0.1
 #define RAD_MAX 1.2
 #define RAD_STEP_SIZE 0.001
+
+#define NUM_FILE_LOAD 4
+#define NUM_FILE_LOAD_PARAMETER 2
+#define MAX_FILES 1000
+#define MAX_PATH 150
 
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
@@ -167,6 +173,15 @@ private:
 	std::vector<double>* Y_pos_ball_stack;
 	std::vector<double>* Rad_ball_stack;
 
+	// Container variables - only for loaded data
+	std::vector<double>* sEMG_MAV_stack_loaded;
+	std::vector<double>* Finger_raw_stack_loaded;
+	std::vector<double>* Wrist_raw_stack_loaded;
+	std::vector<double>* MotionLabel_loaded;
+	
+	// Container variables - only for loaded parameters
+
+
 	// TwinCAT variables
 	HANDLE hMutex;
 	HANDLE hMemory;
@@ -194,19 +209,26 @@ private:
 
 	// Error & Status text
 	CString	error_text;
-	CString stat = L"";
+	CString stat = _T("");
 
 	// Elapsed time variables
 	double Time_DAQ_elapse;
 	double Time_RTGraph_elapse;
 
-	// Load the model parameter file
-	ifstream inFile_model_param;
-	bool isModelParamLoaded;
-
 	// Load the previously saved file
-	ifstream inFile_data;
+	CString* m_filelist_dir_Data;
+	CString* m_filelist_name_Data;
+	char Data_getline[10000];
+	ifstream* inFile_data;
+	int* N_CH_each_data;
 	bool isDataLoaded;
+
+	CString* m_filelist_dir_Param;
+	CString* m_filelist_name_Param;
+	char Parameters_getline[1000];
+	ifstream* inFile_parameters;
+	int* N_CH_each_Param;
+	bool isParameterLoaded;
 
 	// DAQ device
 	MatchDevice* MATCH_Dev;
@@ -260,6 +282,12 @@ public:
 	void Dynamic_Allocation();
 	void Dynamic_Free();
 
+	// Set variables for loaded data
+	void Set_Loaded_Data();
+
+	// Set variables for loaded parameters
+	void Set_Loaded_Model_Parameters();
+
 	// MFC Controls
 	afx_msg void RadioCtrl(UINT ID);
 	afx_msg void OnBnClickedBtnSwitch();
@@ -275,6 +303,9 @@ public:
 	void Initialize_EndIdx();
 
 	void Set_MFC_Control_Availability(bool _isAvailable);
+
+	void Set_loaded_Data_stack();
+	void Set_loaded_Param_stack();
 
 	// Utilities
 	void Set_Font(CButton& Btn_, UINT Height_, UINT Width_);

@@ -162,6 +162,8 @@ BOOL CDAQVizDlg::OnInitDialog()
 	Initialize_SaveFolder();
 	Initialize_LogonU();
 
+	std::cout << "EE" << std::endl;
+
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -221,8 +223,8 @@ void CDAQVizDlg::Initialize_Variable() {
 
 	isMATCHconnected = FALSE;
 
-	isModelParamLoaded = FALSE;
 	isDataLoaded = FALSE;
+	isParameterLoaded = FALSE;
 
 	X_pos_ball = X_POS_INIT;
 	Y_pos_ball = Y_POS_INIT;
@@ -268,8 +270,8 @@ void CDAQVizDlg::Initialize_GUI() {
 	// m_comboSelectDlg.AddString(_T("2. Another users"));
 	m_comboSelectDlg.SetCurSel(0);
 
-	m_editParameterLoadName.SetWindowText(_T("Select file"));
-	m_editLoadName.SetWindowText(_T("Select file"));
+	m_editParameterLoadName.SetWindowText(_T("Select files"));
+	m_editLoadName.SetWindowText(_T("Select files"));
 	m_editStartIdx.SetWindowText(_T("Not selected"));
 	m_editEndIdx.SetWindowText(_T("Not selected"));
 
@@ -459,6 +461,10 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 	if (!m_flag_Switch) { // Turned OFF -> ON
 		if (!TimerStarted) {
 			TimerStarted = TRUE;
+			
+			Set_loaded_Data_stack();
+			Set_loaded_Param_stack();
+
 			AfxBeginThread(MainThreadFunc, this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 		}
 		else {
@@ -485,26 +491,83 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 }
 
 void CDAQVizDlg::OnBnClickedBtnLoad() {
-	CFileDialog read_file(TRUE, NULL, NULL, OFN_FILEMUSTEXIST, _T("파일 선택 (.txt) | *.txt"));
+	// Allow to select multiple files
+	CFileDialog read_file(TRUE, NULL, NULL, OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT, _T("파일 선택 (.txt) | *.txt"));
+
+	CString temp;
+	int nMaxFiles = MAX_FILES;
+	int nBuffSize = nMaxFiles * MAX_PATH + 1;
+	read_file.m_ofn.nMaxFile = nBuffSize; // To increase buffer size
+	read_file.m_ofn.lpstrFile = temp.GetBuffer(nBuffSize);
 	read_file.m_ofn.lpstrTitle = _T("Load할 데이터 텍스트 파일을 선택하세요.");
-	read_file.m_ofn.lpstrInitialDir = _T("../Loading_data");
+	read_file.m_ofn.lpstrInitialDir = _T("E:/OneDrive - postech.ac.kr/연구/### 데이터/DAQViz data/");
 
 	CString m_filename;
 	CString m_filedir;
 
-	if (read_file.DoModal() == IDOK) {
-		m_filename = read_file.GetFileName();
-		m_filedir = read_file.GetPathName();
+	m_filelist_dir_Data = new CString[NUM_FILE_LOAD];
+	m_filelist_name_Data = new CString[NUM_FILE_LOAD];
 
-		if (!isDataLoaded) {
-			isDataLoaded = TRUE;
-			inFile_data.open(m_filedir);
-			m_editLoadName.SetWindowText(m_filename);
+	UINT m_filelist_idx = 0;
+	if (read_file.DoModal() == IDOK) {
+		POSITION pos = read_file.GetStartPosition();
+
+		// Load the .txt files
+		while (pos != NULL) {
+			m_filedir = read_file.GetNextPathName(pos);
+			m_filename = m_filedir;
+			m_filename.Delete(0, m_filedir.ReverseFind('\\') + 1);
+
+			m_filelist_dir_Data[m_filelist_idx] = m_filedir;
+			m_filelist_name_Data[m_filelist_idx] = m_filename;
+			m_filelist_idx++;
 		}
-		else {
-			inFile_data.close();
-			inFile_data.open(m_filedir);
-			m_editLoadName.SetWindowText(m_filename);
+
+		// Check for loading wrong file
+		for (int i = 0; i < NUM_FILE_LOAD; i++) {
+			if (m_filelist_name_Data[0] != _T("Finger_flex_raw.txt")) {
+				MessageBox(_T("First loading file should be 'Finger_flex_raw.txt'."),
+							_T("Notice"), MB_OK | MB_ICONWARNING);
+				delete[] m_filelist_dir_Data;
+				delete[] m_filelist_name_Data;
+				return;
+			}
+			if (m_filelist_name_Data[1] != _T("Motion_label.txt")) {
+				MessageBox(_T("Second loading file should be 'Motion_label.txt'."),
+							_T("Notice"), MB_OK | MB_ICONWARNING);
+				delete[] m_filelist_dir_Data;
+				delete[] m_filelist_name_Data;
+				return;
+			}
+			if (m_filelist_name_Data[2] != _T("sEMG_MAV.txt")) {
+				MessageBox(_T("Third loading file should be 'sEMG_MAV.txt'."),
+							_T("Notice"), MB_OK | MB_ICONWARNING);
+				delete[] m_filelist_dir_Data;
+				delete[] m_filelist_name_Data;
+				return;
+			}
+			if (m_filelist_name_Data[3] != _T("Wrist_flex_raw.txt")) {
+				MessageBox(_T("Fourth loading file should be 'Wrist_flex_raw.txt'."),
+							_T("Notice"), MB_OK | MB_ICONWARNING);
+				delete[] m_filelist_dir_Data;
+				delete[] m_filelist_name_Data;
+				return;
+			}
+		}
+		
+		m_editLoadName.SetWindowText(_T("Files loaded"));
+		m_editStatusBar.SetWindowText(stat += "[USER] Data load success \r\n");
+		m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+		// Enable switch
+		isDataLoaded = TRUE;
+		if (m_radioTrainingMode == 0 || m_radioTrainingMode == 1)
+			m_btnSwitch.EnableWindow(TRUE);
+		else if (m_radioTrainingMode == 2) {
+			if (isParameterLoaded)
+				m_btnSwitch.EnableWindow(TRUE);
+			else
+				m_btnSwitch.EnableWindow(FALSE);
 		}
 	}
 }
@@ -550,9 +613,108 @@ void CDAQVizDlg::OnSize(UINT nType, int cx, int cy) {
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
 }
 
+void CDAQVizDlg::Set_loaded_Data_stack() {
+	// In case of offline data loading
+	if (m_radioStreamingMode == 1) {
+		inFile_data = new ifstream[NUM_FILE_LOAD];
+		N_CH_each_data = new int[NUM_FILE_LOAD];
+		memset(N_CH_each_data, 0, sizeof(N_CH_each_data) * NUM_FILE_LOAD);
+
+		for (int i = 0; i < NUM_FILE_LOAD; i++) {
+			// 0. Open the file
+			inFile_data[i].open(m_filelist_dir_Data[i]);
+
+			// 1. Check the number of channels for each files
+			if (inFile_data[i].is_open()) {
+				CString CStr_temp;
+				inFile_data[i].getline(Data_getline, 1000, '\n');
+				CStr_temp = Data_getline;
+
+				for (int j = 0; j < CStr_temp.GetLength(); j++) {
+					if (CStr_temp[j] == ' ')
+						N_CH_each_data[i]++;
+				}
+				N_CH_each_data[i]++;
+
+				std::cout << N_CH_each_data[i] << std::endl;
+			}
+		}
+
+		Finger_raw_stack_loaded = new std::vector<double>[N_CH_each_data[0]];
+		MotionLabel_loaded = new std::vector<double>[N_CH_each_data[1]];
+		sEMG_MAV_stack_loaded = new std::vector<double>[N_CH_each_data[2]];
+		Wrist_raw_stack_loaded = new std::vector<double>[N_CH_each_data[3]];
+
+		m_editStatusBar.SetWindowText(stat += "[USER] Data loading start... \r\n");
+		m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+		CString CStr_temp;
+		CString data_Str;
+		int _temp = 0;
+		for (int i = 0; i < NUM_FILE_LOAD; i++) {
+			while (!inFile_data[i].eof()) {
+				inFile_data[i].getline(Data_getline, 10000, '\n');
+				CStr_temp = Data_getline;
+
+				int CH_idx = 0;
+				data_Str = _T("");
+				for (int j = 0; j < CStr_temp.GetLength(); j++) {
+					if (CStr_temp[j] != ' ') {
+						data_Str += CStr_temp[j];
+						if (j == CStr_temp.GetLength() - 1) {
+							double data_val = _wtof(data_Str);
+
+							if (i == 0)
+								Finger_raw_stack_loaded[CH_idx].push_back(data_val);
+							else if (i == 1)
+								MotionLabel_loaded[CH_idx].push_back(data_val);
+							else if (i == 2)
+								sEMG_MAV_stack_loaded[CH_idx].push_back(data_val);
+							else if (i == 3)
+								Wrist_raw_stack_loaded[CH_idx].push_back(data_val);
+						}
+					}
+					else {
+						double data_val = _wtof(data_Str);
+
+						if (i == 0)
+							Finger_raw_stack_loaded[CH_idx].push_back(data_val);
+						else if (i == 1)
+							MotionLabel_loaded[CH_idx].push_back(data_val);
+						else if (i == 2)
+							sEMG_MAV_stack_loaded[CH_idx].push_back(data_val);
+						else if (i == 3)
+							Wrist_raw_stack_loaded[CH_idx].push_back(data_val);
+						CH_idx++;
+
+						data_Str = _T("");
+					}
+				}
+			}
+		}
+		m_editStatusBar.SetWindowText(stat += "[USER] Data loading end \r\n");
+		m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+		std::cout << Finger_raw_stack_loaded[0].size() << std::endl;
+		std::cout << MotionLabel_loaded[0].size() << std::endl;
+		std::cout << sEMG_MAV_stack_loaded[0].size() << std::endl;
+		std::cout << Wrist_raw_stack_loaded[0].size() << std::endl;
+	}
+}
+
 UINT CDAQVizDlg::MainThreadFunc(LPVOID IParam) {
 	((CDAQVizDlg*)IParam)->MainStart();
 	return TRUE;
+}
+
+void CDAQVizDlg::Set_loaded_Param_stack() {
+	// In case of test session
+	if (m_radioTrainingMode == 2) {
+		// 0. Dynamic allocation & open the file
+		inFile_parameters = new ifstream[NUM_FILE_LOAD_PARAMETER];
+		N_CH_each_Param = new int[NUM_FILE_LOAD_PARAMETER];
+		memset(N_CH_each_Param, 0, sizeof(N_CH_each_Param) * NUM_FILE_LOAD_PARAMETER);
+	}
 }
 
 int CDAQVizDlg::MainStart() {
@@ -884,27 +1046,66 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 		CString temp = SaveFolderPath_Main + SaveFolderName;
 		switch (m_radioTrainingMode) {
 		case 0:
-			m_btnParameterLoad.EnableWindow(FALSE);
+			if (isParameterLoaded) {
+				isParameterLoaded = FALSE;
+				m_editParameterLoadName.SetWindowText(_T("Select files"));
+				m_editStatusBar.SetWindowText(stat += "[USER] Parameter unload success \r\n");
+				m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+			}
 
-			temp += _T("_Unsupervised");
+			m_btnParameterLoad.EnableWindow(FALSE);
+			if (m_radioStreamingMode == 0) {
+				temp += _T("_Unsupervised_Online");
+				m_btnSwitch.EnableWindow(TRUE);
+			}
+			else if (m_radioStreamingMode == 1) {
+				temp += _T("_Unsupervised_Offline");
+				if (isDataLoaded)
+					m_btnSwitch.EnableWindow(TRUE);
+				else
+					m_btnSwitch.EnableWindow(FALSE);
+			}
 			SaveFolderPath = temp;
 			m_editSaveFolderPath.SetWindowText(SaveFolderPath);
 
 			break;
 		case 1:
-			m_btnParameterLoad.EnableWindow(FALSE);
+			if (isParameterLoaded) {
+				isParameterLoaded = FALSE;
+				m_editParameterLoadName.SetWindowText(_T("Select files"));
+				m_editStatusBar.SetWindowText(stat += "[USER] Parameter unload success \r\n");
+				m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+			}
 
-			temp += _T("_Training");
+			m_btnParameterLoad.EnableWindow(FALSE);
+			if (m_radioStreamingMode == 0) {
+				temp += _T("_Training_Online");
+				m_btnSwitch.EnableWindow(TRUE);
+			}
+			else if (m_radioStreamingMode == 1) {
+				temp += _T("_Training_Offline");
+				if (isDataLoaded)
+					m_btnSwitch.EnableWindow(TRUE);
+				else
+					m_btnSwitch.EnableWindow(FALSE);
+			}
 			SaveFolderPath = temp;
 			m_editSaveFolderPath.SetWindowText(SaveFolderPath);
 
 			break;
 		case 2:
+			isParameterLoaded = FALSE;
 			m_btnParameterLoad.EnableWindow(TRUE);
-
-			temp += _T("_Test");
+			if (m_radioStreamingMode == 0) {
+				temp += _T("_Test_Online");
+			}
+			else if (m_radioStreamingMode == 1) {
+				temp += _T("_Test_Offline");
+			}
 			SaveFolderPath = temp;
 			m_editSaveFolderPath.SetWindowText(SaveFolderPath);
+
+			m_btnSwitch.EnableWindow(FALSE);
 
 			break;
 		}
@@ -915,12 +1116,51 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 			radio_val.Format(_T("%d"), m_radioStreamingMode);
 			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
 		}
+
+		CString temp = SaveFolderPath_Main + SaveFolderName;
 		switch (m_radioStreamingMode) {
 		case 0:
+			if (isDataLoaded) {
+				isDataLoaded = FALSE;
+				m_editLoadName.SetWindowText(_T("Select files"));
+				m_editStatusBar.SetWindowText(stat += "[USER] Data unload success \r\n");
+				m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+			}
+
 			m_btnLoad.EnableWindow(FALSE);
+			if (m_radioTrainingMode == 0) {
+				temp += _T("_Unsupervised_Online");
+				m_btnSwitch.EnableWindow(TRUE);
+			}
+			else if (m_radioTrainingMode == 1) {
+				temp += _T("_Training_Online");
+				m_btnSwitch.EnableWindow(TRUE);
+			}
+			else if (m_radioTrainingMode == 2) {
+				temp += _T("_Test_Online");
+				if (isParameterLoaded)
+					m_btnSwitch.EnableWindow(TRUE);
+				else
+					m_btnSwitch.EnableWindow(FALSE);
+			}
+			SaveFolderPath = temp;
+			m_editSaveFolderPath.SetWindowText(SaveFolderPath);
+
 			break;
 		case 1:
+			isDataLoaded = FALSE;
 			m_btnLoad.EnableWindow(TRUE);
+			if (m_radioTrainingMode == 0)
+				temp += _T("_Unsupervised_Offline");
+			else if (m_radioTrainingMode == 1)
+				temp += _T("_Training_Offline");
+			else if (m_radioTrainingMode == 2)
+				temp += _T("_Test_Offline");
+			m_btnSwitch.EnableWindow(FALSE);
+
+			SaveFolderPath = temp;
+			m_editSaveFolderPath.SetWindowText(SaveFolderPath);
+
 			break;
 		}
 	}
@@ -1393,6 +1633,10 @@ void CDAQVizDlg::SaveParameters(CString SaveFolderName) {
 	f_parameters << "Rad maximal value : " << RAD_MAX << endl;
 	f_parameters << "Rad step size : " << RAD_STEP_SIZE << endl;
 	f_parameters << endl;
+
+	f_parameters << "Max. number of files: " << MAX_FILES << endl;
+	f_parameters << "Max path size : " << MAX_PATH << endl;
+	f_parameters << endl;
 }
 
 void CDAQVizDlg::SaveModel(CString SaveFolderName) {
@@ -1511,26 +1755,67 @@ void CDAQVizDlg::OnEnChangeEditNumImuCh() {
 
 void CDAQVizDlg::OnBnClickedBtnParameterLoad() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	CFileDialog read_file(TRUE, NULL, NULL, OFN_FILEMUSTEXIST, _T("파일 선택 (.txt) | *.txt"));
+	CFileDialog read_file(TRUE, NULL, NULL, OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT, _T("파일 선택 (.txt) | *.txt"));
+	CString temp;
+	int nMaxFiles = MAX_FILES;
+	int nBuffSize = nMaxFiles * MAX_PATH + 1;
+	read_file.m_ofn.nMaxFile = nBuffSize; // To increase buffer size
+	read_file.m_ofn.lpstrFile = temp.GetBuffer(nBuffSize);
 	read_file.m_ofn.lpstrTitle = _T("Load할 파라미터 텍스트 파일을 선택하세요.");
-	read_file.m_ofn.lpstrInitialDir = _T("../Loading_data");
+	read_file.m_ofn.lpstrInitialDir = _T("E:/OneDrive - postech.ac.kr/연구/### 데이터/DAQViz data/");
 
 	CString m_filename;
 	CString m_filedir;
 
-	if (read_file.DoModal() == IDOK) {
-		m_filename = read_file.GetFileName();
-		m_filedir = read_file.GetPathName();
+	m_filelist_dir_Param = new CString[NUM_FILE_LOAD_PARAMETER];
+	m_filelist_name_Param = new CString[NUM_FILE_LOAD_PARAMETER];
 
-		if (!isModelParamLoaded) {
-			isModelParamLoaded = TRUE;
-			inFile_model_param.open(m_filedir);
-			m_editLoadName.SetWindowText(m_filename);
+	UINT m_filelist_idx = 0;
+	if (read_file.DoModal() == IDOK) {
+		POSITION pos = read_file.GetStartPosition();
+
+		// Load the .txt files
+		while (pos != NULL) {
+			m_filedir = read_file.GetNextPathName(pos);
+			m_filename = m_filedir;
+			m_filename.Delete(0, m_filedir.ReverseFind('\\') + 1);
+
+			m_filelist_dir_Param[m_filelist_idx] = m_filedir;
+			m_filelist_name_Param[m_filelist_idx] = m_filename;
+			m_filelist_idx++;
 		}
-		else {
-			inFile_model_param.close();
-			inFile_model_param.open(m_filedir);
-			m_editLoadName.SetWindowText(m_filename);
+	}
+
+	// Check for loading wrong file
+	for (int i = 0; i < NUM_FILE_LOAD_PARAMETER; i++) {
+		if (m_filelist_name_Param[0] != _T("Model_sEMG_mean.txt")) {
+			MessageBox(_T("First loading file should be 'Model_sEMG_mean.txt'."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			delete[] m_filelist_dir_Param;
+			delete[] m_filelist_name_Param;
+			return;
 		}
+		if (m_filelist_name_Param[1] != _T("Model_sEMG_std.txt")) {
+			MessageBox(_T("Second loading file should be 'Model_sEMG_std.txt'."),
+						_T("Notice"), MB_OK | MB_ICONWARNING);
+			delete[] m_filelist_dir_Param;
+			delete[] m_filelist_name_Param;
+			return;
+		}
+	}
+
+	m_editParameterLoadName.SetWindowText(_T("Files loaded"));
+	m_editStatusBar.SetWindowText(stat += "[USER] Parameter load success \r\n");
+	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+	// Enable switch
+	isParameterLoaded = TRUE;
+	if (m_radioStreamingMode == 0)
+		m_btnSwitch.EnableWindow(TRUE);
+	else if (m_radioStreamingMode == 1) {
+		if (isDataLoaded)
+			m_btnSwitch.EnableWindow(TRUE);
+		else
+			m_btnSwitch.EnableWindow(FALSE);
 	}
 }

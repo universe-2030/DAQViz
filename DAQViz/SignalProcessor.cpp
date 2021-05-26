@@ -21,6 +21,16 @@ SignalProcessor::~SignalProcessor() { // Niave initialization
 
 }
 
+double SignalProcessor::LowPassFilter(double Prev_input,
+									double Current_input, double Prev_output) {
+	double A1 = 2 + T_S * w_c_LPF;
+	double A2 = 2 - T_S * w_c_LPF;
+	double B1 = T_S * w_c_LPF;
+	double B2 = T_S * w_c_LPF;
+
+	return ((1 / A1) * (A2 * Prev_output + B1 * Current_input + B2 * Prev_input));
+}
+
 double SignalProcessor::FilteredDerivative(double Prev_input,
 										   double Current_input, double Prev_output) {
 	double A1 = 2 + T_S * w_c_LPF;
