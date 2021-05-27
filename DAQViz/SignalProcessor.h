@@ -49,6 +49,8 @@ public:
 	UINT* MotionClassification_Flex(const double* _Finger_data, const double* _Wrist_data);
 	UINT MotionClassification_Flex_Slope(const double* _Finger_slope, const double* _Wrist_slope);
 
+	UINT* MotionEstimation_sEMG(const double* _sEMG_data);
+
 	int Factorial(int n);
 
 	/////////////////////////////////////// Not used ///////////////////////////////////////	

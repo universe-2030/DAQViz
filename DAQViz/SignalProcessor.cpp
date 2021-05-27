@@ -67,6 +67,15 @@ UINT* SignalProcessor::MotionClassification_Flex (const double* _Finger_data,
 	UINT* Motion_idx = new UINT[3];
 	memset(Motion_idx, 0.0, sizeof(Motion_idx) * 3);
 
+	if (isFingerFlex[0] && isFingerFlex[1] &&
+		isFingerFlex[2] && isFingerFlex[3] && isFingerFlex[4]) { // Power grip
+		Motion_idx[0] = LABEL_POWER_GRIP;
+	}
+	else if (!isFingerFlex[0] && !isFingerFlex[1] &&
+		!isFingerFlex[2] && !isFingerFlex[3] && !isFingerFlex[4]) { // Hand open
+		Motion_idx[0] = LABEL_HAND_OPEN;
+	}
+
 	if (isWristFlex[0] == 1) { // Wrist - Flexion
 		Motion_idx[1] = LABEL_WRIST_FLEXION;
 	}
@@ -80,15 +89,6 @@ UINT* SignalProcessor::MotionClassification_Flex (const double* _Finger_data,
 	else if (isWristFlex[1] == -1) { // Wrist - Ulnar deviation
 		Motion_idx[2] = LABEL_WRIST_ULNAR;
 	}
-	
-	if (isFingerFlex[0] && isFingerFlex[1] &&
-		isFingerFlex[2] && isFingerFlex[3] && isFingerFlex[4]) { // Power grip
-		Motion_idx[0] = LABEL_POWER_GRIP;
-	}
-	else if (!isFingerFlex[0] && !isFingerFlex[1] &&
-		!isFingerFlex[2] && !isFingerFlex[3] && !isFingerFlex[4]) { // Hand open
-		Motion_idx[0] = LABEL_HAND_OPEN;
-	}
 
 	return Motion_idx;
 }
@@ -96,6 +96,13 @@ UINT* SignalProcessor::MotionClassification_Flex (const double* _Finger_data,
 UINT SignalProcessor::MotionClassification_Flex_Slope(const double* _Flex_slope,
 													const double* _IMU_slope) {
 	return 0;
+}
+
+UINT* SignalProcessor::MotionEstimation_sEMG(const double* _sEMG_data) {
+	UINT* Motion_est_idx = new UINT[3];
+	memset(Motion_est_idx, 0.0, sizeof(Motion_est_idx) * 3);
+	
+	return Motion_est_idx;
 }
 
 int SignalProcessor::Factorial(int n) {

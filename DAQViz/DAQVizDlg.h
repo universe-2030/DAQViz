@@ -157,6 +157,10 @@ private:
 	std::vector<double>* sEMG_abs_stack;
 	std::vector<double>* sEMG_MAV_stack;
 
+	std::vector<double>** sEMG_raw_stack_motionwise;
+	std::vector<double>** sEMG_abs_stack_motionwise;
+	std::vector<double>** sEMG_MAV_stack_motionwise;
+
 	std::vector<double>* Finger_raw_stack;
 	std::vector<double>* Finger_slope_stack;
 	std::vector<double>* Wrist_raw_stack;
@@ -172,16 +176,7 @@ private:
 	std::vector<double>* X_pos_ball_stack;
 	std::vector<double>* Y_pos_ball_stack;
 	std::vector<double>* Rad_ball_stack;
-
-	// Container variables - only for loaded data
-	std::vector<double>* sEMG_MAV_stack_loaded;
-	std::vector<double>* Finger_raw_stack_loaded;
-	std::vector<double>* Wrist_raw_stack_loaded;
-	std::vector<double>* MotionLabel_loaded;
 	
-	// Container variables - only for loaded parameters
-
-
 	// TwinCAT variables
 	HANDLE hMutex;
 	HANDLE hMemory;
@@ -216,19 +211,29 @@ private:
 	double Time_RTGraph_elapse;
 
 	// Load the previously saved file
+	UINT Offline_idx;
 	CString* m_filelist_dir_Data;
 	CString* m_filelist_name_Data;
-	char Data_getline[10000];
+	char Data_getline[1000];
 	ifstream* inFile_data;
 	int* N_CH_each_data;
 	bool isDataLoaded;
 
+	std::vector<double>* sEMG_MAV_stack_loaded;
+	std::vector<double>* Finger_raw_stack_loaded;
+	std::vector<double>* Wrist_raw_stack_loaded;
+	std::vector<double>* MotionLabel_loaded;
+
+	// Load the parameter file
 	CString* m_filelist_dir_Param;
 	CString* m_filelist_name_Param;
 	char Parameters_getline[1000];
 	ifstream* inFile_parameters;
 	int* N_CH_each_Param;
 	bool isParameterLoaded;
+
+	double** sEMG_mean_Param;
+	double** sEMG_std_Param;
 
 	// DAQ device
 	MatchDevice* MATCH_Dev;
@@ -265,10 +270,22 @@ private:
 	// Signal processor
 	SignalProcessor* SigProc;
 
+	// File streams
+	ofstream f_time, f_time_elapsed_DAQ, f_time_elapsed_RTGraph;
+	ofstream f_sEMG_raw, f_sEMG_abs, f_sEMG_MAV;
+	ofstream f_Finger_raw, f_Finger_slope;
+	ofstream f_Wrist_raw, f_Wrist_slope;
+	ofstream f_MotionLabel, f_MotionEstimation;
+	ofstream f_X_pos_ball, f_Y_pos_ball, f_Rad_ball;
+	ofstream f_parameters;
+	ofstream f_model_sEMG_mean, f_model_sEMG_std;
+
 public:
 	// Thread functions
 	static UINT MainThreadFunc(LPVOID IParam);
 	int MainStart();
+	void DAQ_Online();
+	void DAQ_Offline();
 
 	// Initialization
 	void Initialize_Variable();
@@ -349,18 +366,20 @@ public:
 					double _X_pos,
 					double _Y_pos,
 					double _Rad);
+	void StackData (double _m_time,
+					double _Time_DAQ_elapse,
+					double _Time_RTGraph_elapse,
+					double* _sEMG_MAV,
+					double* _Finger_raw,
+					double* _Wrist_raw,
+					double* _MotionLabel_current,
+					double* _MotionEstimation_current,
+					double _X_pos,
+					double _Y_pos,
+					double _Rad);
 	void SaveData(CString SaveFolderName);
 	void SaveParameters(CString SaveFolderName);
 	void SaveModel(CString SaveFolderName);
-
-	ofstream f_time, f_time_elapsed_DAQ, f_time_elapsed_RTGraph;
-	ofstream f_sEMG_raw, f_sEMG_abs, f_sEMG_MAV;
-	ofstream f_Finger_raw, f_Finger_slope;
-	ofstream f_Wrist_raw, f_Wrist_slope;
-	ofstream f_MotionLabel, f_MotionEstimation;
-	ofstream f_X_pos_ball, f_Y_pos_ball, f_Rad_ball;
-	ofstream f_parameters;
-	ofstream f_model_sEMG_mean, f_model_sEMG_std;
 
 	afx_msg void OnEnChangeEditNumSemgCh();
 	afx_msg void OnEnChangeEditNumFlexCh();

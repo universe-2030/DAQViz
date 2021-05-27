@@ -215,6 +215,8 @@ void CDAQVizDlg::Initialize_Variable() {
 	m_time = 0.0;
 	m_count = 0;
 
+	Offline_idx = 0;
+
 	TimerStarted = FALSE;
 	if (m_radioSaveMode == 0)
 		b_SaveImmediate_Dlg = TRUE;
@@ -302,7 +304,7 @@ void CDAQVizDlg::Initialize_GUI() {
 	p_ChildDlg_KSJ->ShowWindow(SW_SHOW);
 	p_ChildDlg_KSJ->MoveWindow(rectofDialogArea);
 
-	SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
+	// SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
 }
 
 void CDAQVizDlg::Initialize_SaveFolder() {
@@ -462,8 +464,16 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 		if (!TimerStarted) {
 			TimerStarted = TRUE;
 			
-			Set_loaded_Data_stack();
-			Set_loaded_Param_stack();
+			// In case of test session
+			if (m_radioTrainingMode == 2)
+				Set_loaded_Param_stack();
+
+			// In case of offline data loading
+			if (m_radioStreamingMode == 1)
+				Set_loaded_Data_stack();
+
+			// Dynamic allocation of variables
+			Dynamic_Allocation();
 
 			AfxBeginThread(MainThreadFunc, this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 		}
@@ -499,7 +509,7 @@ void CDAQVizDlg::OnBnClickedBtnLoad() {
 	int nBuffSize = nMaxFiles * MAX_PATH + 1;
 	read_file.m_ofn.nMaxFile = nBuffSize; // To increase buffer size
 	read_file.m_ofn.lpstrFile = temp.GetBuffer(nBuffSize);
-	read_file.m_ofn.lpstrTitle = _T("Load할 데이터 텍스트 파일을 선택하세요.");
+	read_file.m_ofn.lpstrTitle = _T("Load할 data 파일을 선택하세요.");
 	read_file.m_ofn.lpstrInitialDir = _T("E:/OneDrive - postech.ac.kr/연구/### 데이터/DAQViz data/");
 
 	CString m_filename;
@@ -525,29 +535,11 @@ void CDAQVizDlg::OnBnClickedBtnLoad() {
 
 		// Check for loading wrong file
 		for (int i = 0; i < NUM_FILE_LOAD; i++) {
-			if (m_filelist_name_Data[0] != _T("Finger_flex_raw.txt")) {
-				MessageBox(_T("First loading file should be 'Finger_flex_raw.txt'."),
-							_T("Notice"), MB_OK | MB_ICONWARNING);
-				delete[] m_filelist_dir_Data;
-				delete[] m_filelist_name_Data;
-				return;
-			}
-			if (m_filelist_name_Data[1] != _T("Motion_label.txt")) {
-				MessageBox(_T("Second loading file should be 'Motion_label.txt'."),
-							_T("Notice"), MB_OK | MB_ICONWARNING);
-				delete[] m_filelist_dir_Data;
-				delete[] m_filelist_name_Data;
-				return;
-			}
-			if (m_filelist_name_Data[2] != _T("sEMG_MAV.txt")) {
-				MessageBox(_T("Third loading file should be 'sEMG_MAV.txt'."),
-							_T("Notice"), MB_OK | MB_ICONWARNING);
-				delete[] m_filelist_dir_Data;
-				delete[] m_filelist_name_Data;
-				return;
-			}
-			if (m_filelist_name_Data[3] != _T("Wrist_flex_raw.txt")) {
-				MessageBox(_T("Fourth loading file should be 'Wrist_flex_raw.txt'."),
+			if (m_filelist_name_Data[0] != _T("Finger_flex_raw.txt") ||
+				m_filelist_name_Data[1] != _T("Motion_label.txt") ||
+				m_filelist_name_Data[2] != _T("sEMG_MAV.txt") ||
+				m_filelist_name_Data[3] != _T("Wrist_flex_raw.txt")) {
+				MessageBox(_T("Data should only include following files : \n\n 1. Finger_flex_raw.txt \n 2. Motion_label.txt \n 3. sEMG_MAV.txt \n 4. Wrist_flex_raw.txt"),
 							_T("Notice"), MB_OK | MB_ICONWARNING);
 				delete[] m_filelist_dir_Data;
 				delete[] m_filelist_name_Data;
@@ -614,67 +606,52 @@ void CDAQVizDlg::OnSize(UINT nType, int cx, int cy) {
 }
 
 void CDAQVizDlg::Set_loaded_Data_stack() {
-	// In case of offline data loading
-	if (m_radioStreamingMode == 1) {
-		inFile_data = new ifstream[NUM_FILE_LOAD];
-		N_CH_each_data = new int[NUM_FILE_LOAD];
-		memset(N_CH_each_data, 0, sizeof(N_CH_each_data) * NUM_FILE_LOAD);
+	inFile_data = new ifstream[NUM_FILE_LOAD];
+	N_CH_each_data = new int[NUM_FILE_LOAD];
+	memset(N_CH_each_data, 0, sizeof(N_CH_each_data) * NUM_FILE_LOAD);
 
-		for (int i = 0; i < NUM_FILE_LOAD; i++) {
-			// 0. Open the file
-			inFile_data[i].open(m_filelist_dir_Data[i]);
+	for (int i = 0; i < NUM_FILE_LOAD; i++) {
+		// 0. Open the file
+		inFile_data[i].open(m_filelist_dir_Data[i]);
 
-			// 1. Check the number of channels for each files
-			if (inFile_data[i].is_open()) {
-				CString CStr_temp;
-				inFile_data[i].getline(Data_getline, 1000, '\n');
-				CStr_temp = Data_getline;
+		// 1. Check the number of channels for each files
+		if (inFile_data[i].is_open()) {
+			CString CStr_temp;
+			inFile_data[i].getline(Data_getline, 1000, '\n');
+			CStr_temp = Data_getline;
 
-				for (int j = 0; j < CStr_temp.GetLength(); j++) {
-					if (CStr_temp[j] == ' ')
-						N_CH_each_data[i]++;
-				}
-				N_CH_each_data[i]++;
-
-				std::cout << N_CH_each_data[i] << std::endl;
+			for (int j = 0; j < CStr_temp.GetLength(); j++) {
+				if (CStr_temp[j] == ' ')
+					N_CH_each_data[i]++;
 			}
+			N_CH_each_data[i]++;
+
+			std::cout << N_CH_each_data[i] << std::endl;
 		}
+	}
 
-		Finger_raw_stack_loaded = new std::vector<double>[N_CH_each_data[0]];
-		MotionLabel_loaded = new std::vector<double>[N_CH_each_data[1]];
-		sEMG_MAV_stack_loaded = new std::vector<double>[N_CH_each_data[2]];
-		Wrist_raw_stack_loaded = new std::vector<double>[N_CH_each_data[3]];
+	Finger_raw_stack_loaded = new std::vector<double>[N_CH_each_data[0]];
+	MotionLabel_loaded = new std::vector<double>[N_CH_each_data[1]];
+	sEMG_MAV_stack_loaded = new std::vector<double>[N_CH_each_data[2]];
+	Wrist_raw_stack_loaded = new std::vector<double>[N_CH_each_data[3]];
 
-		m_editStatusBar.SetWindowText(stat += "[USER] Data loading start... \r\n");
-		m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+	m_editStatusBar.SetWindowText(stat += "[USER] Data loading start... \r\n");
+	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 
-		CString CStr_temp;
-		CString data_Str;
-		int _temp = 0;
-		for (int i = 0; i < NUM_FILE_LOAD; i++) {
-			while (!inFile_data[i].eof()) {
-				inFile_data[i].getline(Data_getline, 10000, '\n');
-				CStr_temp = Data_getline;
+	CString CStr_temp;
+	CString data_Str;
+	int _temp = 0;
+	for (int i = 0; i < NUM_FILE_LOAD; i++) {
+		while (!inFile_data[i].eof()) {
+			inFile_data[i].getline(Data_getline, 1000, '\n');
+			CStr_temp = Data_getline;
 
-				int CH_idx = 0;
-				data_Str = _T("");
-				for (int j = 0; j < CStr_temp.GetLength(); j++) {
-					if (CStr_temp[j] != ' ') {
-						data_Str += CStr_temp[j];
-						if (j == CStr_temp.GetLength() - 1) {
-							double data_val = _wtof(data_Str);
-
-							if (i == 0)
-								Finger_raw_stack_loaded[CH_idx].push_back(data_val);
-							else if (i == 1)
-								MotionLabel_loaded[CH_idx].push_back(data_val);
-							else if (i == 2)
-								sEMG_MAV_stack_loaded[CH_idx].push_back(data_val);
-							else if (i == 3)
-								Wrist_raw_stack_loaded[CH_idx].push_back(data_val);
-						}
-					}
-					else {
+			int CH_idx = 0;
+			data_Str = _T("");
+			for (int j = 0; j < CStr_temp.GetLength(); j++) {
+				if (CStr_temp[j] != ' ') {
+					data_Str += CStr_temp[j];
+					if (j == CStr_temp.GetLength() - 1) {
 						double data_val = _wtof(data_Str);
 
 						if (i == 0)
@@ -685,36 +662,116 @@ void CDAQVizDlg::Set_loaded_Data_stack() {
 							sEMG_MAV_stack_loaded[CH_idx].push_back(data_val);
 						else if (i == 3)
 							Wrist_raw_stack_loaded[CH_idx].push_back(data_val);
-						CH_idx++;
-
-						data_Str = _T("");
 					}
+				}
+				else {
+					double data_val = _wtof(data_Str);
+
+					if (i == 0)
+						Finger_raw_stack_loaded[CH_idx].push_back(data_val);
+					else if (i == 1)
+						MotionLabel_loaded[CH_idx].push_back(data_val);
+					else if (i == 2)
+						sEMG_MAV_stack_loaded[CH_idx].push_back(data_val);
+					else if (i == 3)
+						Wrist_raw_stack_loaded[CH_idx].push_back(data_val);
+					CH_idx++;
+
+					data_Str = _T("");
 				}
 			}
 		}
-		m_editStatusBar.SetWindowText(stat += "[USER] Data loading end \r\n");
-		m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
-
-		std::cout << Finger_raw_stack_loaded[0].size() << std::endl;
-		std::cout << MotionLabel_loaded[0].size() << std::endl;
-		std::cout << sEMG_MAV_stack_loaded[0].size() << std::endl;
-		std::cout << Wrist_raw_stack_loaded[0].size() << std::endl;
 	}
+	m_editStatusBar.SetWindowText(stat += "[USER] Data loading end \r\n");
+	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+}
+
+void CDAQVizDlg::Set_loaded_Param_stack() {
+	// 0. Dynamic allocation & open the file
+	inFile_parameters = new ifstream[NUM_FILE_LOAD_PARAMETER];
+	N_CH_each_Param = new int[NUM_FILE_LOAD_PARAMETER];
+	memset(N_CH_each_Param, 0, sizeof(N_CH_each_Param) * NUM_FILE_LOAD_PARAMETER);
+
+	for (int i = 0; i < NUM_FILE_LOAD_PARAMETER; i++) {
+		// 0. Open the file
+		inFile_parameters[i].open(m_filelist_dir_Param[i]);
+
+		// 1. Check the number of channels for each files
+		if (inFile_parameters[i].is_open()) {
+			CString CStr_temp;
+			inFile_parameters[i].getline(Parameters_getline, 1000, '\n');
+			CStr_temp = Parameters_getline;
+
+			for (int j = 0; j < CStr_temp.GetLength(); j++) {
+				if (CStr_temp[j] == ' ')
+					N_CH_each_Param[i]++;
+			}
+			N_CH_each_Param[i]++;
+
+			std::cout << N_CH_each_Param[i] << std::endl;
+		}
+	}
+
+	sEMG_mean_Param = new double* [N_MOTIONS];
+	sEMG_std_Param = new double* [N_MOTIONS];
+	for (int i = 0; i < N_MOTIONS; i++) {
+		sEMG_mean_Param[i] = new double[N_CH_each_Param[0]];
+		sEMG_std_Param[i] = new double[N_CH_each_Param[1]];
+	}
+
+	m_editStatusBar.SetWindowText(stat += "[USER] Parameter loading start... \r\n");
+	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+	// Assign the parameters
+	CString CStr_temp;
+	CString data_Str;
+	int Motion_idx = 0;
+	for (int i = 0; i < NUM_FILE_LOAD_PARAMETER; i++) {
+		inFile_parameters[i].getline(Parameters_getline, 1000, '\n');
+		CStr_temp = Parameters_getline;
+
+		int CH_idx = 0;
+		data_Str = _T("");
+		for (int j = 0; j < CStr_temp.GetLength(); j++) {
+			if (CStr_temp[j] != ' ') {
+				data_Str += CStr_temp[j];
+				if (j == CStr_temp.GetLength() - 1) {
+					double data_val = _wtof(data_Str);
+
+					if (i == 0) {
+						sEMG_mean_Param[Motion_idx][CH_idx] = data_val;
+						Motion_idx++;
+					}
+					else if (i == 1) {
+						sEMG_std_Param[Motion_idx][CH_idx] = data_val;
+						Motion_idx++;
+					}
+				}
+			}
+			else {
+				double data_val = _wtof(data_Str);
+
+				if (i == 0) {
+					sEMG_mean_Param[Motion_idx][CH_idx] = data_val;
+					Motion_idx++;
+				}
+				else if (i == 1) {
+					sEMG_std_Param[Motion_idx][CH_idx] = data_val;
+					Motion_idx++;
+				}
+
+				data_Str = _T("");
+			}
+		}
+	}
+
+	m_editStatusBar.SetWindowText(stat += "[USER] Parameter loading end. \r\n");
+	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 }
 
 UINT CDAQVizDlg::MainThreadFunc(LPVOID IParam) {
 	((CDAQVizDlg*)IParam)->MainStart();
 	return TRUE;
-}
-
-void CDAQVizDlg::Set_loaded_Param_stack() {
-	// In case of test session
-	if (m_radioTrainingMode == 2) {
-		// 0. Dynamic allocation & open the file
-		inFile_parameters = new ifstream[NUM_FILE_LOAD_PARAMETER];
-		N_CH_each_Param = new int[NUM_FILE_LOAD_PARAMETER];
-		memset(N_CH_each_Param, 0, sizeof(N_CH_each_Param) * NUM_FILE_LOAD_PARAMETER);
-	}
 }
 
 int CDAQVizDlg::MainStart() {
@@ -723,9 +780,6 @@ int CDAQVizDlg::MainStart() {
 	LARGE_INTEGER Counter_RTGraph_Start, Counter_RTGraph_End, Counter_RTGraph_Frequency;
 	QueryPerformanceFrequency(&Counter_DAQ_Frequency);
 	QueryPerformanceFrequency(&Counter_RTGraph_Frequency);
-
-	// Dynamic allocation
-	Dynamic_Allocation();
 
 	// Mutex Generation
 	if (hMutex = CreateMutex(NULL, TRUE, L"nMutex"))
@@ -813,109 +867,28 @@ int CDAQVizDlg::MainStart() {
 			// Tic
 			QueryPerformanceCounter(&Counter_DAQ_Start);
 
-			// DAQ Body
-			AI_sEMG->ReadOneStep();
-			sEMG_raw_plot = AI_sEMG->Get_m_ReadValue();
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_abs_plot[i] = abs(sEMG_raw_plot[i]);
-
-				double sEMG_MAV_temp = 0.0;
-				if (m_count <= WIN_SIZE) {
-					sEMG_raw_window[i][m_count - 1] = sEMG_raw_plot[i];
-
-					for (int j = 0; j < m_count; j++) {
-						sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
-					}
-				}
-				else {
-					for (int j = 0; j < WIN_SIZE - 1; j++) {
-						sEMG_raw_window[i][j] = sEMG_raw_window[i][j + 1];
-					}
-					sEMG_raw_window[i][WIN_SIZE - 1] = sEMG_raw_plot[i];
-
-					for (int j = 0; j < WIN_SIZE; j++) {
-						sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
-					}
-				}
-				
-				sEMG_MAV_temp /= WIN_SIZE;
-				sEMG_MAV_plot[i] = sEMG_MAV_temp;
+			// DAQ Body - online streaming
+			if (m_radioStreamingMode == 0)
+				DAQ_Online();
+			else if (m_radioStreamingMode == 1) {
+				if (m_count == 1)
+					std::cout << sEMG_MAV_stack_loaded[0].size() << std::endl;
+				DAQ_Offline();
 			}
 
-			AI_Flex->ReadOneStep();
-			Flex_data = AI_Flex->Get_m_ReadValue();
-
-			if (CALI_START <= pShared_Data->time && pShared_Data->time <= CALI_END) {
-				if (pShared_Data->count == CALI_START * 1000) {
-					m_editStatusBar.SetWindowText(stat += "[USER] Calibration start \r\n");
-					m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
-				}
-
-				cali_count++;
-				// Calibration DAQ - sEMG
-
-
-				// Calibration DAQ - Flex
-				for (int i = 0; i < Num_Flex_CH; i++)
-					Flex_data_calib[i] += Flex_data[i];
-
-				if (pShared_Data->count == CALI_END * 1000) {
-					m_editStatusBar.SetWindowText(stat += "[USER] Calibration end \r\n");
-					m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
-
-					for (int i = 0; i < Num_Flex_CH; i++)
-						Flex_data_calib[i] /= (double)cali_count;
-				}
+			// Motion estimation - w/ sEMG sensor
+			if (m_radioTrainingMode == 2) {
+				Label_Est[1][0] = SigProc->MotionEstimation_sEMG(sEMG_MAV_plot)[0]; // Finger motion estimation
+				Label_Est[1][1] = SigProc->MotionEstimation_sEMG(sEMG_MAV_plot)[1]; // Wrist F/E estimation
+				Label_Est[1][2] = SigProc->MotionEstimation_sEMG(sEMG_MAV_plot)[2]; // Wrist R/U estimation
 			}
 			else {
-				for (int i = 0; i < Num_Flex_CH; i++) {
-					Flex_data[i] -= Flex_data_calib[i];
-				}
+				Label_Est[1][0] = 0; // Finger motion estimation
+				Label_Est[1][1] = 0; // Wrist F/E estimation
+				Label_Est[1][2] = 0; // Wrist R/U estimation
 			}
 
-			// Finger & wrist data
-			for (int i = 0; i < Num_Flex_CH; i++) {
-				if (0 <= i && i < Num_Finger_CH)
-					Finger_data[i] = Flex_data[i];
-				else if (Num_Finger_CH <= i && i < Num_Flex_CH)
-					Wrist_data[i - Num_Finger_CH] = Flex_data[i];
-			}
-
-			// Flex slope data
-			if (m_count == 1) {
-				for (int i = 0; i < Num_Flex_CH; i++) {
-					Flex_slope[i] = SigProc->FilteredDerivative(Flex_data[i],
-															Flex_data[i], Flex_slope_prev[i]);
-					Flex_data_prev[i] = Flex_data[i];
-					Flex_slope_prev[i] = Flex_slope[i];
-				}
-			}
-			else {
-				for (int i = 0; i < Num_Flex_CH; i++) {
-					Flex_slope[i] = SigProc->FilteredDerivative(Flex_data_prev[i],
-															Flex_data[i], Flex_slope_prev[i]);
-					Flex_data_prev[i] = Flex_data[i];
-					Flex_slope_prev[i] = Flex_slope[i];
-				}
-			}
-
-			// Finger & wrist slope
-			for (int i = 0; i < Num_Flex_CH; i++) {
-				if (0 <= i && i < Num_Finger_CH)
-					Finger_slope[i] = Flex_slope[i];
-				else if (Num_Finger_CH <= i && i < Num_Flex_CH)
-					Wrist_slope[i - Num_Finger_CH] = Flex_slope[i];
-			}
-
-			// Motion classification
-			Label_Est[0][0] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[0]; // Finger motion label (w/ flex sensor)
-			Label_Est[0][1] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[1]; // Wrist F/E label (w/ flex sensor)
-			Label_Est[0][2] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[2]; // Wrist R/U Label (w/ flex sensor)
-			Label_Est[1][0] = 0; // Finger motion estimation (Classifier necessary)
-			Label_Est[1][1] = 0; // Wrist F/E estimation (Classifier necessary)
-			Label_Est[1][2] = 0; // Wrist R/U estimation (Classifier necessary)
-
-			// Ball control
+			// Ball control w/ labels
 			if (Label_Est[0][0] == LABEL_POWER_GRIP)
 				Rad_ball -= RAD_STEP_SIZE;
 			else if (Label_Est[0][0] == LABEL_HAND_OPEN)
@@ -966,7 +939,7 @@ int CDAQVizDlg::MainStart() {
 			p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_MAV_plot);
 
 			if (pShared_Data->count % N_GRAPH == 0) {
-				p_ChildDlg_KSJ->Plot_graph(sEMG_raw_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
+				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
 			}
 			else if (pShared_Data->count % N_GRAPH == 1) {
 				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
@@ -996,11 +969,19 @@ int CDAQVizDlg::MainStart() {
 														/ (double)Counter_RTGraph_Frequency.QuadPart * 1000; // ms scale
 
 			// Stack the data
-			StackData(m_time, Time_DAQ_elapse, Time_RTGraph_elapse,
+			if (m_radioStreamingMode == 0) {
+				StackData(m_time, Time_DAQ_elapse, Time_RTGraph_elapse,
 					sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
 					Finger_data, Finger_slope, Wrist_data, Wrist_slope,
-					Label_Est[0], Label_Est[1],
-					X_pos_ball, Y_pos_ball, Rad_ball);
+					Label_Est[0], Label_Est[1], X_pos_ball, Y_pos_ball, Rad_ball);
+			}
+			else if (m_radioStreamingMode == 1) {
+				StackData(m_time, Time_DAQ_elapse, Time_RTGraph_elapse,
+					sEMG_raw_plot, Finger_data, Wrist_data,
+					Label_Est[0], Label_Est[1], X_pos_ball, Y_pos_ball, Rad_ball);
+				if (Offline_idx == sEMG_MAV_stack_loaded[0].size())
+					pShared_Data->bProcessEnd = TRUE;
+			}
 
 			pShared_Data->iNextOwner = THREAD_CALLBACK;
 			ReleaseMutex(hMutex);
@@ -1031,6 +1012,124 @@ error:
 	m_editStatusBar.SetWindowText(stat += "\r\n");
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 	return 0;
+}
+
+void CDAQVizDlg::DAQ_Online() {
+	AI_sEMG->ReadOneStep();
+	sEMG_raw_plot = AI_sEMG->Get_m_ReadValue();
+	for (int i = 0; i < Num_sEMG_CH; i++) {
+		sEMG_abs_plot[i] = abs(sEMG_raw_plot[i]);
+
+		double sEMG_MAV_temp = 0.0;
+		if (m_count <= WIN_SIZE) {
+			sEMG_raw_window[i][m_count - 1] = sEMG_raw_plot[i];
+
+			for (int j = 0; j < m_count; j++) {
+				sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
+			}
+		}
+		else {
+			for (int j = 0; j < WIN_SIZE - 1; j++) {
+				sEMG_raw_window[i][j] = sEMG_raw_window[i][j + 1];
+			}
+			sEMG_raw_window[i][WIN_SIZE - 1] = sEMG_raw_plot[i];
+
+			for (int j = 0; j < WIN_SIZE; j++) {
+				sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
+			}
+		}
+
+		sEMG_MAV_temp /= WIN_SIZE;
+		sEMG_MAV_plot[i] = sEMG_MAV_temp;
+	}
+
+	AI_Flex->ReadOneStep();
+	Flex_data = AI_Flex->Get_m_ReadValue();
+
+	if (CALI_START <= pShared_Data->time && pShared_Data->time <= CALI_END) {
+		if (pShared_Data->count == CALI_START * 1000) {
+			m_editStatusBar.SetWindowText(stat += "[USER] Calibration start \r\n");
+			m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+		}
+
+		cali_count++;
+		// Calibration DAQ - Flex
+		for (int i = 0; i < Num_Flex_CH; i++)
+			Flex_data_calib[i] += Flex_data[i];
+
+		if (pShared_Data->count == CALI_END * 1000) {
+			m_editStatusBar.SetWindowText(stat += "[USER] Calibration end \r\n");
+			m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+			for (int i = 0; i < Num_Flex_CH; i++)
+				Flex_data_calib[i] /= (double)cali_count;
+		}
+	}
+	else {
+		for (int i = 0; i < Num_Flex_CH; i++) {
+			Flex_data[i] -= Flex_data_calib[i];
+		}
+	}
+
+	// Finger & wrist data
+	for (int i = 0; i < Num_Flex_CH; i++) {
+		if (0 <= i && i < Num_Finger_CH)
+			Finger_data[i] = Flex_data[i];
+		else if (Num_Finger_CH <= i && i < Num_Flex_CH)
+			Wrist_data[i - Num_Finger_CH] = Flex_data[i];
+	}
+
+	// Flex slope data
+	if (m_count == 1) {
+		for (int i = 0; i < Num_Flex_CH; i++) {
+			Flex_slope[i] = SigProc->FilteredDerivative(Flex_data[i],
+				Flex_data[i], Flex_slope_prev[i]);
+			Flex_data_prev[i] = Flex_data[i];
+			Flex_slope_prev[i] = Flex_slope[i];
+		}
+	}
+	else {
+		for (int i = 0; i < Num_Flex_CH; i++) {
+			Flex_slope[i] = SigProc->FilteredDerivative(Flex_data_prev[i],
+				Flex_data[i], Flex_slope_prev[i]);
+			Flex_data_prev[i] = Flex_data[i];
+			Flex_slope_prev[i] = Flex_slope[i];
+		}
+	}
+
+	// Finger & wrist slope
+	for (int i = 0; i < Num_Flex_CH; i++) {
+		if (0 <= i && i < Num_Finger_CH)
+			Finger_slope[i] = Flex_slope[i];
+		else if (Num_Finger_CH <= i && i < Num_Flex_CH)
+			Wrist_slope[i - Num_Finger_CH] = Flex_slope[i];
+	}
+
+	// Motion classification - w/ flex sensor
+	Label_Est[0][0] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[0]; // Finger motion label (w/ flex sensor)
+	Label_Est[0][1] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[1]; // Wrist F/E label (w/ flex sensor)
+	Label_Est[0][2] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[2]; // Wrist R/U Label (w/ flex sensor)
+}
+
+void CDAQVizDlg::DAQ_Offline() {
+	if (Offline_idx < sEMG_MAV_stack_loaded[0].size()) {
+		// 1. sEMG MAV
+		for (int i = 0; i < Num_sEMG_CH; i++)
+			sEMG_MAV_plot[i] = sEMG_MAV_stack_loaded[i][Offline_idx];
+
+		// 2. Finger_flex_raw
+		for (int i = 0; i < Num_Finger_CH; i++)
+			Finger_data[i] = Finger_raw_stack_loaded[i][Offline_idx];
+
+		// 3. Wrist_flex_raw
+		for (int i = 0; i < Num_Wrist_CH; i++)
+			Wrist_data[i] = Wrist_raw_stack_loaded[i][Offline_idx];
+
+		// 4. MotionLabel
+		for (int i = 0; i < MOTION_DOF; i++)
+			Label_Est[0][i] = MotionLabel_loaded[i][Offline_idx];
+	}
+	Offline_idx++;
 }
 
 void CDAQVizDlg::RadioCtrl(UINT ID) {
@@ -1439,6 +1538,40 @@ void CDAQVizDlg::StackData (double _m_time,
 	Rad_ball_stack[0].push_back(_Rad);
 }
 
+void CDAQVizDlg::StackData(double _m_time,
+	double _Time_DAQ_elapse,
+	double _Time_RTGraph_elapse,
+	double* _sEMG_MAV,
+	double* _Finger_raw,
+	double* _Wrist_raw,
+	double* _MotionLabel_current,
+	double* _MotionEstimation_current,
+	double _X_pos,
+	double _Y_pos,
+	double _Rad) {
+	Time_stack.push_back(_m_time);
+	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);
+	Time_RTGraph_elapse_stack.push_back(_Time_RTGraph_elapse);
+
+	for (int i = 0; i < Num_sEMG_CH; i++)
+		sEMG_MAV_stack[i].push_back(_sEMG_MAV[i]);
+
+	for (int i = 0; i < Num_Finger_CH; i++)
+		Finger_raw_stack[i].push_back(_Finger_raw[i]);
+
+	for (int i = 0; i < Num_Wrist_CH; i++)
+		Wrist_raw_stack[i].push_back(_Wrist_raw[i]);
+
+	for (int i = 0; i < MOTION_DOF; i++) {
+		MotionLabel[i].push_back(_MotionLabel_current[i]);
+		MotionEstimation[i].push_back(_MotionEstimation_current[i]);
+	}
+
+	X_pos_ball_stack[0].push_back(_X_pos);
+	Y_pos_ball_stack[0].push_back(_Y_pos);
+	Rad_ball_stack[0].push_back(_Rad);
+}
+
 void CDAQVizDlg::SaveData(CString SaveFolderName) {
 	////////////////////////////////////////////////////////////////////////////////////////
 	m_editStatusBar.SetWindowText(stat += "[USER] Save Start!");
@@ -1455,24 +1588,24 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 	f_time_elapsed_DAQ.open(prefix + _T("Time_elapsed_DAQ.txt"));
 	f_time_elapsed_RTGraph.open(prefix + _T("Time_elapsed_RTGraph.txt"));
 
-	f_sEMG_raw.open(prefix + _T("sEMG_raw.txt"));
-	f_sEMG_abs.open(prefix + _T("sEMG_abs.txt"));
 	f_sEMG_MAV.open(prefix + _T("sEMG_MAV.txt"));
-
 	f_Finger_raw.open(prefix + _T("Finger_flex_raw.txt"));
-	f_Finger_slope.open(prefix + _T("Finger_flex_slope.txt"));
 	f_Wrist_raw.open(prefix + _T("Wrist_flex_raw.txt"));
-	f_Wrist_slope.open(prefix + _T("Wrist_flex_slope.txt"));
-
 	f_MotionLabel.open(prefix + _T("Motion_label.txt"));
-	f_MotionEstimation.open(prefix + _T("Motion_estimation.txt"));
+
+	if (m_radioStreamingMode == 0) {
+		f_sEMG_raw.open(prefix + _T("sEMG_raw.txt"));
+		f_sEMG_abs.open(prefix + _T("sEMG_abs.txt"));
+		f_Finger_slope.open(prefix + _T("Finger_flex_slope.txt"));
+		f_Wrist_slope.open(prefix + _T("Wrist_flex_slope.txt"));
+	}
+
+	if (m_radioTrainingMode == 2)
+		f_MotionEstimation.open(prefix + _T("Motion_estimation.txt"));
 
 	f_X_pos_ball.open(prefix + _T("X_pos_ball.txt"));
 	f_Y_pos_ball.open(prefix + _T("Y_pos_ball.txt"));
 	f_Rad_ball.open(prefix + _T("Rad_ball.txt"));
-
-	m_editStatusBar.SetWindowText(stat += _T("[USER] Save Start \r\n"));
-	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 
 	m_editStatusBar.SetWindowText(stat += _T("[USER] Saving... \r\n"));
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
@@ -1486,19 +1619,26 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 	size_log << "The length of 'Time_RTGraph_elapse_stack' : " << Time_RTGraph_elapse_stack.size() << endl;
 	size_log << endl;
 
-	size_log << "The length of 'sEMG_raw' : " << sEMG_raw_stack[0].size() << endl;
-	size_log << "The length of 'sEMG_abs' : " << sEMG_abs_stack[0].size() << endl;
 	size_log << "The length of 'sEMG_MAV' : " << sEMG_MAV_stack[0].size() << endl;
+	if (m_radioStreamingMode == 0) {
+		size_log << "The length of 'sEMG_raw' : " << sEMG_raw_stack[0].size() << endl;
+		size_log << "The length of 'sEMG_abs' : " << sEMG_abs_stack[0].size() << endl;
+	}
 	size_log << endl;
 
 	size_log << "The length of 'Finger_raw' : " << Finger_raw_stack[0].size() << endl;
-	size_log << "The length of 'Finger_slope' : " << Finger_slope_stack[0].size() << endl;
 	size_log << "The length of 'Wrist_raw' : " << Wrist_raw_stack[0].size() << endl;
-	size_log << "The length of 'Wrist_slope' : " << Wrist_slope_stack[0].size() << endl;
 	size_log << endl;
 
+	if (m_radioStreamingMode == 0) {
+		size_log << "The length of 'Finger_slope' : " << Finger_slope_stack[0].size() << endl;
+		size_log << "The length of 'Wrist_slope' : " << Wrist_slope_stack[0].size() << endl;
+		size_log << endl;
+	}
+
 	size_log << "The length of 'MotionLabel' : " << MotionLabel[0].size() << endl;
-	size_log << "The length of 'MotionEstimation' : " << MotionEstimation[0].size() << endl;
+	if (m_radioTrainingMode == 2)
+		size_log << "The length of 'MotionEstimation' : " << MotionEstimation[0].size() << endl;
 	size_log << endl;
 
 	size_log << "The length of 'X_pos_ball_stack' : " << X_pos_ball_stack[0].size() << endl;
@@ -1513,57 +1653,72 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 		f_time_elapsed_RTGraph << Time_RTGraph_elapse_stack[i] << endl;
 
 		for (int j = 0; j < Num_sEMG_CH; j++) {
-			f_sEMG_raw << sEMG_raw_stack[j][i];
-			f_sEMG_abs << sEMG_abs_stack[j][i];
+			if (m_radioStreamingMode == 0) {
+				f_sEMG_raw << sEMG_raw_stack[j][i];
+				if (j != Num_sEMG_CH - 1)
+					f_sEMG_raw << " ";
+				else
+					f_sEMG_raw << endl;
+
+				f_sEMG_abs << sEMG_abs_stack[j][i];
+				if (j != Num_sEMG_CH - 1)
+					f_sEMG_abs << " ";
+				else
+					f_sEMG_abs << endl;
+			}
+
 			f_sEMG_MAV << sEMG_MAV_stack[j][i];
-			if (j != Num_sEMG_CH - 1) {
-				f_sEMG_raw << " ";
-				f_sEMG_abs << " ";
+			if (j != Num_sEMG_CH - 1)
 				f_sEMG_MAV << " ";
-			}
-			else {
-				f_sEMG_raw << endl;
-				f_sEMG_abs << endl;
+			else
 				f_sEMG_MAV << endl;
-			}
 		}
 
 		for (int j = 0; j < Num_Finger_CH; j++) {
 			f_Finger_raw << Finger_raw_stack[j][i];
-			f_Finger_slope << Finger_slope_stack[j][i];
-			if (j != Num_Finger_CH - 1) {
+			if (j != Num_Finger_CH - 1)
 				f_Finger_raw << " ";
-				f_Finger_slope << " ";
-			}
-			else {
+			else
 				f_Finger_raw << endl;
-				f_Finger_slope << endl;
+
+			if (m_radioStreamingMode == 0) {
+				f_Finger_slope << Finger_slope_stack[j][i];
+				if (j != Num_Finger_CH - 1)
+					f_Finger_slope << " ";
+				else
+					f_Finger_slope << endl;
 			}
 		}
 
 		for (int j = 0; j < Num_Wrist_CH; j++) {
 			f_Wrist_raw << Wrist_raw_stack[j][i];
-			f_Wrist_slope << Wrist_slope_stack[j][i];
-			if (j != Num_Wrist_CH - 1) {
+			if (j != Num_Wrist_CH - 1)
 				f_Wrist_raw << " ";
-				f_Wrist_slope << " ";
-			}
-			else {
+			else
 				f_Wrist_raw << endl;
-				f_Wrist_slope << endl;
+
+			if (m_radioStreamingMode == 0) {
+				f_Wrist_slope << Wrist_slope_stack[j][i];
+				if (j != Num_Wrist_CH - 1)
+					f_Wrist_slope << " ";
+				else
+					f_Wrist_slope << endl;
 			}
 		}
 		
 		for (int j = 0; j < MOTION_DOF; j++) {
 			f_MotionLabel << MotionLabel[j][i];
-			f_MotionEstimation << MotionEstimation[j][i];
-			if (j != MOTION_DOF - 1) {
+			if (j != MOTION_DOF - 1)
 				f_MotionLabel << " ";
-				f_MotionEstimation << " ";
-			}
-			else {
+			else
 				f_MotionLabel << endl;
-				f_MotionEstimation << endl;
+
+			if (m_radioTrainingMode == 2) {
+				f_MotionEstimation << MotionEstimation[j][i];
+				if (j != MOTION_DOF - 1)
+					f_MotionEstimation << " ";
+				else
+					f_MotionEstimation << endl;
 			}
 		}
 
@@ -1616,6 +1771,11 @@ void CDAQVizDlg::SaveParameters(CString SaveFolderName) {
 	f_parameters << "Others : " << LABEL_OTHERS << endl;
 	f_parameters << endl;
 
+	f_parameters << "The number of sEMG channels : " << Num_sEMG_CH << endl;
+	f_parameters << "The number of finger flex channels : " << Num_Wrist_CH << endl;
+	f_parameters << "The number of wrist flex channels : " << Num_Finger_CH << endl;
+	f_parameters << "The number of total flex channels (Finger + Wrist) : " << Num_Flex_CH << endl;
+
 	f_parameters << "X_pos initial value : " << X_POS_INIT << endl;
 	f_parameters << "X_pos minimal value : " << X_POS_MIN << endl;
 	f_parameters << "X_pos maximal value : " << X_POS_MAX << endl;
@@ -1645,6 +1805,14 @@ void CDAQVizDlg::SaveModel(CString SaveFolderName) {
 
 	f_model_sEMG_mean.open(prefix + _T("Model_sEMG_mean.txt"));
 	f_model_sEMG_std.open(prefix + _T("Model_sEMG_std.txt"));
+
+	//for (int i = 0; i < Num_sEMG_CH; i++) {
+	//	double sum_MAV = 0.0;
+	//	for (int j = 0; j < sEMG_MAV_stack[i].size(); j++)
+	//		sum_MAV += sEMG_MAV_stack[i][j];
+	//	sum_MAV /= (double)sEMG_MAV_stack[i].size();
+	//	f_model_sEMG_mean << sum_MAV << " ";
+	//}
 }
 
 void CDAQVizDlg::OnEnChangeEditNumSemgCh() {
@@ -1761,7 +1929,7 @@ void CDAQVizDlg::OnBnClickedBtnParameterLoad() {
 	int nBuffSize = nMaxFiles * MAX_PATH + 1;
 	read_file.m_ofn.nMaxFile = nBuffSize; // To increase buffer size
 	read_file.m_ofn.lpstrFile = temp.GetBuffer(nBuffSize);
-	read_file.m_ofn.lpstrTitle = _T("Load할 파라미터 텍스트 파일을 선택하세요.");
+	read_file.m_ofn.lpstrTitle = _T("Load할 parameter 파일을 선택하세요.");
 	read_file.m_ofn.lpstrInitialDir = _T("E:/OneDrive - postech.ac.kr/연구/### 데이터/DAQViz data/");
 
 	CString m_filename;
@@ -1788,15 +1956,9 @@ void CDAQVizDlg::OnBnClickedBtnParameterLoad() {
 
 	// Check for loading wrong file
 	for (int i = 0; i < NUM_FILE_LOAD_PARAMETER; i++) {
-		if (m_filelist_name_Param[0] != _T("Model_sEMG_mean.txt")) {
-			MessageBox(_T("First loading file should be 'Model_sEMG_mean.txt'."),
-						_T("Notice"), MB_OK | MB_ICONWARNING);
-			delete[] m_filelist_dir_Param;
-			delete[] m_filelist_name_Param;
-			return;
-		}
-		if (m_filelist_name_Param[1] != _T("Model_sEMG_std.txt")) {
-			MessageBox(_T("Second loading file should be 'Model_sEMG_std.txt'."),
+		if (m_filelist_name_Param[0] != _T("Model_sEMG_mean.txt") ||
+			m_filelist_name_Param[1] != _T("Model_sEMG_std.txt")) {
+			MessageBox(_T("Data should only include following files : \n\n 1. Model_sEMG_mean.txt \n 2. Model_sEMG_std.txt"),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			delete[] m_filelist_dir_Param;
 			delete[] m_filelist_name_Param;
