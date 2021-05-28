@@ -407,11 +407,24 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	sEMG_MAV_stack_motionwise = new std::vector<double>*[N_MOTIONS];
 	for (int i = 0; i < N_MOTIONS; i++)
 		sEMG_MAV_stack_motionwise[i] = new std::vector<double>[Num_sEMG_CH];
+
 	sEMG_MAV_stack_motionwise_mean = new double* [N_MOTIONS];
 	for (int i = 0; i < N_MOTIONS; i++) {
 		sEMG_MAV_stack_motionwise_mean[i] = new double[Num_sEMG_CH];
 		memset(sEMG_MAV_stack_motionwise_mean[i], 0.0,
 			2 * sizeof(sEMG_MAV_stack_motionwise_mean[i]) * Num_sEMG_CH);
+	}
+	sEMG_MAV_stack_motionwise_square_mean = new double* [N_MOTIONS];
+	for (int i = 0; i < N_MOTIONS; i++) {
+		sEMG_MAV_stack_motionwise_square_mean[i] = new double[Num_sEMG_CH];
+		memset(sEMG_MAV_stack_motionwise_square_mean[i], 0.0,
+			2 * sizeof(sEMG_MAV_stack_motionwise_square_mean[i]) * Num_sEMG_CH);
+	}
+	sEMG_MAV_stack_motionwise_std = new double* [N_MOTIONS];
+	for (int i = 0; i < N_MOTIONS; i++) {
+		sEMG_MAV_stack_motionwise_std[i] = new double[Num_sEMG_CH];
+		memset(sEMG_MAV_stack_motionwise_std[i], 0.0,
+			2 * sizeof(sEMG_MAV_stack_motionwise_std[i]) * Num_sEMG_CH);
 	}
 
 	Finger_raw_stack = new std::vector<double>[Num_Finger_CH];
@@ -1227,31 +1240,121 @@ void CDAQVizDlg::DAQ_Online() {
 
 		if (Label_Est[0][1] == LABEL_WRIST_FLEXION &&
 			Label_Est[0][2] == 0) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
+			for (int i = 0; i < Num_sEMG_CH; i++) {
 				sEMG_MAV_stack_motionwise[2][i].push_back(sEMG_MAV_plot[i]);
+				
+				int _len = sEMG_MAV_stack_motionwise[2][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[2][i] =
+					(sEMG_MAV_stack_motionwise_mean[2][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[2][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[2][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[2][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[2][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[2][i], 2)));
+			}
 		}
 		else if (Label_Est[0][1] == LABEL_WRIST_EXTENSION &&
 			Label_Est[0][2] == 0) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
+			for (int i = 0; i < Num_sEMG_CH; i++) {
 				sEMG_MAV_stack_motionwise[3][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[3][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[3][i] =
+					(sEMG_MAV_stack_motionwise_mean[3][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[3][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[3][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[3][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[3][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[3][i], 2)));
+			}
 		}
 		else if (Label_Est[0][1] == 0 &&
 			Label_Est[0][2] == LABEL_WRIST_RADIAL) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
+			for (int i = 0; i < Num_sEMG_CH; i++) {
 				sEMG_MAV_stack_motionwise[4][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[4][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[4][i] =
+					(sEMG_MAV_stack_motionwise_mean[4][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[4][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[4][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[4][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[4][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[4][i], 2)));
+			}
 		}
 		else if (Label_Est[0][1] == 0 &&
 			Label_Est[0][2] == LABEL_WRIST_ULNAR) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
+			for (int i = 0; i < Num_sEMG_CH; i++) {
 				sEMG_MAV_stack_motionwise[5][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[5][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[5][i] =
+					(sEMG_MAV_stack_motionwise_mean[5][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[5][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[5][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[5][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[5][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[5][i], 2)));
+			}
 		}
 		else if (Label_Est[0][0] == LABEL_POWER_GRIP) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
+			for (int i = 0; i < Num_sEMG_CH; i++) {
 				sEMG_MAV_stack_motionwise[0][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[0][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[0][i] =
+					(sEMG_MAV_stack_motionwise_mean[0][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[0][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[0][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[0][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[0][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[0][i], 2)));
+			}
 		}
 		else if (Label_Est[0][0] == LABEL_HAND_OPEN) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
+			for (int i = 0; i < Num_sEMG_CH; i++) {
 				sEMG_MAV_stack_motionwise[1][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[1][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[1][i] =
+					(sEMG_MAV_stack_motionwise_mean[1][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[1][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[1][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[1][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[1][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[1][i], 2)));
+			}
 		}
 	}
 }
@@ -1290,31 +1393,121 @@ void CDAQVizDlg::DAQ_Offline() {
 		// 5. Motionwise sEMG MAV stack
 		if (Label_Est[0][1] == LABEL_WRIST_FLEXION &&
 			Label_Est[0][2] == 0) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
-				sEMG_MAV_stack_motionwise[2]->push_back(sEMG_MAV_plot[i]);
+			for (int i = 0; i < Num_sEMG_CH; i++) {
+				sEMG_MAV_stack_motionwise[2][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[2][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[2][i] =
+					(sEMG_MAV_stack_motionwise_mean[2][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[2][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[2][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[2][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[2][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[2][i], 2)));
+			}
 		}
 		else if (Label_Est[0][1] == LABEL_WRIST_EXTENSION &&
 			Label_Est[0][2] == 0) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
-				sEMG_MAV_stack_motionwise[3]->push_back(sEMG_MAV_plot[i]);
+			for (int i = 0; i < Num_sEMG_CH; i++) {
+				sEMG_MAV_stack_motionwise[3][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[3][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[3][i] =
+					(sEMG_MAV_stack_motionwise_mean[3][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[3][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[3][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[3][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[3][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[3][i], 2)));
+			}
 		}
 		else if (Label_Est[0][1] == 0 &&
 			Label_Est[0][2] == LABEL_WRIST_RADIAL) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
-				sEMG_MAV_stack_motionwise[4]->push_back(sEMG_MAV_plot[i]);
+			for (int i = 0; i < Num_sEMG_CH; i++) {
+				sEMG_MAV_stack_motionwise[4][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[4][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[4][i] =
+					(sEMG_MAV_stack_motionwise_mean[4][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[4][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[4][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[4][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[4][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[4][i], 2)));
+			}
 		}
 		else if (Label_Est[0][1] == 0 &&
 			Label_Est[0][2] == LABEL_WRIST_ULNAR) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
-				sEMG_MAV_stack_motionwise[5]->push_back(sEMG_MAV_plot[i]);
+			for (int i = 0; i < Num_sEMG_CH; i++) {
+				sEMG_MAV_stack_motionwise[5][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[5][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[5][i] =
+					(sEMG_MAV_stack_motionwise_mean[5][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[5][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[5][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[5][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[5][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[5][i], 2)));
+			}
 		}
 		else if (Label_Est[0][0] == LABEL_POWER_GRIP) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
-				sEMG_MAV_stack_motionwise[0]->push_back(sEMG_MAV_plot[i]);
+			for (int i = 0; i < Num_sEMG_CH; i++) {
+				sEMG_MAV_stack_motionwise[0][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[0][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[0][i] =
+					(sEMG_MAV_stack_motionwise_mean[0][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[0][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[0][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[0][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[0][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[0][i], 2)));
+			}
 		}
 		else if (Label_Est[0][0] == LABEL_HAND_OPEN) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
-				sEMG_MAV_stack_motionwise[1]->push_back(sEMG_MAV_plot[i]);
+			for (int i = 0; i < Num_sEMG_CH; i++) {
+				sEMG_MAV_stack_motionwise[1][i].push_back(sEMG_MAV_plot[i]);
+
+				int _len = sEMG_MAV_stack_motionwise[1][i].size();
+
+				sEMG_MAV_stack_motionwise_mean[1][i] =
+					(sEMG_MAV_stack_motionwise_mean[1][i] * (_len - 1) +
+						sEMG_MAV_plot[i]) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_square_mean[1][i] =
+					(sEMG_MAV_stack_motionwise_square_mean[1][i] * (_len - 1) +
+						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+				sEMG_MAV_stack_motionwise_std[1][i] =
+					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[1][i] -
+						pow(sEMG_MAV_stack_motionwise_mean[1][i], 2)));
+			}
 		}
 	}
 	Offline_idx++;
@@ -2012,25 +2205,13 @@ void CDAQVizDlg::SaveModel(CString SaveFolderName) {
 
 	for (int i = 0; i < N_MOTIONS; i++) {
 		for (int j = 0; j < Num_sEMG_CH; j++) {
-			double sEMG_sum = 0.0;
-			double sEMG_square_sum = 0.0;
-			for (int k = 0; k < sEMG_MAV_stack_motionwise[i][j].size(); k++) {
-				sEMG_sum += sEMG_MAV_stack_motionwise[i][j][k];
-				sEMG_square_sum += pow(sEMG_MAV_stack_motionwise[i][j][k], 2);
-			}
-
-			if (sEMG_MAV_stack_motionwise[i][j].size() > 0) {
-				sEMG_sum /= sEMG_MAV_stack_motionwise[i][j].size();
-				sEMG_square_sum /= sEMG_MAV_stack_motionwise[i][j].size();
-			}
-
 			if (j != Num_sEMG_CH - 1) {
-				f_model_sEMG_mean << sEMG_sum << " ";
-				f_model_sEMG_std << abs(sEMG_square_sum - pow(sEMG_sum, 2)) << " ";
+				f_model_sEMG_mean << sEMG_MAV_stack_motionwise_mean[i][j] << " ";
+				f_model_sEMG_std << sEMG_MAV_stack_motionwise_std[i][j] << " ";
 			}
 			else {
-				f_model_sEMG_mean << sEMG_sum << endl;
-				f_model_sEMG_std << abs(sEMG_square_sum - pow(sEMG_sum, 2)) << endl;
+				f_model_sEMG_mean << sEMG_MAV_stack_motionwise_mean[i][j] << endl;
+				f_model_sEMG_std << sEMG_MAV_stack_motionwise_std[i][j] << endl;
 			}
 		}
 

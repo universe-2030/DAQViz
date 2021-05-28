@@ -164,8 +164,9 @@ private:
 	std::vector<double>* sEMG_abs_stack;
 	std::vector<double>* sEMG_MAV_stack;
 	std::vector<double>** sEMG_MAV_stack_motionwise;
-
 	double** sEMG_MAV_stack_motionwise_mean;
+	double** sEMG_MAV_stack_motionwise_square_mean;
+	double** sEMG_MAV_stack_motionwise_std;
 
 	std::vector<double>* Finger_raw_stack;
 	std::vector<double>* Finger_slope_stack;
