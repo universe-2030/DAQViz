@@ -179,11 +179,11 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	Plot_polygon(sEMG_data, 1, 16, 0.0, 0.38, 0.85);
+	Plot_polygon(sEMG_data, 1, 15, 0.0, 0.38, 0.85);
 
 	Plot_polygon(sEMG_data, 1, 5, -0.9, -0.75, 0.45);
 	Plot_polygon(sEMG_data, 6, 10, 0.0, -0.75, 0.45);
-	Plot_polygon(sEMG_data, 11, 16, 0.9, -0.75, 0.45);
+	Plot_polygon(sEMG_data, 11, 15, 0.9, -0.75, 0.45);
 }
 
 void DAQVizChildOpenGL::Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,

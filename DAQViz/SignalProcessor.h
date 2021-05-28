@@ -18,6 +18,8 @@
 #define LABEL_WRIST_ULNAR 6
 #define LABEL_OTHERS 0
 
+#define SEMG_BASE_SCALE 1.1
+
 class SignalProcessor {
 private:
 	// The number of sEMG channel
@@ -46,7 +48,10 @@ public:
 
 	double FilteredDerivative(double Prev_input, double Current_input, double Prev_output);
 
-	UINT* MotionClassification_Flex(const double* _Finger_data, const double* _Wrist_data);
+	UINT* MotionClassification (const double* _sEMG_MAV_base,
+								const double* _sEMG_MAV,
+								const double* _Finger_data,
+								const double* _Wrist_data);
 	UINT MotionClassification_Flex_Slope(const double* _Finger_slope, const double* _Wrist_slope);
 
 	UINT* MotionEstimation_sEMG(const double* _sEMG_data);

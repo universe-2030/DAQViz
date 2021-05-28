@@ -38,6 +38,11 @@
 #define FINGER_CH_MAX 5
 #define WRIST_CH_MAX 2
 
+#define DELSYS_CH_INIT 15
+#define FRANKFURT_CH_INIT 8
+#define FINGER_CH_INIT 5
+#define WRIST_CH_INIT 2
+
 #define FINGER_ANALOG_ABS_MAX 0.75
 #define WRIST_FE_ANALOG_ABS_MAX 0.3
 #define WRIST_RU_ANALOG_ABS_MAX 0.3
@@ -62,9 +67,11 @@
 #define RAD_STEP_SIZE 0.001
 
 #define NUM_FILE_LOAD 4
-#define NUM_FILE_LOAD_PARAMETER 2
+#define NUM_FILE_LOAD_PARAMETER 3
 #define MAX_FILES 1000
 #define MAX_PATH 150
+
+#define SEMG_CHANNEL_IDX { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16 }
 
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
@@ -158,6 +165,8 @@ private:
 	std::vector<double>* sEMG_MAV_stack;
 	std::vector<double>** sEMG_MAV_stack_motionwise;
 
+	double** sEMG_MAV_stack_motionwise_mean;
+
 	std::vector<double>* Finger_raw_stack;
 	std::vector<double>* Finger_slope_stack;
 	std::vector<double>* Wrist_raw_stack;
@@ -229,6 +238,7 @@ private:
 	int* N_CH_each_Param;
 	bool isParameterLoaded;
 
+	double* sEMG_boolean_Param;
 	double** sEMG_mean_Param;
 	double** sEMG_std_Param;
 
@@ -241,9 +251,13 @@ private:
 	NI_AI_Flex* AI_Flex;
 
 	// Pointer variables
+	int sEMG_raw_plot_CH[DELSYS_CH_INIT] = SEMG_CHANNEL_IDX;
+
+	double* sEMG_raw_NI;
 	double* sEMG_raw_plot;
 	double* sEMG_abs_plot;
 	double* sEMG_MAV_plot;
+	double* sEMG_MAV_plot_baseline;
 
 	float64* Flex_data;
 	float64* Flex_data_calib;
@@ -269,13 +283,13 @@ private:
 
 	// File streams
 	ofstream f_time, f_time_elapsed_DAQ, f_time_elapsed_RTGraph;
-	ofstream f_sEMG_raw, f_sEMG_abs, f_sEMG_MAV;
+	ofstream f_sEMG_raw, f_sEMG_abs, f_sEMG_MAV, f_sEMG_MAV_baseline;
 	ofstream f_Finger_raw, f_Finger_slope;
 	ofstream f_Wrist_raw, f_Wrist_slope;
 	ofstream f_MotionLabel, f_MotionEstimation;
 	ofstream f_X_pos_ball, f_Y_pos_ball, f_Rad_ball;
 	ofstream f_parameters;
-	ofstream f_model_sEMG_mean, f_model_sEMG_std;
+	ofstream f_model_sEMG_mean, f_model_sEMG_std, f_model_sEMG_boolean;
 
 public:
 	// Thread functions

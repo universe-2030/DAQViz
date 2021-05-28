@@ -41,8 +41,18 @@ double SignalProcessor::FilteredDerivative(double Prev_input,
 	return ((1 / A1) * (A2 * Prev_output + B1 * Current_input - B2 * Prev_input));
 }
 
-UINT* SignalProcessor::MotionClassification_Flex (const double* _Finger_data,
-												const double* _Wrist_data) {
+UINT* SignalProcessor::MotionClassification (const double* _sEMG_MAV_base,
+											const double* _sEMG_MAV,
+											const double* _Finger_data,
+											const double* _Wrist_data) {
+	// sEMG threshold calculation
+	double sEMG_base_sum = 0.0;
+	double sEMG_sum = 0.0;
+	for (int i = 0; i < N_sEMG_CH; i++) {
+		sEMG_base_sum += _sEMG_MAV_base[i];
+		sEMG_sum += _sEMG_MAV[i];
+	}
+	
 	bool* isFingerFlex = new bool[N_Finger_CH];
 	memset(isFingerFlex, FALSE, N_Finger_CH);
 	for (int i = 0; i < N_Finger_CH; i++) {
@@ -67,11 +77,13 @@ UINT* SignalProcessor::MotionClassification_Flex (const double* _Finger_data,
 	UINT* Motion_idx = new UINT[3];
 	memset(Motion_idx, 0.0, sizeof(Motion_idx) * 3);
 
-	if (isFingerFlex[0] && isFingerFlex[1] &&
+	if (sEMG_sum >= SEMG_BASE_SCALE * sEMG_base_sum &&
+		isFingerFlex[0] && isFingerFlex[1] &&
 		isFingerFlex[2] && isFingerFlex[3] && isFingerFlex[4]) { // Power grip
 		Motion_idx[0] = LABEL_POWER_GRIP;
 	}
-	else if (!isFingerFlex[0] && !isFingerFlex[1] &&
+	else if (sEMG_sum >= SEMG_BASE_SCALE * sEMG_base_sum &&
+		!isFingerFlex[0] && !isFingerFlex[1] &&
 		!isFingerFlex[2] && !isFingerFlex[3] && !isFingerFlex[4]) { // Hand open
 		Motion_idx[0] = LABEL_HAND_OPEN;
 	}
