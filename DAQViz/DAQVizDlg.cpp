@@ -162,8 +162,6 @@ BOOL CDAQVizDlg::OnInitDialog()
 	Initialize_SaveFolder();
 	Initialize_LogonU();
 
-	std::cout << "EE" << std::endl;
-
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -304,7 +302,7 @@ void CDAQVizDlg::Initialize_GUI() {
 	p_ChildDlg_KSJ->ShowWindow(SW_SHOW);
 	p_ChildDlg_KSJ->MoveWindow(rectofDialogArea);
 
-	// SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
+	SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
 }
 
 void CDAQVizDlg::Initialize_SaveFolder() {
@@ -391,7 +389,10 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	sEMG_raw_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_MAV_stack = new std::vector<double>[Num_sEMG_CH];
-	
+	sEMG_MAV_stack_motionwise = new std::vector<double>*[N_MOTIONS];
+	for (int i = 0; i < N_MOTIONS; i++)
+		sEMG_MAV_stack_motionwise[i] = new std::vector<double>[Num_sEMG_CH];
+
 	Finger_raw_stack = new std::vector<double>[Num_Finger_CH];
 	Finger_slope_stack = new std::vector<double>[Num_Finger_CH];
 	Wrist_raw_stack = new std::vector<double>[Num_Wrist_CH];
@@ -471,7 +472,7 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 			// In case of offline data loading
 			if (m_radioStreamingMode == 1)
 				Set_loaded_Data_stack();
-
+			
 			// Dynamic allocation of variables
 			Dynamic_Allocation();
 
@@ -682,6 +683,9 @@ void CDAQVizDlg::Set_loaded_Data_stack() {
 			}
 		}
 	}
+
+	std::cout << MotionLabel_loaded[0].size() << std::endl;
+
 	m_editStatusBar.SetWindowText(stat += "[USER] Data loading end \r\n");
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
 }
@@ -868,12 +872,124 @@ int CDAQVizDlg::MainStart() {
 			QueryPerformanceCounter(&Counter_DAQ_Start);
 
 			// DAQ Body - online streaming
-			if (m_radioStreamingMode == 0)
-				DAQ_Online();
+			if (m_radioStreamingMode == 0) {
+				AI_sEMG->ReadOneStep();
+				sEMG_raw_plot = AI_sEMG->Get_m_ReadValue();
+				for (int i = 0; i < Num_sEMG_CH; i++) {
+					sEMG_abs_plot[i] = abs(sEMG_raw_plot[i]);
+
+					double sEMG_MAV_temp = 0.0;
+					if (m_count <= WIN_SIZE) {
+						sEMG_raw_window[i][m_count - 1] = sEMG_raw_plot[i];
+
+						for (int j = 0; j < m_count; j++) {
+							sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
+						}
+					}
+					else {
+						for (int j = 0; j < WIN_SIZE - 1; j++) {
+							sEMG_raw_window[i][j] = sEMG_raw_window[i][j + 1];
+						}
+						sEMG_raw_window[i][WIN_SIZE - 1] = sEMG_raw_plot[i];
+
+						for (int j = 0; j < WIN_SIZE; j++) {
+							sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
+						}
+					}
+
+					sEMG_MAV_temp /= WIN_SIZE;
+					sEMG_MAV_plot[i] = sEMG_MAV_temp;
+				}
+
+				AI_Flex->ReadOneStep();
+				Flex_data = AI_Flex->Get_m_ReadValue();
+
+				if (CALI_START <= pShared_Data->time && pShared_Data->time <= CALI_END) {
+					if (pShared_Data->count == CALI_START * 1000) {
+						m_editStatusBar.SetWindowText(stat += "[USER] Calibration start \r\n");
+						m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+					}
+
+					cali_count++;
+					// Calibration DAQ - Flex
+					for (int i = 0; i < Num_Flex_CH; i++)
+						Flex_data_calib[i] += Flex_data[i];
+
+					if (pShared_Data->count == CALI_END * 1000) {
+						m_editStatusBar.SetWindowText(stat += "[USER] Calibration end \r\n");
+						m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+
+						for (int i = 0; i < Num_Flex_CH; i++)
+							Flex_data_calib[i] /= (double)cali_count;
+					}
+				}
+				else {
+					for (int i = 0; i < Num_Flex_CH; i++) {
+						Flex_data[i] -= Flex_data_calib[i];
+					}
+				}
+
+				// Finger & wrist data
+				for (int i = 0; i < Num_Flex_CH; i++) {
+					if (0 <= i && i < Num_Finger_CH)
+						Finger_data[i] = Flex_data[i];
+					else if (Num_Finger_CH <= i && i < Num_Flex_CH)
+						Wrist_data[i - Num_Finger_CH] = Flex_data[i];
+				}
+
+				// Flex slope data
+				if (m_count == 1) {
+					for (int i = 0; i < Num_Flex_CH; i++) {
+						Flex_slope[i] = SigProc->FilteredDerivative(Flex_data[i],
+							Flex_data[i], Flex_slope_prev[i]);
+						Flex_data_prev[i] = Flex_data[i];
+						Flex_slope_prev[i] = Flex_slope[i];
+					}
+				}
+				else {
+					for (int i = 0; i < Num_Flex_CH; i++) {
+						Flex_slope[i] = SigProc->FilteredDerivative(Flex_data_prev[i],
+							Flex_data[i], Flex_slope_prev[i]);
+						Flex_data_prev[i] = Flex_data[i];
+						Flex_slope_prev[i] = Flex_slope[i];
+					}
+				}
+
+				// Finger & wrist slope
+				for (int i = 0; i < Num_Flex_CH; i++) {
+					if (0 <= i && i < Num_Finger_CH)
+						Finger_slope[i] = Flex_slope[i];
+					else if (Num_Finger_CH <= i && i < Num_Flex_CH)
+						Wrist_slope[i - Num_Finger_CH] = Flex_slope[i];
+				}
+
+				// Motion classification - w/ flex sensor
+				Label_Est[0][0] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[0]; // Finger motion label (w/ flex sensor)
+				Label_Est[0][1] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[1]; // Wrist F/E label (w/ flex sensor)
+				Label_Est[0][2] = SigProc->MotionClassification_Flex(Finger_data, Wrist_data)[2]; // Wrist R/U Label (w/ flex sensor)
+			}
 			else if (m_radioStreamingMode == 1) {
 				if (m_count == 1)
 					std::cout << sEMG_MAV_stack_loaded[0].size() << std::endl;
-				DAQ_Offline();
+
+				if (Offline_idx < sEMG_MAV_stack_loaded[0].size()) {
+					// 1. sEMG MAV
+					for (int i = 0; i < Num_sEMG_CH; i++)
+						sEMG_MAV_plot[i] = sEMG_MAV_stack_loaded[i][Offline_idx];
+
+					// 2. Finger_flex_raw
+					for (int i = 0; i < Num_Finger_CH; i++)
+						Finger_data[i] = Finger_raw_stack_loaded[i][Offline_idx];
+
+					// 3. Wrist_flex_raw
+					for (int i = 0; i < Num_Wrist_CH; i++)
+						Wrist_data[i] = Wrist_raw_stack_loaded[i][Offline_idx];
+
+					// 4. MotionLabel
+					for (int i = 0; i < MOTION_DOF; i++)
+						Label_Est[0][i] = MotionLabel_loaded[i][Offline_idx];
+				}
+				Offline_idx++;
 			}
 
 			// Motion estimation - w/ sEMG sensor
@@ -1424,6 +1540,10 @@ const std::vector<double>* CDAQVizDlg::Get_sEMG_abs_stack() {
 
 const std::vector<double>* CDAQVizDlg::Get_sEMG_MAV_stack() {
 	return sEMG_MAV_stack;
+}
+
+std::vector<double>** CDAQVizDlg::Get_sEMG_MAV_stack_motionwise() {
+	return sEMG_MAV_stack_motionwise;
 }
 
 const std::vector<double>* CDAQVizDlg::Get_Finger_raw_stack() {

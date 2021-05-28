@@ -156,9 +156,6 @@ private:
 	std::vector<double>* sEMG_raw_stack;
 	std::vector<double>* sEMG_abs_stack;
 	std::vector<double>* sEMG_MAV_stack;
-
-	std::vector<double>** sEMG_raw_stack_motionwise;
-	std::vector<double>** sEMG_abs_stack_motionwise;
 	std::vector<double>** sEMG_MAV_stack_motionwise;
 
 	std::vector<double>* Finger_raw_stack;
@@ -337,6 +334,7 @@ public:
 	const std::vector<double>* Get_sEMG_raw_stack();
 	const std::vector<double>* Get_sEMG_abs_stack();
 	const std::vector<double>* Get_sEMG_MAV_stack();
+	std::vector<double>** Get_sEMG_MAV_stack_motionwise();
 
 	const std::vector<double>* Get_Finger_raw_stack();
 	const std::vector<double>* Get_Finger_slope_stack();
