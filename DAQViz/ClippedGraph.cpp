@@ -607,9 +607,16 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	for (int i = 0; i < N_MOTIONS; i++)
 		sEMG_plot_mean[i] = new double[Num_CH];
 
-	for (int i = 0; i < N_MOTIONS; i++)
-		for (int j = 0; j < Num_CH; j++)
-			sEMG_plot_mean[i][j] = pMainDlg->Get_sEMG_MAV_stack_motionwise_mean_stack()[i][j][Current_idx + m_Start_idx - 1];
+	if (pMainDlg->Get_m_radioTrainingMode() == 1) { // Training
+		for (int i = 0; i < N_MOTIONS; i++)
+			for (int j = 0; j < Num_CH; j++)
+				sEMG_plot_mean[i][j] = pMainDlg->Get_sEMG_MAV_stack_motionwise_mean_stack()[i][j][Current_idx + m_Start_idx - 1];
+	}
+	else if (pMainDlg->Get_m_radioTrainingMode() == 2) { // Test
+		for (int i = 0; i < N_MOTIONS; i++)
+			for (int j = 0; j < Num_CH; j++)
+				sEMG_plot_mean[i][j] = pMainDlg->Get_sEMG_mean_Param()[i][j];
+	}
 
 	X_polygon = -2.4f;
 	Y_polygon = -1.35f;

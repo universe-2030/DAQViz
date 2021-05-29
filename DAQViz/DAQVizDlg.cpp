@@ -1809,6 +1809,10 @@ bool CDAQVizDlg::Get_TimerStarted() {
 	return TimerStarted;
 }
 
+UINT CDAQVizDlg::Get_m_radioTrainingMode() {
+	return m_radioTrainingMode;
+}
+
 UINT CDAQVizDlg::Get_Num_sEMG_CH() {
 	return Num_sEMG_CH;
 }

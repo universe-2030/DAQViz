@@ -348,6 +348,8 @@ public:
 	UINT Get_m_count();
 	bool Get_TimerStarted();
 	
+	UINT Get_m_radioTrainingMode();
+
 	UINT Get_Num_sEMG_CH();
 	const std::vector<double>* Get_sEMG_raw_stack();
 	const std::vector<double>* Get_sEMG_abs_stack();
