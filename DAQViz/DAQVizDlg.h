@@ -351,6 +351,13 @@ public:
 	const std::vector<double>* Get_sEMG_MAV_stack();
 	std::vector<double>** Get_sEMG_MAV_stack_motionwise();
 
+	double** Get_sEMG_MAV_stack_motionwise_mean();
+	double** Get_sEMG_MAV_stack_motionwise_std();
+
+	double* Get_sEMG_boolean_Param();
+	double** Get_sEMG_mean_Param();
+	double** Get_sEMG_std_Param();
+
 	const std::vector<double>* Get_Finger_raw_stack();
 	const std::vector<double>* Get_Finger_slope_stack();
 	const std::vector<double>* Get_Wrist_raw_stack();

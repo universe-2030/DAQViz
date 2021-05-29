@@ -134,7 +134,7 @@ void DAQVizChildKSJ::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_OPENGL)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ChildOpenGL = new DAQVizChildOpenGL(N_sEMG);
+	p_ChildOpenGL = new DAQVizChildOpenGL(N_sEMG, N_MOTIONS);
 	p_ChildOpenGL->Create(IDD_DAQVIZ_DIALOG_CHILD_OPENGL, this);
 	p_ChildOpenGL->ShowWindow(SW_SHOW);
 	p_ChildOpenGL->MoveWindow(rectofDialogArea);

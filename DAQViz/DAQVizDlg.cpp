@@ -1016,6 +1016,10 @@ int CDAQVizDlg::MainStart() {
 
 			// Polygon
 			p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_MAV_plot);
+			if (m_radioTrainingMode == 1)
+				p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data_mean(sEMG_MAV_stack_motionwise_mean);
+			if (m_radioTrainingMode == 2)
+				p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data_mean(sEMG_mean_Param);
 
 			double* sEMG_MAV_plot_temp = new double[5];
 			if (pShared_Data->count % N_GRAPH == 0) {
@@ -1809,6 +1813,26 @@ const std::vector<double>* CDAQVizDlg::Get_sEMG_MAV_stack() {
 
 std::vector<double>** CDAQVizDlg::Get_sEMG_MAV_stack_motionwise() {
 	return sEMG_MAV_stack_motionwise;
+}
+
+double** CDAQVizDlg::Get_sEMG_MAV_stack_motionwise_mean() {
+	return sEMG_MAV_stack_motionwise_mean;
+}
+
+double** CDAQVizDlg::Get_sEMG_MAV_stack_motionwise_std() {
+	return sEMG_MAV_stack_motionwise_std;
+}
+
+double* CDAQVizDlg::Get_sEMG_boolean_Param() {
+	return sEMG_boolean_Param;
+}
+
+double** CDAQVizDlg::Get_sEMG_mean_Param() {
+	return sEMG_mean_Param;
+}
+
+double** CDAQVizDlg::Get_sEMG_std_Param() {
+	return sEMG_std_Param;
 }
 
 const std::vector<double>* CDAQVizDlg::Get_Finger_raw_stack() {

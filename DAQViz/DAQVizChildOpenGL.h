@@ -17,7 +17,7 @@ class DAQVizChildOpenGL : public CDialogEx {
 
 public:
 	DAQVizChildOpenGL(CWnd* pParent = nullptr);   // 표준 생성자입니다.
-	DAQVizChildOpenGL(int N_sEMG, CWnd* pParent = nullptr);   // 표준 생성자입니다.
+	DAQVizChildOpenGL(int N_sEMG, int N_motions, CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~DAQVizChildOpenGL();
 
 // 대화 상자 데이터입니다.
@@ -38,8 +38,9 @@ private:
 	int count = 0;
 
 	int N_sEMG_CH;
+	int N_motions;
 	double* sEMG_data;
-	double* sEMG_data_normalized;
+	double** sEMG_data_mean;
 
 	HGLRC	m_hRC;
 	CDC*	m_pDC;
@@ -61,10 +62,16 @@ public:
 	void GLResize(int cx, int cy);
 	void GLRenderScene();
 
+	// Only draw the polygon from current sEMG
 	void Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
-					double _X_center, double _Y_center, double _Rad);
+					double _X_center, double _Y_center, double _Rad, bool _Normalization);
+
+	// Draw 1) polygon from current sEMG and 2) 
+	void Plot_polygon(const double* data, const double* data_mean, int _m_StartIdx, int _m_EndIdx,
+					double _X_center, double _Y_center, double _Rad, bool _Normalization);
 
 	void initialize_Variable();
 
 	void Set_sEMG_data(double* _sEMG_input);
+	void Set_sEMG_data_mean(double** _sEMG_mean_input);
 };
