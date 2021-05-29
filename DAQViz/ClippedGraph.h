@@ -16,8 +16,8 @@
 
 #define GRAPH_Y_LEN_TOTAL 0.6
 #define GRAPH_Y_INTERVAL_TOTAL 0.1
-#define GRAPH_Y_LEN_ANI 0.42
-#define GRAPH_Y_INTERVAL_ANI 0.1
+#define GRAPH_Y_LEN_ANI 0.35
+#define GRAPH_Y_INTERVAL_ANI 0.05
 
 #define SEMG_VAL_MAX 1.0
 #define FINGER_VAL_MAX 1.2
@@ -68,6 +68,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	double X_Axis_start = -3.6f;
+	double X_Axis_end = 3.6f;
+
 	int m_Start_idx;
 	int m_End_idx;
 	int m_Num_idx;
@@ -113,8 +116,13 @@ public:
 	void GLResize(int cx, int cy);
 	void GLRenderScene_Total();
 	void GLRenderScene_Animation();
+	// Only draw the polygon from current sEMG
 	void Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
-					double _X_center, double _Y_center, double _Rad);
+					double _X_center, double _Y_center, double _Rad, bool _Normalization);
+
+	// Draw 1) polygon from current sEMG and 2) 
+	void Plot_polygon(const double* data, const double* data_mean, int _m_StartIdx, int _m_EndIdx,
+					double _X_center, double _Y_center, double _Rad, bool _Normalization);
 
 	void Set_Current_idx(UINT _Current_idx);
 	void Set_TimeStep(UINT _TimeStep);

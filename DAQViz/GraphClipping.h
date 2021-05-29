@@ -8,14 +8,13 @@
 // GraphClipping 대화 상자
 #define TIMER_GRAPH_CLIPPING 1
 #define TIME_ELAPSE 20
-#define NUM_CH 16
 
 class GraphClipping : public CDialogEx {
 	DECLARE_DYNAMIC(GraphClipping)
 
 public:
 	GraphClipping(CWnd* pParent = nullptr);   // 표준 생성자입니다.
-	GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
+	GraphClipping(UINT _Num_sEMG_CH, UINT start_idx, UINT end_idx, UINT _m_count,
 					const std::vector<double>* _sEMG_plot,
 					const std::vector<double>* _Finger_plot,
 					const std::vector<double>* _Finger_slope_plot,
@@ -60,6 +59,7 @@ private:
 	const std::vector<double>* Y_ball_plot;
 	const std::vector<double>* Rad_ball_plot;
 
+	UINT Num_sEMG_CH;
 	UINT m_StartIdx;
 	UINT m_EndIdx;
 	UINT m_NumIdx;

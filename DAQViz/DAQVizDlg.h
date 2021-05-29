@@ -164,6 +164,8 @@ private:
 	std::vector<double>* sEMG_abs_stack;
 	std::vector<double>* sEMG_MAV_stack;
 	std::vector<double>** sEMG_MAV_stack_motionwise;
+	std::vector<double>** sEMG_MAV_stack_motionwise_mean_stack;
+	std::vector<double>** sEMG_MAV_stack_motionwise_std_stack;
 	double** sEMG_MAV_stack_motionwise_mean;
 	double** sEMG_MAV_stack_motionwise_square_mean;
 	double** sEMG_MAV_stack_motionwise_std;
@@ -346,6 +348,7 @@ public:
 	UINT Get_m_count();
 	bool Get_TimerStarted();
 	
+	UINT Get_Num_sEMG_CH();
 	const std::vector<double>* Get_sEMG_raw_stack();
 	const std::vector<double>* Get_sEMG_abs_stack();
 	const std::vector<double>* Get_sEMG_MAV_stack();
@@ -353,6 +356,8 @@ public:
 
 	double** Get_sEMG_MAV_stack_motionwise_mean();
 	double** Get_sEMG_MAV_stack_motionwise_std();
+	std::vector<double>** Get_sEMG_MAV_stack_motionwise_mean_stack();
+	std::vector<double>** Get_sEMG_MAV_stack_motionwise_std_stack();
 
 	double* Get_sEMG_boolean_Param();
 	double** Get_sEMG_mean_Param();
@@ -377,6 +382,8 @@ public:
 					double* _sEMG_raw,
 					double* _sEMG_abs,
 					double* _sEMG_MAV,
+					double** _sEMG_MAV_stack_motionwise_mean,
+					double** _sEMG_MAV_stack_motionwise_std,
 					double* _Finger_raw,
 					double* _Finger_slope,
 					double* _Wrist_raw,

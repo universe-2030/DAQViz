@@ -111,8 +111,6 @@ public:
 	COScopeCtrl** Get_rtGraph_Wrist_slope();
 	COScopeCtrl** Get_rtGraph_Label_Est();
 	DAQVizChildOpenGL* Get_OpenGLPointer();
-
-	void Set_sEMG_MAV(double* _sEMG_MAV);
 	
 	void Cursor_set(UINT graph_idx);
 	afx_msg void OnClickedGraphSemgMav1();

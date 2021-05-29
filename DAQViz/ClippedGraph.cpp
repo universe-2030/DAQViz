@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "DAQViz.h"
+#include "DAQVizDlg.h"
 #include "ClippedGraph.h"
 #include "afxdialogex.h"
 #include "GraphClipping.h"
@@ -71,7 +72,7 @@ BOOL ClippedGraph::OnInitDialog() {
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
 	X_pos = new double[m_Num_idx];
 	for (int i = 0; i < m_Num_idx; i++) {
-		X_pos[i] = -3.0f + 6.0f / (double)(m_Num_idx) * i;
+		X_pos[i] = X_Axis_start + (X_Axis_end - X_Axis_start) / (double)(m_Num_idx) * i;
 	}
 
 	SetTimer(TIMER_RENDER, TIME_ELAPSE, NULL);
@@ -228,24 +229,24 @@ void ClippedGraph::GLRenderScene_Total(void) {
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
 		if (i != 3 && i != 4 && i != 5 && i != 6) {
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
-			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
+			glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
+			glVertex3f(X_Axis_end, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
 		}
 		else if (i == 3) {
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.2, 0.0f);
-			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.2, 0.0f);
+			glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.2, 0.0f);
+			glVertex3f(X_Axis_end, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.2, 0.0f);
 		}
 		else if (i == 4 || i == 5 || i == 6) {
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.5, 0.0f);
-			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.5, 0.0f);
+			glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.5, 0.0f);
+			glVertex3f(X_Axis_end, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL * 0.5, 0.0f);
 		}
 		glEnd();
 
 		// Y axis
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i, 0.0f);
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
+			glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i, 0.0f);
+			glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_TOTAL + GRAPH_Y_INTERVAL_TOTAL) * i - GRAPH_Y_LEN_TOTAL, 0.0f);
 		glEnd();
 	}
 
@@ -421,24 +422,24 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
 		if (i != 3 && i != 4 && i != 5 && i != 6) {
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
-			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
+			glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
+			glVertex3f(X_Axis_end, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
 		}
 		else if (i == 3) {
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.2, 0.0f);
-			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.2, 0.0f);
+			glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.2, 0.0f);
+			glVertex3f(X_Axis_end, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.2, 0.0f);
 		}
 		else if (i == 4 || i == 5 || i == 6) {
-			glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.5, 0.0f);
-			glVertex3f(3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.5, 0.0f);
+			glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.5, 0.0f);
+			glVertex3f(X_Axis_end, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI * 0.5, 0.0f);
 		}
 		glEnd();
 
 		// Y axis
 		glBegin(GL_LINES);
 		glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i, 0.0f);
-		glVertex3f(-3.0f, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
+		glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i, 0.0f);
+		glVertex3f(X_Axis_start, 2.7f - (GRAPH_Y_LEN_ANI + GRAPH_Y_INTERVAL_ANI) * i - GRAPH_Y_LEN_ANI, 0.0f);
 		glEnd();
 	}
 
@@ -455,7 +456,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 			N_Y_interval = 1;
 			N_Y_len = 2;
 		}
-		else if (10 <= i && i < 16) { // CH 11 - 16
+		else if (10 <= i && i < 15) { // CH 11 - 16
 			N_Y_interval = 2;
 			N_Y_len = 3;
 		}
@@ -592,37 +593,65 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	glColor3f(0.0f, 0.0f, 0.0f);
 	glBegin(GL_LINES);
 		glVertex3f(X_pos[Current_idx], 3.0f, 0.0f);
-		glVertex3f(X_pos[Current_idx], -1.4f, 0.0f);
+		glVertex3f(X_pos[Current_idx], -0.5f, 0.0f);
 	glEnd();
 
 	/////////////////////////////// Polygon frame ///////////////////////////////
-	double* sEMG_plot_temp = new double[16];
-	for (int i = 0; i < 16; i++)
+	double* sEMG_plot_temp = new double[Num_CH];
+	for (int i = 0; i < Num_CH; i++)
 		sEMG_plot_temp[i] = sEMG_plot[i][Current_idx + m_Start_idx - 1];
-	
-	X_polygon = -2.4f;
-	Y_polygon = -2.6f;
-	Rad_max = 0.9;
 
-	Plot_polygon(sEMG_plot_temp, 1, 5, X_polygon, Y_polygon, Rad_max);
+	// Load the 
+	CDAQVizDlg* pMainDlg = (CDAQVizDlg*)AfxGetMainWnd();
+	double** sEMG_plot_mean = new double*[N_MOTIONS];
+	for (int i = 0; i < N_MOTIONS; i++)
+		sEMG_plot_mean[i] = new double[Num_CH];
+
+	for (int i = 0; i < N_MOTIONS; i++)
+		for (int j = 0; j < Num_CH; j++)
+			sEMG_plot_mean[i][j] = pMainDlg->Get_sEMG_MAV_stack_motionwise_mean_stack()[i][j][Current_idx + m_Start_idx - 1];
+
+	X_polygon = -2.4f;
+	Y_polygon = -1.35f;
+	Rad_max = 0.8;
+
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[0], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
 
 	X_polygon = 0.0f;
-	Y_polygon = -2.6f;
-	Rad_max = 0.9;
+	Y_polygon = -1.35f;
+	Rad_max = 0.8;
 
-	Plot_polygon(sEMG_plot_temp, 6, 10, X_polygon, Y_polygon, Rad_max);
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[1], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
 
 	X_polygon = 2.4f;
-	Y_polygon = -2.6f;
-	Rad_max = 0.9;
+	Y_polygon = -1.35f;
+	Rad_max = 0.8;
 
-	Plot_polygon(sEMG_plot_temp, 11, 16, X_polygon, Y_polygon, Rad_max);
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[2], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
+
+	X_polygon = -2.4f;
+	Y_polygon = -2.7f;
+	Rad_max = 0.8;
+
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[3], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
+
+	X_polygon = 0.0f;
+	Y_polygon = -2.7f;
+	Rad_max = 0.8;
+
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[4], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
+
+	X_polygon = 2.4f;
+	Y_polygon = -2.7f;
+	Rad_max = 0.8;
+
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[5], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
 
 	delete sEMG_plot_temp;
 }
 
 void ClippedGraph::Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
-								double _X_center, double _Y_center, double _Rad) {
+								double _X_center, double _Y_center, double _Rad, bool _Normalization) {
 	glPushMatrix();
 
 	glEnable(GL_DEPTH_TEST);
@@ -670,49 +699,192 @@ void ClippedGraph::Plot_polygon(const double* data, int _m_StartIdx, int _m_EndI
 		glEnd();
 	}
 
-	// Draw sEMG data (Not normalized)
-	glLineWidth(5.0);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glBegin(GL_LINE_STRIP);
-	for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
-		glVertex3f(X_polygon + Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
-				Y_polygon + 1 / fAspect * Rad_max * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
-				0);
+	if (_Normalization) {
+		// Draw sEMG data (Normalized)
+		double* data_normalized = new double[Num_vertex];
+		double max_data = data[_m_StartIdx];
 
-	}
-	glVertex3f(X_polygon + Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
-			Y_polygon + Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
-			0);
-	glEnd();
+		for (int i = 0; i < Num_vertex; i++)
+			if (data[i + _m_StartIdx - 1] >= max_data)
+				max_data = data[i + _m_StartIdx - 1];
 
-	// Draw sEMG data (Normalized)
-	double* data_normalized = new double[Num_vertex];
-	double sum_data = 0.0;
-	
-	for (int i = 0; i < Num_vertex; i++)
-		sum_data += abs(data[i + _m_StartIdx - 1]);
+		for (int i = 0; i < Num_vertex; i++)
+			data_normalized[i] = abs(data[i + _m_StartIdx - 1]) / max_data;
 
-	for (int i = 0; i < Num_vertex; i++)
-		data_normalized[i] = abs(data[i + _m_StartIdx - 1]) / sum_data;
-
-	glLineWidth(5.0);
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glBegin(GL_LINE_STRIP);
-	for (int j = 0; j < Num_vertex; j++) {
-		glVertex3f(X_polygon + Rad_max * data_normalized[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+		glLineWidth(5.0);
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < Num_vertex; j++) {
+			glVertex3f(X_polygon + Rad_max * data_normalized[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				Y_polygon + Rad_max / fAspect * data_normalized[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				0);
 
-	}
-	glVertex3f(X_polygon + Rad_max * data_normalized[0] * cos(PI / 2.0),
+		}
+		glVertex3f(X_polygon + Rad_max * data_normalized[0] * cos(PI / 2.0),
 			Y_polygon + Rad_max / fAspect * data_normalized[0] * sin(PI / 2.0),
 			0);
-	glEnd();
+		glEnd();		
+
+		delete data_normalized;
+	}
+	else {
+		// Draw sEMG data (Not normalized)
+		glLineWidth(5.0);
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
+			glVertex3f(X_polygon + Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				Y_polygon + 1 / fAspect * Rad_max * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				0);
+
+		}
+		glVertex3f(X_polygon + Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
+			Y_polygon + Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
+			0);
+		glEnd();
+	}
 
 	glPopMatrix();
 	glFlush();
+}
 
-	delete data_normalized;
+void ClippedGraph::Plot_polygon(const double* data, const double* data_mean, int _m_StartIdx, int _m_EndIdx,
+	double _X_center, double _Y_center, double _Rad, bool _Normalization) {
+	glPushMatrix();
+
+	glEnable(GL_DEPTH_TEST);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+
+	glShadeModel(GL_FLAT);
+	glLoadIdentity();
+
+	glTranslatef(0.0, 0.0, -5.0);
+	gluLookAt(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+	int Num_vertex = _m_EndIdx - _m_StartIdx + 1;
+
+	// Draw polygon frames
+	X_polygon = _X_center;
+	Y_polygon = _Y_center;
+	Rad_max = _Rad;
+
+	for (int i = 0; i < N_GRID_STEP; i++) {
+		if (i == N_GRID_STEP - 1)
+			glLineWidth(2.0);
+		else
+			glLineWidth(1.0);
+
+		glColor3f(0.0f, 0.0f, 0.0f);
+		double rad = Rad_max / (double)N_GRID_STEP * (i + 1);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < Num_vertex; j++) {
+			glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
+		}
+		glVertex3f(X_polygon + rad * cos(PI / 2.0), Y_polygon + 1 / fAspect * rad * sin(PI / 2.0), 0);
+		glEnd();
+	}
+
+	// Draw center - vertex lines
+	glLineWidth(0.1);
+	for (int i = 0; i < Num_vertex; i++) {
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(X_polygon, Y_polygon, 0);
+		glVertex3f(X_polygon + Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * i),
+			Y_polygon + Rad_max / fAspect * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * i),
+			0);
+		glEnd();
+	}
+
+	if (_Normalization) {
+		// Draw sEMG data (Normalization with maximum value being 1)
+		double* data_normalized = new double[Num_vertex];
+		double max_data = data[_m_StartIdx];
+		double* data_mean_normalized = new double[Num_vertex];
+		double max_data_mean = data_mean[_m_StartIdx];
+
+		for (int i = 0; i < Num_vertex; i++) {
+			if (data[i + _m_StartIdx - 1] >= max_data)
+				max_data = data[i + _m_StartIdx - 1];
+			if (data_mean[i + _m_StartIdx - 1] >= max_data_mean)
+				max_data_mean = data_mean[i + _m_StartIdx - 1];
+		}
+
+		for (int i = 0; i < Num_vertex; i++) {
+			data_normalized[i] = abs(data[i + _m_StartIdx - 1]) / max_data;
+			data_mean_normalized[i] = abs(data_mean[i + _m_StartIdx - 1]) / max_data_mean;
+		}
+
+		glLineWidth(5.0);
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < Num_vertex; j++) {
+			glVertex3f(X_polygon + Rad_max * data_normalized[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				Y_polygon + Rad_max / fAspect * data_normalized[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
+
+		}
+		glVertex3f(X_polygon + Rad_max * data_normalized[0] * cos(PI / 2.0),
+			Y_polygon + Rad_max / fAspect * data_normalized[0] * sin(PI / 2.0),
+			0);
+		glEnd();
+
+		glLineWidth(5.0);
+		glColor3f(0.0f, 0.0f, 1.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < Num_vertex; j++) {
+			glVertex3f(X_polygon + Rad_max * data_mean_normalized[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				Y_polygon + Rad_max / fAspect * data_mean_normalized[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
+
+		}
+		glVertex3f(X_polygon + Rad_max * data_mean_normalized[0] * cos(PI / 2.0),
+			Y_polygon + Rad_max / fAspect * data_mean_normalized[0] * sin(PI / 2.0),
+			0);
+		glEnd();
+
+		glPopMatrix();
+		glFlush();
+
+		delete data_normalized;
+	}
+	else {
+		// Draw sEMG data (Not normalized)
+		glLineWidth(5.0);
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
+			glVertex3f(X_polygon + Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				Y_polygon + 1 / fAspect * Rad_max * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				0);
+
+		}
+		glVertex3f(X_polygon + Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
+			Y_polygon + Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
+			0);
+		glEnd();
+
+		glLineWidth(5.0);
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
+			glVertex3f(X_polygon + Rad_max * data_mean[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				Y_polygon + 1 / fAspect * Rad_max * data_mean[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				0);
+
+		}
+		glVertex3f(X_polygon + Rad_max * data_mean[_m_StartIdx - 1] * cos(PI / 2.0),
+			Y_polygon + Rad_max / fAspect * data_mean[_m_StartIdx - 1] * sin(PI / 2.0),
+			0);
+		glEnd();
+
+		glPopMatrix();
+		glFlush();
+	}
+
+	glPopMatrix();
+	glFlush();
 }
 
 void ClippedGraph::Set_Current_idx(UINT _Current_idx) {
@@ -746,6 +918,6 @@ void ClippedGraph::Set_Dynamic_Alloc(UINT _m_Start_idx, UINT _m_End_idx, UINT _m
 
 	X_pos = new double[m_Num_idx];
 	for (int i = 0; i < m_Num_idx; i++) {
-		X_pos[i] = -3.0f + 6.0f / (double)(m_Num_idx) * i;
+		X_pos[i] = X_Axis_start + (X_Axis_end - X_Axis_start) / (double)(m_Num_idx) * i;
 	}
 }

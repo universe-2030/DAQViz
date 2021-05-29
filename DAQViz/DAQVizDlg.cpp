@@ -404,9 +404,18 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	sEMG_raw_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_MAV_stack = new std::vector<double>[Num_sEMG_CH];
+
 	sEMG_MAV_stack_motionwise = new std::vector<double>*[N_MOTIONS];
 	for (int i = 0; i < N_MOTIONS; i++)
 		sEMG_MAV_stack_motionwise[i] = new std::vector<double>[Num_sEMG_CH];
+
+	sEMG_MAV_stack_motionwise_mean_stack = new std::vector<double>*[N_MOTIONS];
+	for (int i = 0; i < N_MOTIONS; i++)
+		sEMG_MAV_stack_motionwise_mean_stack[i] = new std::vector<double>[Num_sEMG_CH];
+
+	sEMG_MAV_stack_motionwise_std_stack = new std::vector<double>*[N_MOTIONS];
+	for (int i = 0; i < N_MOTIONS; i++)
+		sEMG_MAV_stack_motionwise_std_stack[i] = new std::vector<double>[Num_sEMG_CH];
 
 	sEMG_MAV_stack_motionwise_mean = new double* [N_MOTIONS];
 	for (int i = 0; i < N_MOTIONS; i++) {
@@ -1064,6 +1073,7 @@ int CDAQVizDlg::MainStart() {
 				if (m_time > 0) {
 					StackData(m_time, Time_DAQ_elapse, Time_RTGraph_elapse,
 						sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
+						sEMG_MAV_stack_motionwise_mean, sEMG_MAV_stack_motionwise_std,
 						Finger_data, Finger_slope, Wrist_data, Wrist_slope,
 						Label_Est[0], Label_Est[1], X_pos_ball, Y_pos_ball, Rad_ball);
 				}
@@ -1799,6 +1809,10 @@ bool CDAQVizDlg::Get_TimerStarted() {
 	return TimerStarted;
 }
 
+UINT CDAQVizDlg::Get_Num_sEMG_CH() {
+	return Num_sEMG_CH;
+}
+
 const std::vector<double>* CDAQVizDlg::Get_sEMG_raw_stack() {
 	return sEMG_raw_stack;
 }
@@ -1821,6 +1835,14 @@ double** CDAQVizDlg::Get_sEMG_MAV_stack_motionwise_mean() {
 
 double** CDAQVizDlg::Get_sEMG_MAV_stack_motionwise_std() {
 	return sEMG_MAV_stack_motionwise_std;
+}
+
+std::vector<double>** CDAQVizDlg::Get_sEMG_MAV_stack_motionwise_mean_stack() {
+	return sEMG_MAV_stack_motionwise_mean_stack;
+}
+
+std::vector<double>** CDAQVizDlg::Get_sEMG_MAV_stack_motionwise_std_stack() {
+	return sEMG_MAV_stack_motionwise_std_stack;
 }
 
 double* CDAQVizDlg::Get_sEMG_boolean_Param() {
@@ -1908,6 +1930,8 @@ void CDAQVizDlg::StackData (double _m_time,
 							double* _sEMG_raw,
 							double* _sEMG_abs,
 							double* _sEMG_MAV,
+							double** _sEMG_MAV_stack_motionwise_mean,
+							double** _sEMG_MAV_stack_motionwise_std,
 							double* _Finger_raw,
 							double* _Finger_slope,
 							double* _Wrist_raw,
@@ -1926,6 +1950,14 @@ void CDAQVizDlg::StackData (double _m_time,
 		sEMG_abs_stack[i].push_back(_sEMG_abs[i]);
 		sEMG_MAV_stack[i].push_back(_sEMG_MAV[i]);
 	}
+
+	for (int i = 0; i < N_MOTIONS; i++)
+		for (int j = 0; j < Num_sEMG_CH; j++) {
+			sEMG_MAV_stack_motionwise_mean_stack[i][j].
+				push_back(_sEMG_MAV_stack_motionwise_mean[i][j]);
+			sEMG_MAV_stack_motionwise_std_stack[i][j].
+				push_back(_sEMG_MAV_stack_motionwise_std[i][j]);
+		}
 
 	for (int i = 0; i < Num_Finger_CH; i++) {
 		Finger_raw_stack[i].push_back(_Finger_raw[i]);
@@ -1948,16 +1980,16 @@ void CDAQVizDlg::StackData (double _m_time,
 }
 
 void CDAQVizDlg::StackData(double _m_time,
-	double _Time_DAQ_elapse,
-	double _Time_RTGraph_elapse,
-	double* _sEMG_MAV,
-	double* _Finger_raw,
-	double* _Wrist_raw,
-	double* _MotionLabel_current,
-	double* _MotionEstimation_current,
-	double _X_pos,
-	double _Y_pos,
-	double _Rad) {
+						double _Time_DAQ_elapse,
+						double _Time_RTGraph_elapse,
+						double* _sEMG_MAV,
+						double* _Finger_raw,
+						double* _Wrist_raw,
+						double* _MotionLabel_current,
+						double* _MotionEstimation_current,
+						double _X_pos,
+						double _Y_pos,
+						double _Rad) {
 	Time_stack.push_back(_m_time);
 	Time_DAQ_elapse_stack.push_back(_Time_DAQ_elapse);
 	Time_RTGraph_elapse_stack.push_back(_Time_RTGraph_elapse);
