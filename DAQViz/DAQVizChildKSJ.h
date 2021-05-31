@@ -15,7 +15,7 @@
 #define SEMG_RAW_MAX 0.001
 
  #define SEMG_MAV_MIN 0.0
- #define SEMG_MAV_MAX 1.2
+ #define SEMG_MAV_MAX 0.6
 
 #define FINGER_MIN -1.5
 #define FINGER_MAX 0.5
@@ -23,8 +23,8 @@
 #define FINGER_SLOPE_MIN -10.0
 #define FINGER_SLOPE_MAX 10.0
 
-#define WRIST_MIN -0.5
-#define WRIST_MAX 0.5
+#define WRIST_MIN -0.3
+#define WRIST_MAX 0.3
 
 #define WRIST_SLOPE_MIN -5.0
 #define WRIST_SLOPE_MAX 5.0
