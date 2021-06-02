@@ -82,7 +82,9 @@
 #define IDC_EDIT_PARAMETER_LOAD_NAME    1070
 #define IDC_PLOT_ANIMATION_BALL_CONTROL 1070
 #define IDC_GRAPH_SEMG_MAV_1            1071
+#define IDC_EDIT_MAV_WIN_SIZE           1071
 #define IDC_GRAPH_SEMG_MAV_2            1072
+#define IDC_TEXT_MAV_WIN_SIZE           1072
 #define IDC_GRAPH_SEMG_MAV_3            1073
 #define IDC_GRAPH_FINGER_FLEX           1074
 #define IDC_GRAPH_FINGER_FLEX_SLOPE     1075
@@ -96,7 +98,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1071
+#define _APS_NEXT_CONTROL_VALUE         1073
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1124,7 +1124,7 @@ void CDAQVizDlg::DAQ_Online() {
 	AI_sEMG->ReadOneStep();
 	sEMG_raw_NI = AI_sEMG->Get_m_ReadValue();
 
-	//// Temporary - sEMG data assignment
+	//// Temporary - sEMG data assignment as sine wave
 	//for (int i = 0; i < DELSYS_CH_MAX; i++)
 	//	sEMG_raw_NI[i] = abs(sin(2 * PI * 0.5 * (i + 1) * pShared_Data->time));
 
