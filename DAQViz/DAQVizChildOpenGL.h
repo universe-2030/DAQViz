@@ -12,8 +12,6 @@
 
 #define TIME_ELAPSE 20
 
-#define SCALE 1.0
-
 // DAQVizChildOpenGL 대화 상자
 
 class DAQVizChildOpenGL : public CDialogEx {
@@ -50,6 +48,8 @@ private:
 	CDC*	m_pDC;
 	HDC		m_hDC;
 
+	double sEMG_polygon_scale;
+
 	double X_polygon;
 	double Y_polygon;
 	double Rad_max;
@@ -78,6 +78,7 @@ public:
 
 	void initialize_Variable();
 
+	void Set_sEMG_polygon_scale(double _Polygon_scale);
 	void Set_N_sEMG_CH(int _N_sEMG_CH);
 	void Set_sEMG_data(double* _sEMG_input);
 	void Set_sEMG_data_mean(double** _sEMG_mean_input);

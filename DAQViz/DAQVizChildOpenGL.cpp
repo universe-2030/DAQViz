@@ -13,12 +13,14 @@ IMPLEMENT_DYNAMIC(DAQVizChildOpenGL, CDialogEx)
 DAQVizChildOpenGL::DAQVizChildOpenGL(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL, pParent) {
 	N_sEMG_CH = N_SEMG_CH;
+	sEMG_polygon_scale = 1.0;
 }
 
 DAQVizChildOpenGL::DAQVizChildOpenGL(int N_sEMG, int N_motions, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL, pParent) {
 	N_sEMG_CH = N_sEMG;
 	this->N_motions = N_motions;
+	sEMG_polygon_scale = 1.0;
 }
 
 DAQVizChildOpenGL::~DAQVizChildOpenGL() {
@@ -282,13 +284,13 @@ void DAQVizChildOpenGL::Plot_polygon(const double* data, int _m_StartIdx, int _m
 		glColor3f(0.0f, 0.0f, 0.0f);
 		glBegin(GL_LINE_STRIP);
 		for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
-			glVertex3f(X_polygon + SCALE * Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
-				Y_polygon + SCALE * Rad_max / fAspect * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+			glVertex3f(X_polygon + sEMG_polygon_scale * Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				Y_polygon + sEMG_polygon_scale * Rad_max / fAspect * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
 				0);
 
 		}
-		glVertex3f(X_polygon + SCALE * Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
-			Y_polygon + SCALE * Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
+		glVertex3f(X_polygon + sEMG_polygon_scale * Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
+			Y_polygon + sEMG_polygon_scale * Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
 			0);
 		glEnd();
 	}
@@ -367,6 +369,7 @@ void DAQVizChildOpenGL::Plot_polygon(const double* data, const double* data_mean
 	double* data_mean_normalized = new double[Num_vertex];
 	memset(data_mean_normalized, 0.0, 2 * sizeof(data_mean_normalized) * Num_vertex);
 	double max_data_mean = data_mean[_m_StartIdx];
+
 	if (_Normalization) {
 		// Draw sEMG data (Normalization with maximum value being 1)
 		for (int i = 0; i < Num_vertex; i++) {
@@ -416,26 +419,13 @@ void DAQVizChildOpenGL::Plot_polygon(const double* data, const double* data_mean
 		glColor3f(0.0f, 0.0f, 0.0f);
 		glBegin(GL_LINE_STRIP);
 		for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
-			glVertex3f(X_polygon + SCALE * Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
-				Y_polygon + 1 / fAspect * SCALE * Rad_max * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+			glVertex3f(X_polygon + sEMG_polygon_scale * Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				Y_polygon + 1 / fAspect * sEMG_polygon_scale * Rad_max * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
 				0);
 
 		}
-		glVertex3f(X_polygon + SCALE * Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
-			Y_polygon + SCALE * Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
-			0);
-		glEnd();
-
-		glLineWidth(5.0);
-		glColor3f(1.0f, 0.0f, 0.0f);
-		glBegin(GL_LINE_STRIP);
-		for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
-			glVertex3f(X_polygon + SCALE * Rad_max * data_mean[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
-				Y_polygon + SCALE * Rad_max / fAspect * data_mean[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
-				0);
-		}
-		glVertex3f(X_polygon + SCALE * Rad_max * data_mean[_m_StartIdx - 1] * cos(PI / 2.0),
-			Y_polygon + SCALE * Rad_max / fAspect * data_mean[_m_StartIdx - 1] * sin(PI / 2.0),
+		glVertex3f(X_polygon + sEMG_polygon_scale * Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
+			Y_polygon + sEMG_polygon_scale * Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
 			0);
 		glEnd();
 	}
@@ -469,6 +459,10 @@ void DAQVizChildOpenGL::initialize_Variable() {
 		sEMG_data_mean[i] = new double[N_sEMG_CH];
 		memset(sEMG_data_mean[i], 0.0, 2 * sizeof(sEMG_data_mean[i]) * N_sEMG_CH);
 	}
+}
+
+void DAQVizChildOpenGL::Set_sEMG_polygon_scale(double _Polygon_scale) {
+	sEMG_polygon_scale = _Polygon_scale;
 }
 
 void DAQVizChildOpenGL::Set_N_sEMG_CH(int _N_sEMG_CH) {

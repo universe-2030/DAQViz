@@ -73,6 +73,10 @@
 
 #define SEMG_CHANNEL_IDX { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16 }
 
+#define SCALE_INIT 1.0
+
+#define MAJOR_SEMG_THRES 0.3
+
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
 public:
@@ -160,7 +164,10 @@ private:
 	CEdit		m_editNumWristFlexCH;
 
 	CStatic		m_textMAVWinSize;
-	CStatic		m_editMAVWinSize;
+	CEdit		m_editMAVWinSize;
+
+	CStatic		m_textsEMGPolygonScale;
+	CEdit		m_editsEMGPolygonScale;
 
 	// Container variables
 	std::vector<double> Time_stack;
@@ -283,6 +290,9 @@ private:
 	float64* Wrist_slope;
 
 	double** Label_Est;
+
+	// Polygon scaling
+	double Polygon_scale;
 
 	// Calibration
 	int cali_count = 0;
@@ -432,4 +442,5 @@ public:
 	afx_msg void OnEnChangeEditNumImuCh();
 	afx_msg void OnBnClickedBtnParameterLoad();
 	afx_msg void OnEnChangeEditMavWinSize();
+	afx_msg void OnEnChangeEditSemgPolygonScale();
 };

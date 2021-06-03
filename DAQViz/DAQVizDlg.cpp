@@ -102,6 +102,9 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 
 	DDX_Control(pDX, IDC_TEXT_MAV_WIN_SIZE, m_textMAVWinSize);
 	DDX_Control(pDX, IDC_EDIT_MAV_WIN_SIZE, m_editMAVWinSize);
+
+	DDX_Control(pDX, IDC_TEXT_SEMG_POLYGON_SCALE, m_textsEMGPolygonScale);
+	DDX_Control(pDX, IDC_EDIT_SEMG_POLYGON_SCALE, m_editsEMGPolygonScale);
 }
 
 BEGIN_MESSAGE_MAP(CDAQVizDlg, CDialogEx)
@@ -126,6 +129,7 @@ ON_EN_CHANGE(IDC_EDIT_NUM_FINGER_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumFlexCh)
 ON_EN_CHANGE(IDC_EDIT_NUM_WRIST_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumImuCh)
 ON_BN_CLICKED(IDC_BTN_PARAMETER_LOAD, &CDAQVizDlg::OnBnClickedBtnParameterLoad)
 ON_EN_CHANGE(IDC_EDIT_MAV_WIN_SIZE, &CDAQVizDlg::OnEnChangeEditMavWinSize)
+ON_EN_CHANGE(IDC_EDIT_SEMG_POLYGON_SCALE, &CDAQVizDlg::OnEnChangeEditSemgPolygonScale)
 END_MESSAGE_MAP()
 
 // CDAQVizDlg 메시지 처리기
@@ -221,6 +225,8 @@ void CDAQVizDlg::Initialize_Variable() {
 	sEMG_Win_size = WIN_SIZE;
 	sEMG_Win_size_prev = WIN_SIZE;
 
+	Polygon_scale = 1.0;
+
 	Offline_idx = 0;
 
 	TimerStarted = FALSE;
@@ -275,6 +281,8 @@ void CDAQVizDlg::Initialize_GUI() {
 	Set_Font(m_editNumWristFlexCH, 20, 8);
 	Set_Font(m_textMAVWinSize, 20, 8);
 	Set_Font(m_editMAVWinSize, 20, 8);
+	Set_Font(m_textsEMGPolygonScale, 20, 8);
+	Set_Font(m_editsEMGPolygonScale, 20, 8);
 
 	m_comboSelectDlg.AddString(_T("1. Sejin Kim"));
 	// m_comboSelectDlg.AddString(_T("2. Another users"));
@@ -294,6 +302,8 @@ void CDAQVizDlg::Initialize_GUI() {
 	m_editNumWristFlexCH.SetWindowTextW(temp);
 	temp.Format(_T("%d"), sEMG_Win_size);
 	m_editMAVWinSize.SetWindowTextW(temp);
+	temp.Format(_T("%.1f"), Polygon_scale);
+	m_editsEMGPolygonScale.SetWindowTextW(temp);
 
 	if (m_radioTrainingMode == 0 || m_radioTrainingMode == 1)
 		m_btnParameterLoad.EnableWindow(FALSE);
@@ -1850,6 +1860,8 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_OFF)->EnableWindow(_isAvailable);
 
 	m_editMAVWinSize.EnableWindow(_isAvailable);
+
+	m_editsEMGPolygonScale.EnableWindow(_isAvailable);
 }
 
 void CDAQVizDlg::StackData (double _m_time,
@@ -2476,6 +2488,7 @@ void CDAQVizDlg::Set_BallControl_Pos() {
 }
 
 void CDAQVizDlg::Visualize_Polygon_sEMG() {
+	p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_polygon_scale(Polygon_scale);
 	p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_N_sEMG_CH(Num_sEMG_CH);
 	p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_MAV_plot);
 	if (m_radioTrainingMode == 1)
@@ -2517,4 +2530,22 @@ void CDAQVizDlg::Visualize_Graph_Data() {
 		p_ChildDlg_KSJ->Plot_graph(Label_Est[0], p_ChildDlg_KSJ->Get_rtGraph_Label_Est()[0]);
 	}
 	delete sEMG_MAV_plot_temp;
+}
+
+void CDAQVizDlg::OnEnChangeEditSemgPolygonScale() {
+	CString temp;
+
+	m_editsEMGPolygonScale.GetWindowText(temp);
+	double _Polygon_scale = _wtof(temp);
+
+	if (_Polygon_scale < 0) {
+		MessageBox(_T("Scaling factor should be same or larger than 0.0."),
+			_T("Notice"), MB_OK | MB_ICONWARNING);
+		temp.Format(_T("%.1f"), SCALE_INIT);
+		m_editsEMGPolygonScale.SetWindowText(temp);
+		Polygon_scale = SCALE_INIT;
+	}
+	else {
+		Polygon_scale = _Polygon_scale;
+	}
 }
