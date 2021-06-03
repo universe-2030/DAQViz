@@ -23,7 +23,7 @@
     <ProjectGuid>{D97C6026-BA52-4870-874C-096439964BC4}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
     <RootNamespace>DAQViz</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

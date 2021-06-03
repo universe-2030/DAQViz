@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <algorithm>
+
 #include "GL/glut.h"
 #include "GL/GL.h"
 #include "GL/GLU.h"
@@ -9,6 +11,8 @@
 #define PI 3.14159265358
 
 #define TIME_ELAPSE 20
+
+#define SCALE 1.0
 
 // DAQVizChildOpenGL 대화 상자
 
@@ -64,14 +68,17 @@ public:
 
 	// Only draw the polygon from current sEMG
 	void Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
-					double _X_center, double _Y_center, double _Rad, bool _Normalization);
+					double _X_center, double _Y_center, double _Rad,
+					bool _Normalization, bool _No_Normalization, bool _VertexSphere);
 
-	// Draw 1) polygon from current sEMG and 2) 
+	// Draw 1) polygon from current sEMG and 2) normalized mean sEMG
 	void Plot_polygon(const double* data, const double* data_mean, int _m_StartIdx, int _m_EndIdx,
-					double _X_center, double _Y_center, double _Rad, bool _Normalization);
+					double _X_center, double _Y_center, double _Rad,
+					bool _Normalization, bool _No_Normalization, bool _VertexSphere);
 
 	void initialize_Variable();
 
+	void Set_N_sEMG_CH(int _N_sEMG_CH);
 	void Set_sEMG_data(double* _sEMG_input);
 	void Set_sEMG_data_mean(double** _sEMG_mean_input);
 };

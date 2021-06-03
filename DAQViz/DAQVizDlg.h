@@ -104,6 +104,11 @@ private:
 	UINT Num_Finger_CH;
 	UINT Num_Wrist_CH;
 
+	UINT sEMG_Win_size;
+	UINT sEMG_Win_size_prev;
+	std::vector<UINT> sEMG_Win_size_history;
+	std::vector<double> sEMG_Win_size_time;
+
 	// MFC control variables
 	CButton m_btnSwitch;
 	BOOL m_flag_Switch = 0;
@@ -154,12 +159,16 @@ private:
 	CStatic		m_textNumWristFlexCH;
 	CEdit		m_editNumWristFlexCH;
 
+	CStatic		m_textMAVWinSize;
+	CStatic		m_editMAVWinSize;
+
 	// Container variables
 	std::vector<double> Time_stack;
 	std::vector<double> Time_DAQ_elapse_stack;
 	std::vector<double> Time_RTGraph_elapse_stack;
 
-	double** sEMG_raw_window;
+	std::vector<double>* sEMG_raw_baseline_stack;
+	std::vector<double>* sEMG_abs_baseline_stack;
 	std::vector<double>* sEMG_raw_stack;
 	std::vector<double>* sEMG_abs_stack;
 	std::vector<double>* sEMG_MAV_stack;
@@ -298,8 +307,16 @@ public:
 	// Thread functions
 	static UINT MainThreadFunc(LPVOID IParam);
 	int MainStart();
+
+	// Unitizing functions
 	void DAQ_Online();
 	void DAQ_Offline();
+
+	void Calculate_sEMG_MAV();
+	void Estimate_Motion_sEMG();
+	void Set_BallControl_Pos();
+	void Visualize_Polygon_sEMG();
+	void Visualize_Graph_Data();
 
 	// Initialization
 	void Initialize_Variable();
@@ -414,4 +431,5 @@ public:
 	afx_msg void OnEnChangeEditNumFlexCh();
 	afx_msg void OnEnChangeEditNumImuCh();
 	afx_msg void OnBnClickedBtnParameterLoad();
+	afx_msg void OnEnChangeEditMavWinSize();
 };

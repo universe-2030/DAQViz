@@ -99,6 +99,9 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_TEXT_NUM_WRIST_FLEX_CH, m_textNumWristFlexCH);
 	DDX_Control(pDX, IDC_EDIT_NUM_FINGER_FLEX_CH, m_editNumFingerFlexCH);
 	DDX_Control(pDX, IDC_EDIT_NUM_WRIST_FLEX_CH, m_editNumWristFlexCH);
+
+	DDX_Control(pDX, IDC_TEXT_MAV_WIN_SIZE, m_textMAVWinSize);
+	DDX_Control(pDX, IDC_EDIT_MAV_WIN_SIZE, m_editMAVWinSize);
 }
 
 BEGIN_MESSAGE_MAP(CDAQVizDlg, CDialogEx)
@@ -122,6 +125,7 @@ ON_EN_CHANGE(IDC_EDIT_NUM_SEMG_CH, &CDAQVizDlg::OnEnChangeEditNumSemgCh)
 ON_EN_CHANGE(IDC_EDIT_NUM_FINGER_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumFlexCh)
 ON_EN_CHANGE(IDC_EDIT_NUM_WRIST_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumImuCh)
 ON_BN_CLICKED(IDC_BTN_PARAMETER_LOAD, &CDAQVizDlg::OnBnClickedBtnParameterLoad)
+ON_EN_CHANGE(IDC_EDIT_MAV_WIN_SIZE, &CDAQVizDlg::OnEnChangeEditMavWinSize)
 END_MESSAGE_MAP()
 
 // CDAQVizDlg 메시지 처리기
@@ -214,6 +218,9 @@ void CDAQVizDlg::Initialize_Variable() {
 	m_time = 0.0;
 	m_count = 0;
 
+	sEMG_Win_size = WIN_SIZE;
+	sEMG_Win_size_prev = WIN_SIZE;
+
 	Offline_idx = 0;
 
 	TimerStarted = FALSE;
@@ -266,6 +273,8 @@ void CDAQVizDlg::Initialize_GUI() {
 	Set_Font(m_editNumFingerFlexCH, 20, 8);
 	Set_Font(m_textNumWristFlexCH, 20, 8);
 	Set_Font(m_editNumWristFlexCH, 20, 8);
+	Set_Font(m_textMAVWinSize, 20, 8);
+	Set_Font(m_editMAVWinSize, 20, 8);
 
 	m_comboSelectDlg.AddString(_T("1. Sejin Kim"));
 	// m_comboSelectDlg.AddString(_T("2. Another users"));
@@ -283,6 +292,8 @@ void CDAQVizDlg::Initialize_GUI() {
 	m_editNumFingerFlexCH.SetWindowTextW(temp);
 	temp.Format(_T("%d"), WRIST_CH_INIT);
 	m_editNumWristFlexCH.SetWindowTextW(temp);
+	temp.Format(_T("%d"), sEMG_Win_size);
+	m_editMAVWinSize.SetWindowTextW(temp);
 
 	if (m_radioTrainingMode == 0 || m_radioTrainingMode == 1)
 		m_btnParameterLoad.EnableWindow(FALSE);
@@ -396,11 +407,8 @@ void CDAQVizDlg::Dynamic_Allocation() {
 		memset(Label_Est[i], 0.0, 2 * sizeof(Label_Est[i]) * 2);
 	}
 
-	sEMG_raw_window = new double* [Num_sEMG_CH];
-	for (int i = 0; i < Num_sEMG_CH; i++) {
-		sEMG_raw_window[i] = new double[WIN_SIZE];
-		memset(sEMG_raw_window[i], 0.0, 2 * sizeof(sEMG_raw_window[i]) * WIN_SIZE);
-	}
+	sEMG_raw_baseline_stack = new std::vector<double>[Num_sEMG_CH];
+	sEMG_abs_baseline_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_raw_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_abs_stack = new std::vector<double>[Num_sEMG_CH];
 	sEMG_MAV_stack = new std::vector<double>[Num_sEMG_CH];
@@ -519,12 +527,22 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 			if (m_radioStreamingMode == 1)
 				Set_loaded_Data_stack();
 
+			sEMG_Win_size_history.push_back(sEMG_Win_size);
+			sEMG_Win_size_time.push_back(TS);
+			sEMG_Win_size_prev = sEMG_Win_size;
+
 			AfxBeginThread(MainThreadFunc, this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 		}
 		else {
 			g_csExitThread.Lock();
 			pShared_Data->bContinue = TRUE;
 			g_csExitThread.Unlock();
+
+			if (sEMG_Win_size != sEMG_Win_size_prev) {
+				sEMG_Win_size_history.push_back(sEMG_Win_size);
+				sEMG_Win_size_time.push_back(m_time);
+			}
+			sEMG_Win_size_prev = sEMG_Win_size;
 		}
 
 		Set_MFC_Control_Availability(FALSE);
@@ -963,110 +981,35 @@ int CDAQVizDlg::MainStart() {
 			// Tic
 			QueryPerformanceCounter(&Counter_DAQ_Start);
 
-			// DAQ Body - online streaming
+			// DAQ
 			if (m_radioStreamingMode == 0)
 				DAQ_Online();
 			else if (m_radioStreamingMode == 1)
 				DAQ_Offline();
 
-			// Motion estimation - w/ sEMG sensor
+			// Motion estimation & Corresponding ball control
 			if (m_count > 0) {
-				if (m_radioTrainingMode == 2) {
-					Label_Est[1][0] = SigProc->MotionEstimation_sEMG(sEMG_MAV_plot)[0]; // Finger motion estimation
-					Label_Est[1][1] = SigProc->MotionEstimation_sEMG(sEMG_MAV_plot)[1]; // Wrist F/E estimation
-					Label_Est[1][2] = SigProc->MotionEstimation_sEMG(sEMG_MAV_plot)[2]; // Wrist R/U estimation
-				}
-				else {
-					Label_Est[1][0] = 0; // Finger motion estimation
-					Label_Est[1][1] = 0; // Wrist F/E estimation
-					Label_Est[1][2] = 0; // Wrist R/U estimation
-				}
-
-				// Ball control w/ labels
-				if (Label_Est[0][0] == LABEL_POWER_GRIP)
-					Rad_ball -= RAD_STEP_SIZE;
-				else if (Label_Est[0][0] == LABEL_HAND_OPEN)
-					Rad_ball += RAD_STEP_SIZE;
-
-				if (Label_Est[0][1] == LABEL_WRIST_FLEXION)
-					X_pos_ball -= X_POS_STEP_SIZE;
-				else if (Label_Est[0][1] == LABEL_WRIST_EXTENSION)
-					X_pos_ball += X_POS_STEP_SIZE;
-
-				if (Label_Est[0][2] == LABEL_WRIST_RADIAL)
-					Y_pos_ball += Y_POS_STEP_SIZE;
-				else if (Label_Est[0][2] == LABEL_WRIST_ULNAR)
-					Y_pos_ball -= Y_POS_STEP_SIZE;
-
-				if (X_pos_ball <= X_POS_MIN)
-					X_pos_ball = X_POS_MIN;
-				else if (X_pos_ball >= X_POS_MAX)
-					X_pos_ball = X_POS_MAX;
-
-				if (Y_pos_ball <= Y_POS_MIN)
-					Y_pos_ball = Y_POS_MIN;
-				else if (Y_pos_ball >= Y_POS_MAX)
-					Y_pos_ball = Y_POS_MAX;
-
-				if (Rad_ball <= RAD_MIN)
-					Rad_ball = RAD_MIN;
-				else if (Rad_ball >= RAD_MAX)
-					Rad_ball = RAD_MAX;
+				Estimate_Motion_sEMG();
+				Set_BallControl_Pos();
 			}
 
 			// Toc
 			QueryPerformanceCounter(&Counter_DAQ_End);
 			Time_DAQ_elapse = (double)(Counter_DAQ_End.QuadPart - Counter_DAQ_Start.QuadPart)
-				/ (double)Counter_DAQ_Frequency.QuadPart * 1000; // ms scale
+									/ (double)Counter_DAQ_Frequency.QuadPart * 1000; // ms scale
 
 			//////////////////////////////////////// RTGraph ////////////////////////////////////////
 			// Tic
 			QueryPerformanceCounter(&Counter_RTGraph_Start);
 
-			// Polygon
-			p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_MAV_plot);
-			if (m_radioTrainingMode == 1)
-				p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data_mean(sEMG_MAV_stack_motionwise_mean);
-			if (m_radioTrainingMode == 2)
-				p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data_mean(sEMG_mean_Param);
-
-			double* sEMG_MAV_plot_temp = new double[5];
-			if (pShared_Data->count % N_GRAPH == 0) {
-				for (int i = 0; i < 5; i++)
-					sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i];
-				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
-			}
-			else if (pShared_Data->count % N_GRAPH == 1) {
-				for (int i = 0; i < 5; i++)
-					sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i + 5];
-				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
-			}
-			else if (pShared_Data->count % N_GRAPH == 2) {
-				for (int i = 0; i < 5; i++)
-					sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i + 10];
-				p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
-			}
-			else if (pShared_Data->count % N_GRAPH == 3) {
-				p_ChildDlg_KSJ->Plot_graph(Finger_data, p_ChildDlg_KSJ->Get_rtGraph_Finger()[0]);
-			}
-			else if (pShared_Data->count % N_GRAPH == 4) {
-				p_ChildDlg_KSJ->Plot_graph(Finger_slope, p_ChildDlg_KSJ->Get_rtGraph_Finger_slope()[0]);
-			}
-			else if (pShared_Data->count % N_GRAPH == 5) {
-				p_ChildDlg_KSJ->Plot_graph(Wrist_data, p_ChildDlg_KSJ->Get_rtGraph_Wrist()[0]);
-			}
-			else if (pShared_Data->count % N_GRAPH == 6) {
-				p_ChildDlg_KSJ->Plot_graph(Wrist_slope, p_ChildDlg_KSJ->Get_rtGraph_Wrist_slope()[0]);
-			}
-			else if (pShared_Data->count % N_GRAPH == 7) {
-				p_ChildDlg_KSJ->Plot_graph(Label_Est[0], p_ChildDlg_KSJ->Get_rtGraph_Label_Est()[0]);
-			}
-			delete sEMG_MAV_plot_temp;
+			// Polygon & RT-graph
+			Visualize_Polygon_sEMG();
+			Visualize_Graph_Data();
 
 			// Toc
 			QueryPerformanceCounter(&Counter_RTGraph_End);
 			Time_RTGraph_elapse = (double)(Counter_RTGraph_End.QuadPart - Counter_RTGraph_Start.QuadPart)
-														/ (double)Counter_RTGraph_Frequency.QuadPart * 1000; // ms scale
+									/ (double)Counter_RTGraph_Frequency.QuadPart * 1000; // ms scale
 
 			// Stack the data
 			if (m_radioStreamingMode == 0) {
@@ -1124,38 +1067,15 @@ void CDAQVizDlg::DAQ_Online() {
 	AI_sEMG->ReadOneStep();
 	sEMG_raw_NI = AI_sEMG->Get_m_ReadValue();
 
-	//// Temporary - sEMG data assignment as sine wave
-	//for (int i = 0; i < DELSYS_CH_MAX; i++)
-	//	sEMG_raw_NI[i] = abs(sin(2 * PI * 0.5 * (i + 1) * pShared_Data->time));
-
-	for (int i = 0; i < Num_sEMG_CH; i++)
-		sEMG_raw_plot[i] = sEMG_raw_NI[sEMG_raw_plot_CH[i] - 1];
-
 	for (int i = 0; i < Num_sEMG_CH; i++) {
+		sEMG_raw_plot[i] = sEMG_raw_NI[sEMG_raw_plot_CH[i] - 1];
 		sEMG_abs_plot[i] = abs(sEMG_raw_plot[i]);
-
-		double sEMG_MAV_temp = 0.0;
-		if (pShared_Data->count <= WIN_SIZE) {
-			sEMG_raw_window[i][pShared_Data->count - 1] = sEMG_raw_plot[i];
-
-			for (int j = 0; j < pShared_Data->count; j++) {
-				sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
-			}
+		if (pShared_Data->time <= CALI_END) {
+			sEMG_raw_baseline_stack[i].push_back(sEMG_raw_plot[i]);
+			sEMG_abs_baseline_stack[i].push_back(sEMG_abs_plot[i]);
 		}
-		else {
-			for (int j = 0; j < WIN_SIZE - 1; j++) {
-				sEMG_raw_window[i][j] = sEMG_raw_window[i][j + 1];
-			}
-			sEMG_raw_window[i][WIN_SIZE - 1] = sEMG_raw_plot[i];
-
-			for (int j = 0; j < WIN_SIZE; j++) {
-				sEMG_MAV_temp += abs(sEMG_raw_window[i][j]);
-			}
-		}
-
-		sEMG_MAV_temp /= WIN_SIZE;
-		sEMG_MAV_plot[i] = sEMG_MAV_temp;
 	}
+	Calculate_sEMG_MAV();
 
 	AI_Flex->ReadOneStep();
 	Flex_data = AI_Flex->Get_m_ReadValue();
@@ -1194,9 +1114,11 @@ void CDAQVizDlg::DAQ_Online() {
 		m_count = 0;
 	}
 	else {
-		for (int i = 0; i < Num_Flex_CH; i++) {
+		for (int i = 0; i < Num_sEMG_CH; i++)
+			sEMG_MAV_plot[i] = abs(sEMG_MAV_plot[i] - sEMG_MAV_plot_baseline[i]);
+
+		for (int i = 0; i < Num_Flex_CH; i++)
 			Flex_data[i] -= Flex_data_calib[i];
-		}
 
 		m_time = pShared_Data->time - CALI_END;
 		m_count = pShared_Data->count - CALI_END * 1000;
@@ -1926,6 +1848,8 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 	GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE)->EnableWindow(_isAvailable);
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_ON)->EnableWindow(_isAvailable);
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_OFF)->EnableWindow(_isAvailable);
+
+	m_editMAVWinSize.EnableWindow(_isAvailable);
 }
 
 void CDAQVizDlg::StackData (double _m_time,
@@ -2200,7 +2124,10 @@ void CDAQVizDlg::SaveParameters(CString SaveFolderName) {
 	f_parameters << "Sensor calibration end time : " << CALI_END << endl;
 	f_parameters << endl;
 
-	f_parameters << "MAV window size : " << WIN_SIZE << endl;
+	for (int i = 0; i < sEMG_Win_size_history.size(); i++) {
+		f_parameters << "MAV window size : " << sEMG_Win_size_history[i]
+					<< " at t = " << sEMG_Win_size_time[i]<< " s" << endl;
+	}
 	f_parameters << endl;
 
 	f_parameters << "The number of sEMG channels : " << Num_sEMG_CH <<  endl;
@@ -2448,4 +2375,146 @@ void CDAQVizDlg::OnBnClickedBtnParameterLoad() {
 		else
 			m_btnSwitch.EnableWindow(FALSE);
 	}
+}
+
+void CDAQVizDlg::OnEnChangeEditMavWinSize() {
+	CString temp;
+
+	m_editMAVWinSize.GetWindowText(temp);
+	int _sEMG_Win_size = _ttoi(temp);
+	
+	if (_sEMG_Win_size < 1) {
+		MessageBox(_T("MAV window size should be same or larger than 1."),
+			_T("Notice"), MB_OK | MB_ICONWARNING);
+		temp.Format(_T("%d"), WIN_SIZE);
+		m_editMAVWinSize.SetWindowText(temp);
+		sEMG_Win_size = WIN_SIZE;
+	}
+	else {
+		sEMG_Win_size = _sEMG_Win_size;
+	}
+}
+
+void CDAQVizDlg::Calculate_sEMG_MAV() {
+	for (int i = 0; i < Num_sEMG_CH; i++) {
+		double sEMG_MAV_temp = 0.0;
+		if (pShared_Data->count <= CALI_END * 1000) {
+			if (pShared_Data->count < sEMG_Win_size) {
+				for (int j = 0; j < pShared_Data->count; j++)
+					sEMG_MAV_temp += sEMG_abs_baseline_stack[i][j];
+			}
+			else {
+				for (int j = 1; j <= sEMG_Win_size; j++)
+					sEMG_MAV_temp += sEMG_abs_baseline_stack
+										[i][sEMG_abs_baseline_stack[i].size() - j];
+			}
+		}
+		else {
+			if (pShared_Data->count - CALI_END * 1000 < sEMG_Win_size) {
+				int N_temp = pShared_Data->count - CALI_END * 1000;
+				for (int j = 1; j <= sEMG_Win_size - N_temp; j++)
+					sEMG_MAV_temp += sEMG_abs_baseline_stack
+										[i][sEMG_abs_baseline_stack[i].size() - j];
+				for (int j = 0; j < N_temp - 1; j++)
+					sEMG_MAV_temp += sEMG_abs_stack[i][j];
+				sEMG_MAV_temp += sEMG_abs_plot[i];
+			}
+			else {
+				for (int j = 1; j <= sEMG_Win_size - 1; j++)
+					sEMG_MAV_temp += sEMG_abs_stack[i][sEMG_abs_stack[i].size() - j];
+				sEMG_MAV_temp += sEMG_abs_plot[i];
+			}
+		}
+		sEMG_MAV_temp /= sEMG_Win_size;
+		sEMG_MAV_plot[i] = sEMG_MAV_temp;
+	}
+}
+
+void CDAQVizDlg::Estimate_Motion_sEMG() {
+	if (m_radioTrainingMode == 2) {
+		Label_Est[1][0] = SigProc->MotionEstimation_sEMG(sEMG_MAV_plot)[0]; // Finger motion estimation
+		Label_Est[1][1] = SigProc->MotionEstimation_sEMG(sEMG_MAV_plot)[1]; // Wrist F/E estimation
+		Label_Est[1][2] = SigProc->MotionEstimation_sEMG(sEMG_MAV_plot)[2]; // Wrist R/U estimation
+	}
+	else {
+		Label_Est[1][0] = 0; // Finger motion estimation
+		Label_Est[1][1] = 0; // Wrist F/E estimation
+		Label_Est[1][2] = 0; // Wrist R/U estimation
+	}
+}
+
+void CDAQVizDlg::Set_BallControl_Pos() {
+	if (Label_Est[0][0] == LABEL_POWER_GRIP)
+		Rad_ball -= RAD_STEP_SIZE;
+	else if (Label_Est[0][0] == LABEL_HAND_OPEN)
+		Rad_ball += RAD_STEP_SIZE;
+
+	if (Label_Est[0][1] == LABEL_WRIST_FLEXION)
+		X_pos_ball -= X_POS_STEP_SIZE;
+	else if (Label_Est[0][1] == LABEL_WRIST_EXTENSION)
+		X_pos_ball += X_POS_STEP_SIZE;
+
+	if (Label_Est[0][2] == LABEL_WRIST_RADIAL)
+		Y_pos_ball += Y_POS_STEP_SIZE;
+	else if (Label_Est[0][2] == LABEL_WRIST_ULNAR)
+		Y_pos_ball -= Y_POS_STEP_SIZE;
+
+	if (X_pos_ball <= X_POS_MIN)
+		X_pos_ball = X_POS_MIN;
+	else if (X_pos_ball >= X_POS_MAX)
+		X_pos_ball = X_POS_MAX;
+
+	if (Y_pos_ball <= Y_POS_MIN)
+		Y_pos_ball = Y_POS_MIN;
+	else if (Y_pos_ball >= Y_POS_MAX)
+		Y_pos_ball = Y_POS_MAX;
+
+	if (Rad_ball <= RAD_MIN)
+		Rad_ball = RAD_MIN;
+	else if (Rad_ball >= RAD_MAX)
+		Rad_ball = RAD_MAX;
+}
+
+void CDAQVizDlg::Visualize_Polygon_sEMG() {
+	p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_N_sEMG_CH(Num_sEMG_CH);
+	p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data(sEMG_MAV_plot);
+	if (m_radioTrainingMode == 1)
+		p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data_mean(sEMG_MAV_stack_motionwise_mean);
+	if (m_radioTrainingMode == 2)
+		p_ChildDlg_KSJ->Get_OpenGLPointer()->Set_sEMG_data_mean(sEMG_mean_Param);
+}
+
+void CDAQVizDlg::Visualize_Graph_Data() {
+	double* sEMG_MAV_plot_temp = new double[5];
+	if (pShared_Data->count % N_GRAPH == 0) {
+		for (int i = 0; i < 5; i++)
+			sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i];
+		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
+	}
+	else if (pShared_Data->count % N_GRAPH == 1) {
+		for (int i = 0; i < 5; i++)
+			sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i + 5];
+		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
+	}
+	else if (pShared_Data->count % N_GRAPH == 2) {
+		for (int i = 0; i < 5; i++)
+			sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i + 10];
+		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
+	}
+	else if (pShared_Data->count % N_GRAPH == 3) {
+		p_ChildDlg_KSJ->Plot_graph(Finger_data, p_ChildDlg_KSJ->Get_rtGraph_Finger()[0]);
+	}
+	else if (pShared_Data->count % N_GRAPH == 4) {
+		p_ChildDlg_KSJ->Plot_graph(Finger_slope, p_ChildDlg_KSJ->Get_rtGraph_Finger_slope()[0]);
+	}
+	else if (pShared_Data->count % N_GRAPH == 5) {
+		p_ChildDlg_KSJ->Plot_graph(Wrist_data, p_ChildDlg_KSJ->Get_rtGraph_Wrist()[0]);
+	}
+	else if (pShared_Data->count % N_GRAPH == 6) {
+		p_ChildDlg_KSJ->Plot_graph(Wrist_slope, p_ChildDlg_KSJ->Get_rtGraph_Wrist_slope()[0]);
+	}
+	else if (pShared_Data->count % N_GRAPH == 7) {
+		p_ChildDlg_KSJ->Plot_graph(Label_Est[0], p_ChildDlg_KSJ->Get_rtGraph_Label_Est()[0]);
+	}
+	delete sEMG_MAV_plot_temp;
 }
