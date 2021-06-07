@@ -70,7 +70,6 @@ void DAQVizChildOpenGL::OnTimer(UINT_PTR nIDEvent) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 
 	CDialogEx::OnTimer(nIDEvent);
-	count++;
 	this->Invalidate(FALSE);
 }
 
@@ -181,7 +180,7 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 	// TODO: 여기에 구현 코드 추가.
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
 	Plot_polygon(sEMG_data, 1, N_sEMG_CH, 0.0, 0.75, 0.4, TRUE, TRUE, TRUE);
 
 	// 1. Power grip
@@ -201,6 +200,13 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 
 	// 6. Ulnar deviation
 	Plot_polygon(sEMG_data, sEMG_data_mean[5], 1, N_sEMG_CH, 0.95, -0.75, 0.4, TRUE, TRUE, TRUE);
+}
+
+void DAQVizChildOpenGL::renderBitmapCharacter(float x, float y, float z, void* font, char* string) {
+	char* c;
+	glRasterPos3f(x, y, z);
+	for (c = string; *c != '\0'; c++)
+		glutBitmapCharacter(font, *c);
 }
 
 void DAQVizChildOpenGL::Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
@@ -302,13 +308,30 @@ void DAQVizChildOpenGL::Plot_polygon(const double* data, int _m_StartIdx, int _m
 			glTranslatef(X_polygon + Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 						Y_polygon * fAspect +  Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 						0);
-			glutSolidSphere(data_normalized[j] * 0.07, 50, 50);
+			glutSolidSphere(data_normalized[j] * 0.035, 50, 50);
 			glTranslatef(- X_polygon - Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				- Y_polygon * fAspect - Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				0);
 		}
 	}
 	delete data_normalized;
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	CString temp;
+	CString temp_2;
+	for (int i = 0; i < N_sEMG_CH; i++) {
+		temp = _T("CH ");
+		temp_2.Format(_T("%02d"), i + 1);
+		temp += temp_2;
+		
+		CStringA temp_CStringA = CStringA(temp);
+		const char* temp_char_const = temp_CStringA;
+		char* temp_char = const_cast<char*>(temp_char_const);
+
+		renderBitmapCharacter(X_polygon + 1.3 * Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * i) - 0.085,
+							Y_polygon * fAspect + 1.15 * Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * i) - 0.01,
+							0, GLUT_BITMAP_HELVETICA_12, temp_char);
+	}
 
 	glPopMatrix();
 	glFlush();
@@ -437,7 +460,7 @@ void DAQVizChildOpenGL::Plot_polygon(const double* data, const double* data_mean
 			glTranslatef(X_polygon + Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				Y_polygon * fAspect + Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				0);
-			glutSolidSphere(data_mean_normalized[j] * 0.07, 50, 50);
+			glutSolidSphere(data_mean_normalized[j] * 0.035, 50, 50);
 			glTranslatef(-X_polygon - Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				-Y_polygon * fAspect - Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				0);

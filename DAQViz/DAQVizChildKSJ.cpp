@@ -47,6 +47,8 @@ BEGIN_MESSAGE_MAP(DAQVizChildKSJ, CDialogEx)
 	ON_STN_CLICKED(IDC_GRAPH_FINGER_FLEX, &DAQVizChildKSJ::OnClickedGraphFingerFlex)
 	ON_STN_CLICKED(IDC_GRAPH_FINGER_FLEX_SLOPE, &DAQVizChildKSJ::OnClickedGraphFingerFlexSlope)
 	ON_STN_CLICKED(IDC_GRAPH_WRIST_FLEX, &DAQVizChildKSJ::OnClickedGraphWristFlex)
+	ON_STN_CLICKED(IDC_GRAPH_WRIST_FLEX_SLOPE, &DAQVizChildKSJ::OnClickedGraphWristFlexSlope)
+	ON_STN_CLICKED(IDC_GRAPH_MOTION_LABEL_EST, &DAQVizChildKSJ::OnClickedGraphMotionLabelEst)
 END_MESSAGE_MAP()
 
 // DAQVizChildKSJ 메시지 처리기
@@ -389,6 +391,14 @@ void DAQVizChildKSJ::OnClickedGraphFingerFlexSlope() {
 
 void DAQVizChildKSJ::OnClickedGraphWristFlex() {
 	Cursor_set(5);
+}
+
+void DAQVizChildKSJ::OnClickedGraphWristFlexSlope() {
+	Cursor_set(6);
+}
+
+void DAQVizChildKSJ::OnClickedGraphMotionLabelEst() {
+	Cursor_set(7);
 }
 
 void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {

@@ -66,6 +66,8 @@ public:
 	void GLResize(int cx, int cy);
 	void GLRenderScene();
 
+	void renderBitmapCharacter(float x, float y, float z, void* font, char* string);
+
 	// Only draw the polygon from current sEMG
 	void Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
 					double _X_center, double _Y_center, double _Rad,

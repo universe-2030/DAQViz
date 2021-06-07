@@ -120,4 +120,6 @@ public:
 	afx_msg void OnClickedGraphFingerFlexSlope();
 	afx_msg void OnClickedGraphWristFlex();
 	CStatic m_textBallControl;
+	afx_msg void OnClickedGraphWristFlexSlope();
+	afx_msg void OnClickedGraphMotionLabelEst();
 };

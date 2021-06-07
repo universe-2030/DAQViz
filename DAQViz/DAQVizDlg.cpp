@@ -1168,140 +1168,9 @@ void CDAQVizDlg::DAQ_Online() {
 			Wrist_slope[i - Num_Finger_CH] = Flex_slope[i];
 	}
 
-	// Motionwise sEMG MAV stack
+	// Motion classification
 	if (m_count > 0) {
-		// Motion classification - w/ flex sensor
-		Label_Est[0][0] = SigProc->MotionClassification(sEMG_MAV_plot_baseline,
-														sEMG_MAV_plot,
-														Finger_data,
-														Wrist_data)[0]; // Finger motion label (w/ flex sensor)
-		Label_Est[0][1] = SigProc->MotionClassification(sEMG_MAV_plot_baseline,
-														sEMG_MAV_plot,
-														Finger_data,
-														Wrist_data)[1]; // Wrist F/E label (w/ flex sensor)
-		Label_Est[0][2] = SigProc->MotionClassification(sEMG_MAV_plot_baseline,
-														sEMG_MAV_plot,
-														Finger_data,
-														Wrist_data)[2]; // Wrist R/U Label (w/ flex sensor)
-
-		if (Label_Est[0][1] == LABEL_WRIST_FLEXION &&
-			Label_Est[0][2] == 0) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[2][i].push_back(sEMG_MAV_plot[i]);
-				
-				int _len = sEMG_MAV_stack_motionwise[2][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[2][i] =
-					(sEMG_MAV_stack_motionwise_mean[2][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[2][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[2][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[2][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[2][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[2][i], 2)));
-			}
-		}
-		else if (Label_Est[0][1] == LABEL_WRIST_EXTENSION &&
-			Label_Est[0][2] == 0) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[3][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[3][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[3][i] =
-					(sEMG_MAV_stack_motionwise_mean[3][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[3][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[3][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[3][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[3][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[3][i], 2)));
-			}
-		}
-		else if (Label_Est[0][1] == 0 &&
-			Label_Est[0][2] == LABEL_WRIST_RADIAL) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[4][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[4][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[4][i] =
-					(sEMG_MAV_stack_motionwise_mean[4][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[4][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[4][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[4][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[4][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[4][i], 2)));
-			}
-		}
-		else if (Label_Est[0][1] == 0 &&
-			Label_Est[0][2] == LABEL_WRIST_ULNAR) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[5][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[5][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[5][i] =
-					(sEMG_MAV_stack_motionwise_mean[5][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[5][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[5][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[5][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[5][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[5][i], 2)));
-			}
-		}
-		else if (Label_Est[0][0] == LABEL_POWER_GRIP) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[0][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[0][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[0][i] =
-					(sEMG_MAV_stack_motionwise_mean[0][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[0][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[0][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[0][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[0][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[0][i], 2)));
-			}
-		}
-		else if (Label_Est[0][0] == LABEL_HAND_OPEN) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[1][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[1][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[1][i] =
-					(sEMG_MAV_stack_motionwise_mean[1][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[1][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[1][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[1][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[1][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[1][i], 2)));
-			}
-		}
+		Motion_Classification();
 	}
 }
 
@@ -1322,141 +1191,70 @@ void CDAQVizDlg::DAQ_Offline() {
 		for (int i = 0; i < Num_Wrist_CH; i++)
 			Wrist_data[i] = Wrist_raw_stack_loaded[i][Offline_idx];
 
-		// Motion classification - w/ flex sensor
-		Label_Est[0][0] = SigProc->MotionClassification(sEMG_MAV_plot_baseline,
-														sEMG_MAV_plot,
-														Finger_data,
-														Wrist_data)[0]; // Finger motion label (w/ flex sensor)
-		Label_Est[0][1] = SigProc->MotionClassification(sEMG_MAV_plot_baseline,
-														sEMG_MAV_plot,
-														Finger_data,
-														Wrist_data)[1]; // Wrist F/E label (w/ flex sensor)
-		Label_Est[0][2] = SigProc->MotionClassification(sEMG_MAV_plot_baseline,
-														sEMG_MAV_plot,
-														Finger_data,
-														Wrist_data)[2]; // Wrist R/U Label (w/ flex sensor)
-
-		// 5. Motionwise sEMG MAV stack
-		if (Label_Est[0][1] == LABEL_WRIST_FLEXION &&
-			Label_Est[0][2] == 0) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[2][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[2][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[2][i] =
-					(sEMG_MAV_stack_motionwise_mean[2][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[2][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[2][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[2][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[2][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[2][i], 2)));
-			}
-		}
-		else if (Label_Est[0][1] == LABEL_WRIST_EXTENSION &&
-			Label_Est[0][2] == 0) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[3][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[3][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[3][i] =
-					(sEMG_MAV_stack_motionwise_mean[3][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[3][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[3][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[3][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[3][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[3][i], 2)));
-			}
-		}
-		else if (Label_Est[0][1] == 0 &&
-			Label_Est[0][2] == LABEL_WRIST_RADIAL) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[4][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[4][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[4][i] =
-					(sEMG_MAV_stack_motionwise_mean[4][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[4][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[4][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[4][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[4][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[4][i], 2)));
-			}
-		}
-		else if (Label_Est[0][1] == 0 &&
-			Label_Est[0][2] == LABEL_WRIST_ULNAR) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[5][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[5][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[5][i] =
-					(sEMG_MAV_stack_motionwise_mean[5][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[5][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[5][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[5][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[5][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[5][i], 2)));
-			}
-		}
-		else if (Label_Est[0][0] == LABEL_POWER_GRIP) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[0][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[0][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[0][i] =
-					(sEMG_MAV_stack_motionwise_mean[0][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[0][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[0][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[0][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[0][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[0][i], 2)));
-			}
-		}
-		else if (Label_Est[0][0] == LABEL_HAND_OPEN) {
-			for (int i = 0; i < Num_sEMG_CH; i++) {
-				sEMG_MAV_stack_motionwise[1][i].push_back(sEMG_MAV_plot[i]);
-
-				int _len = sEMG_MAV_stack_motionwise[1][i].size();
-
-				sEMG_MAV_stack_motionwise_mean[1][i] =
-					(sEMG_MAV_stack_motionwise_mean[1][i] * (_len - 1) +
-						sEMG_MAV_plot[i]) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_square_mean[1][i] =
-					(sEMG_MAV_stack_motionwise_square_mean[1][i] * (_len - 1) +
-						pow(sEMG_MAV_plot[i], 2)) / (double)_len;
-
-				sEMG_MAV_stack_motionwise_std[1][i] =
-					sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[1][i] -
-						pow(sEMG_MAV_stack_motionwise_mean[1][i], 2)));
-			}
-		}
+		// Motion classification
+		Motion_Classification();
 	}
 	Offline_idx++;
+}
+
+void CDAQVizDlg::Motion_Classification() {
+	// Motion classification - w/ flex sensor
+	Label_Est[0][0] = SigProc->MotionClassification(sEMG_MAV_plot_baseline,
+													sEMG_MAV_plot,
+													Finger_data,
+													Wrist_data)[0]; // Finger motion label (w/ flex sensor)
+	Label_Est[0][1] = SigProc->MotionClassification(sEMG_MAV_plot_baseline,
+													sEMG_MAV_plot,
+													Finger_data,
+													Wrist_data)[1]; // Wrist F/E label (w/ flex sensor)
+	Label_Est[0][2] = SigProc->MotionClassification(sEMG_MAV_plot_baseline,
+													sEMG_MAV_plot,
+													Finger_data,
+													Wrist_data)[2]; // Wrist R/U Label (w/ flex sensor)
+
+	// Motionwise sEMG MAV stack & mean, std calculation
+	if (Label_Est[0][1] == LABEL_WRIST_FLEXION &&
+		Label_Est[0][2] == 0) {
+		Calculate_Motionwise_Mean_Std(2);
+	}
+	else if (Label_Est[0][1] == LABEL_WRIST_EXTENSION &&
+		Label_Est[0][2] == 0) {
+		Calculate_Motionwise_Mean_Std(3);
+	}
+	else if (Label_Est[0][1] == 0 &&
+		Label_Est[0][2] == LABEL_WRIST_RADIAL) {
+		Calculate_Motionwise_Mean_Std(4);
+	}
+	else if (Label_Est[0][1] == 0 &&
+		Label_Est[0][2] == LABEL_WRIST_ULNAR) {
+		Calculate_Motionwise_Mean_Std(5);
+	}
+	else if (Label_Est[0][0] == LABEL_POWER_GRIP) {
+		Calculate_Motionwise_Mean_Std(0);
+	}
+	else if (Label_Est[0][0] == LABEL_HAND_OPEN) {
+		Calculate_Motionwise_Mean_Std(1);
+	}
+}
+
+void CDAQVizDlg::Calculate_Motionwise_Mean_Std(UINT _motion_idx) {
+	for (int i = 0; i < Num_sEMG_CH; i++) {
+		sEMG_MAV_stack_motionwise[_motion_idx][i].push_back(sEMG_MAV_plot[i]);
+
+		int _len = sEMG_MAV_stack_motionwise[_motion_idx][i].size();
+
+		sEMG_MAV_stack_motionwise_mean[_motion_idx][i] =
+			(sEMG_MAV_stack_motionwise_mean[_motion_idx][i] * (_len - 1) +
+				sEMG_MAV_plot[i]) / (double)_len;
+
+		sEMG_MAV_stack_motionwise_square_mean[_motion_idx][i] =
+			(sEMG_MAV_stack_motionwise_square_mean[_motion_idx][i] * (_len - 1) +
+				pow(sEMG_MAV_plot[i], 2)) / (double)_len;
+
+		sEMG_MAV_stack_motionwise_std[_motion_idx][i] =
+			sqrt(abs(sEMG_MAV_stack_motionwise_square_mean[_motion_idx][i] -
+				pow(sEMG_MAV_stack_motionwise_mean[_motion_idx][i], 2)));
+	}
 }
 
 void CDAQVizDlg::RadioCtrl(UINT ID) {

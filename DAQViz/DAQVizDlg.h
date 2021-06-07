@@ -321,6 +321,8 @@ public:
 	// Unitizing functions
 	void DAQ_Online();
 	void DAQ_Offline();
+	void Motion_Classification();
+	void Calculate_Motionwise_Mean_Std(UINT _motion_idx);
 
 	void Calculate_sEMG_MAV();
 	void Estimate_Motion_sEMG();
