@@ -185,25 +185,29 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 			//////////////////////////////////////////// Elbow ////////////////////////////////////////////
 			if (pMainDlg->Get_Elbow_raw_stack()[0].size() > 0) {
 				UINT idx_temp = pMainDlg->Get_Elbow_raw_stack()[0].size();
-
 				elbow_FE_plot = pMainDlg->Get_Elbow_raw_stack()[0][idx_temp - 1];
 				rightHand.ElbowFERotatePos(elbow_FE_plot);
+
+				idx_temp = pMainDlg->Get_Elbow_raw_stack()[1].size();
+				elbow_IE_plot = pMainDlg->Get_Elbow_raw_stack()[1][idx_temp - 1];
+				rightHand.ElbowIERotatePos(elbow_IE_plot);
+
+				idx_temp = pMainDlg->Get_Elbow_raw_stack()[2].size();
+				elbow_AA_plot = pMainDlg->Get_Elbow_raw_stack()[2][idx_temp - 1];
+				rightHand.ElbowAARotatePos(elbow_AA_plot);
 			}
 
 			/////////////////////////////////////////// Shoulder ///////////////////////////////////////////
 			if (pMainDlg->Get_Shoulder_raw_stack()[0].size() > 0) {
 				UINT idx_temp = pMainDlg->Get_Shoulder_raw_stack()[0].size();
-
 				shoulder_FE_plot = pMainDlg->Get_Shoulder_raw_stack()[0][idx_temp - 1];
 				rightHand.ShoulderFERotatePos(shoulder_FE_plot);
 
 				idx_temp = pMainDlg->Get_Shoulder_raw_stack()[1].size();
-
 				shoulder_IE_plot = pMainDlg->Get_Shoulder_raw_stack()[1][idx_temp - 1];
 				rightHand.ShoulderIERotatePos(shoulder_IE_plot);
 
 				idx_temp = pMainDlg->Get_Shoulder_raw_stack()[2].size();
-
 				shoulder_AA_plot = pMainDlg->Get_Shoulder_raw_stack()[2][idx_temp - 1];
 				rightHand.ShoulderAARotatePos(shoulder_AA_plot);
 			}
@@ -259,6 +263,12 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 			///////////////////////////////////// Elbow /////////////////////////////////////
 			elbow_FE_plot = pMainDlg->Get_Elbow_raw_stack()[0][idx_temp - 1];
 			rightHand_2.ElbowFERotatePos(elbow_FE_plot);
+
+			elbow_IE_plot = pMainDlg->Get_Elbow_raw_stack()[1][idx_temp - 1];
+			rightHand_2.ElbowIERotatePos(elbow_IE_plot);
+
+			elbow_AA_plot = pMainDlg->Get_Elbow_raw_stack()[2][idx_temp - 1];
+			rightHand_2.ElbowAARotatePos(elbow_AA_plot);
 
 			//////////////////////////////////// Shoulder ////////////////////////////////////
 			shoulder_FE_plot = pMainDlg->Get_Shoulder_raw_stack()[0][idx_temp - 1];
@@ -409,7 +419,7 @@ void DAQVizChildOpenGL2::SetupRC()
 	//}
 
 	M3DVector3f up = { -0.38, 0.86, -0.34 };
-	M3DVector3f origin = { 10.75, 9.81, 0.83 };
+	M3DVector3f origin = { 7.75, 13.81, 5.83 };
 	M3DVector3f look = { -0.49, -0.79, -0.72 };
 	frameCamera.SetForwardVector(look);
 	frameCamera.SetOrigin(origin);

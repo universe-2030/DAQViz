@@ -37,14 +37,14 @@
 #define FRANKFURT_CH_MAX 8
 #define FINGER_CH_MAX 5
 #define WRIST_CH_MAX 2
-#define ELBOW_CH_MAX 1
+#define ELBOW_CH_MAX 3
 #define SHOULDER_CH_MAX 3
 
 #define DELSYS_CH_INIT 15
 #define FRANKFURT_CH_INIT 8
 #define FINGER_CH_INIT 5
 #define WRIST_CH_INIT 2
-#define ELBOW_CH_INIT 1
+#define ELBOW_CH_INIT 3
 #define SHOULDER_CH_INIT 3
 
 #define FINGER_ANALOG_ABS_MAX 0.75
@@ -70,7 +70,7 @@
 #define RAD_MAX 1.2
 #define RAD_STEP_SIZE 0.001
 
-#define NUM_FILE_LOAD 4
+#define NUM_FILE_LOAD 10
 #define NUM_FILE_LOAD_PARAMETER 3
 #define MAX_FILES 1000
 #define MAX_PATH 150
@@ -266,7 +266,13 @@ private:
 
 	std::vector<double>* sEMG_MAV_stack_loaded;
 	std::vector<double>* Finger_raw_stack_loaded;
+	std::vector<double>* Finger_slope_stack_loaded;
 	std::vector<double>* Wrist_raw_stack_loaded;
+	std::vector<double>* Wrist_slope_stack_loaded;
+	std::vector<double>* Elbow_raw_stack_loaded;
+	std::vector<double>* Elbow_slope_stack_loaded;
+	std::vector<double>* Shoulder_raw_stack_loaded;
+	std::vector<double>* Shoulder_slope_stack_loaded;
 	std::vector<double>* MotionLabel_loaded;
 
 	// Load the parameter file
@@ -339,6 +345,8 @@ private:
 	ofstream f_sEMG_raw, f_sEMG_abs, f_sEMG_MAV, f_sEMG_MAV_baseline;
 	ofstream f_Finger_raw, f_Finger_slope;
 	ofstream f_Wrist_raw, f_Wrist_slope;
+	ofstream f_Elbow_raw, f_Elbow_slope;
+	ofstream f_Shoulder_raw, f_Shoulder_slope;
 	ofstream f_MotionLabel, f_MotionEstimation;
 	ofstream f_X_pos_ball, f_Y_pos_ball, f_Rad_ball;
 	ofstream f_parameters;
@@ -467,8 +475,16 @@ public:
 					double _Time_DAQ_elapse,
 					double _Time_RTGraph_elapse,
 					double* _sEMG_MAV,
+					double** _sEMG_MAV_stack_motionwise_mean,
+					double** _sEMG_MAV_stack_motionwise_std,
 					double* _Finger_raw,
+					double* _Finger_slope,
 					double* _Wrist_raw,
+					double* _Wrist_slope,
+					double* _Elbow_raw,
+					double* _Elbow_slope,
+					double* _Shoulder_raw,
+					double* _Shoulder_slope,
 					double* _MotionLabel_current,
 					double* _MotionEstimation_current,
 					double _X_pos,

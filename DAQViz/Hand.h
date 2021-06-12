@@ -15,10 +15,15 @@ public:
 	
 	void WristFERotatePos(float pos);
 	void WristRURotatePos(float pos);
+
 	void ElbowFERotatePos(float pos);
+	void ElbowIERotatePos(float pos);
+	void ElbowAARotatePos(float pos);
+
 	void ShoulderFERotatePos(float pos);
 	void ShoulderIERotatePos(float pos);
 	void ShoulderAARotatePos(float pos);
+
 	void ThumbRotatePos(float pos1, float pos2);
 	void IndexRotatePos(float pos1, float pos2, float pos3);
 	void MiddleRotatePos(float pos1, float pos2, float pos3);
@@ -101,12 +106,20 @@ private:
 
 	// Elbow (1 DoF)
 	float elbow_FE;
+	float elbow_IE;
+	float elbow_AA;
 
 	float elbow_FE_init;
+	float elbow_IE_init;
+	float elbow_AA_init;
 
 	float elbow_FE_min;
+	float elbow_IE_min;
+	float elbow_AA_min;
 
 	float elbow_FE_max;
+	float elbow_IE_max;
+	float elbow_AA_max;
 
 	// Shoulder (3 DoF)
 	float shoulder_FE;

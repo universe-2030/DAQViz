@@ -75,9 +75,14 @@ private:
 	float root_plot;
 	float first_plot;
 	float second_plot;
+
 	float wrist_FE_plot;
 	float wrist_RU_plot;
+
 	float elbow_FE_plot;
+	float elbow_IE_plot;
+	float elbow_AA_plot;
+	
 	float shoulder_FE_plot;
 	float shoulder_IE_plot;
 	float shoulder_AA_plot;

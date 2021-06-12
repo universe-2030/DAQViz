@@ -119,12 +119,20 @@ Hand::Hand(GLFrame* obj) {
 
 	//////////////////////////////////////////////////////////////////////////
 	elbow_FE = 0;
+	elbow_IE = 0;
+	elbow_AA = 0;
 
 	elbow_FE_init = 0;
+	elbow_IE_init = 0;
+	elbow_AA_init = 0;
 
 	elbow_FE_min = -60;
+	elbow_IE_min = -60;
+	elbow_AA_min = -60;
 
 	elbow_FE_max = 55;
+	elbow_IE_max = 55;
+	elbow_AA_max = 55;
 
 	//////////////////////////////////////////////////////////////////////////
 	shoulder_FE = 0;
@@ -139,8 +147,8 @@ Hand::Hand(GLFrame* obj) {
 	shoulder_IE_min = -45;
 	shoulder_AA_min = 0;
 
-	shoulder_FE_max = 80;
-	shoulder_IE_max = 80;
+	shoulder_FE_max = 90;
+	shoulder_IE_max = 90;
 	shoulder_AA_max = 80;
 }
 
@@ -173,8 +181,6 @@ void Hand::WristRURotatePos(float pos) {
 }
 
 void Hand::ElbowFERotatePos(float pos) {
-	index = 16;
-	setJointIndex(index); // Wrist index
 	elbow_FE = pos;
 	if (elbow_FE >= elbow_FE_max)
 		elbow_FE = elbow_FE_max;
@@ -182,9 +188,23 @@ void Hand::ElbowFERotatePos(float pos) {
 		elbow_FE = elbow_FE_min;
 }
 
+void Hand::ElbowIERotatePos(float pos) {
+	elbow_IE = pos;
+	if (elbow_IE >= elbow_IE_max)
+		elbow_IE = elbow_IE_max;
+	else if (elbow_IE <= elbow_IE_min)
+		elbow_IE = elbow_IE_min;
+}
+
+void Hand::ElbowAARotatePos(float pos) {
+	elbow_AA = pos;
+	if (elbow_AA >= elbow_AA_max)
+		elbow_AA = elbow_AA_max;
+	else if (elbow_AA <= elbow_AA_min)
+		elbow_AA = elbow_AA_min;
+}
+
 void Hand::ShoulderFERotatePos(float pos) {
-	index = 17;
-	setJointIndex(index); // Wrist index
 	shoulder_FE = pos;
 	if (shoulder_FE >= shoulder_FE_max)
 		shoulder_FE = shoulder_FE_max;
@@ -193,8 +213,6 @@ void Hand::ShoulderFERotatePos(float pos) {
 }
 
 void Hand::ShoulderIERotatePos(float pos) {
-	index = 18;
-	setJointIndex(index); // Wrist index
 	shoulder_IE = pos;
 	if (shoulder_IE >= shoulder_IE_max)
 		shoulder_IE = shoulder_IE_max;
@@ -203,8 +221,6 @@ void Hand::ShoulderIERotatePos(float pos) {
 }
 
 void Hand::ShoulderAARotatePos(float pos) {
-	index = 19;
-	setJointIndex(index); // Wrist index
 	shoulder_AA = pos;
 	if (shoulder_AA >= shoulder_AA_max)
 		shoulder_AA = shoulder_AA_max;
@@ -466,6 +482,9 @@ void Hand::Render() {
 		glLineWidth(1);
 		glTranslatef(-0.85, 6.05, 9.55);
 
+		(index == 17) || (index == 18) || (index == 19)
+			? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
+		glutWireSphere(0.9, 50, 50);
 		glRotatef(shoulder_FE, 1, 0, 0);
 		glRotatef(shoulder_IE, 0, 1, 0);
 		glRotatef(shoulder_AA, 0, 0, 1);
@@ -488,21 +507,14 @@ void Hand::Render() {
 		glScalef(0.33, 0.33, 0.33);
 
 		// glColor3ub(0, 200, 0); glmDraw(Upper_arm, GL_SMOOTH);
-	#pragma endregion
-
-		glTranslatef(-0.85, 6.05, 9.55);
-
-		(index == 17) || (index == 18) || (index == 19)
-			? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
-		glutWireSphere(0.9, 50, 50);
-
-		glTranslatef(0.85, -6.05, -9.55);
-		
+	#pragma endregion		
 
 	#pragma region Lower_arm_joint
 		glLineWidth(1);
 		glTranslatef(-0.5, 1.05, 10.05);
 		glRotatef(elbow_FE, 1, 0, 0);
+		glRotatef(elbow_IE, 0, 1, 0);
+		glRotatef(elbow_AA, 0, 0, 1);
 
 		index == 16 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
 		glutWireSphere(0.9, 50, 50);
