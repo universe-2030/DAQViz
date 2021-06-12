@@ -77,6 +77,10 @@ private:
 	float second_plot;
 	float wrist_FE_plot;
 	float wrist_RU_plot;
+	float elbow_FE_plot;
+	float shoulder_FE_plot;
+	float shoulder_IE_plot;
+	float shoulder_AA_plot;
 
 	float root_animation;
 	float first_animation;

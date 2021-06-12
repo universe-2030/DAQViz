@@ -306,12 +306,19 @@ private:
 
 	float64* Finger_data;
 	float64* Finger_slope;
+
 	float64* Wrist_data;
 	float64* Wrist_slope;
+
 	float64* Elbow_data;
+	float64* Elbow_data_prev;
 	float64* Elbow_slope;
+	float64* Elbow_slope_prev;
+
 	float64* Shoulder_data;
+	float64* Shoulder_data_prev;
 	float64* Shoulder_slope;
+	float64* Shoulder_slope_prev;
 
 	double** Label_Est;
 
@@ -422,6 +429,10 @@ public:
 	const std::vector<double>* Get_Finger_slope_stack();
 	const std::vector<double>* Get_Wrist_raw_stack();
 	const std::vector<double>* Get_Wrist_slope_stack();
+	const std::vector<double>* Get_Elbow_raw_stack();
+	const std::vector<double>* Get_Elbow_slope_stack();
+	const std::vector<double>* Get_Shoulder_raw_stack();
+	const std::vector<double>* Get_Shoulder_slope_stack();
 
 	const std::vector<double>* Get_MotionLabel_stack();
 	const std::vector<double>* Get_MotionEstimation_stack();
@@ -443,6 +454,10 @@ public:
 					double* _Finger_slope,
 					double* _Wrist_raw,
 					double* _Wrist_slope,
+					double* _Elbow_raw,
+					double* _Elbow_slope,
+					double* _Shoulder_raw,
+					double* _Shoulder_slope,
 					double* _MotionLabel_current,
 					double* _MotionEstimation_current,
 					double _X_pos,

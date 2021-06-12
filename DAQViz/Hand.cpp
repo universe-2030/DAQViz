@@ -462,304 +462,309 @@ void Hand::Render() {
 	object->ApplyActorTransform();
 	glTranslatef(0, 1, 0);
 
-#pragma region Upper_arm_joint
-	glLineWidth(1);
-	glTranslatef(-0.85, 6.05, 9.55);
-
-	(index == 17) || (index == 18) || (index == 19)
-		? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
-	glutWireSphere(0.9, 50, 50);
-
-	glRotatef(shoulder_FE, 1, 0, 0);
-	glRotatef(shoulder_IE, 0, 1, 0);
-	glRotatef(shoulder_AA, 0, 0, 1);
-
-	glTranslatef(0.85, -6.05, -9.55);
-#pragma endregion
-
-#pragma region Upper_arm
-	glLineWidth(1);
-	glScalef(3, 3, 3);
-	glTranslatef(-0.2, 1.2, 3.25);
-	glRotatef(180, 1, 0, 0);
-	glRotatef(90, 0, 0, 1);
-
-	glColor3ub(0, 200, 0); glmDraw(Upper_arm, GL_SMOOTH);
-
-	glRotatef(-90, 0, 0, 1);
-	glRotatef(-180, 1, 0, 0);
-	glTranslatef(0.2, -1.2, -3.25);
-	glScalef(0.33, 0.33, 0.33);
-
-	// glColor3ub(0, 200, 0); glmDraw(Upper_arm, GL_SMOOTH);
-#pragma endregion
-
-#pragma region Lower_arm_joint
-	glLineWidth(1);
-	glTranslatef(-0.5, 1.05, 10.05);
-	glRotatef(elbow_FE, 1, 0, 0);
-
-	index == 16 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
-	glutWireSphere(0.9, 50, 50);
-
-	glTranslatef(0.5, -1.05, -10.05);
-#pragma endregion
-
-#pragma region Lower_arm
-	glLineWidth(1);
-	glScalef(12, 12, 12);
-	//glRotatef(-90, 0, 0, 1);
-	glTranslatef(-0.025, 0.09, 0.65);
-	glRotatef(30, 0, 1, 0);
-	glRotatef(90, 1, 0, 0);
-
-	glColor3ub(0, 200, 0); glmDraw(Lower_arm, GL_SMOOTH);
-
-	glRotatef(-90, 1, 0, 0);
-	glRotatef(-30, 0, 1, 0);
-	glTranslatef(0.025, -0.09, -0.65);
-	glScalef(0.084, 0.084, 0.084);
-#pragma endregion
-
-	glTranslatef(0, 0.2, 0);
-	glRotatef(-90, 0, 0, 1);
-
-#pragma region Palm
-	glLineWidth(1);
-	glScalef(1.5, 1.5, -1.5);
-	glTranslatef(0, 0, -3.2);
-	glRotatef(wrist_FE, 1, 0, 0);
-	index == 14 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.5, 50, 50);
-	glRotatef(wrist_RU, 0, -1, 0);
-	index == 15 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.5, 50, 50);
-
-	glTranslatef(0, 0, 0.5);
-	glColor3ub(0, 200, 0); glmDraw(palm, GL_SMOOTH);
-
-	glLineWidth(2);
-	glTranslatef(0.08, 0, -0.6);
-	glScalef(2.0 / 3.0, 2.0 / 3.0, -2.0 / 3.0);
-	glTranslatef(-0.1, 0, -4.5);
-
-#pragma endregion
-
-#pragma region litteFinger
-	glPushMatrix();
-	glTranslatef(1, -0.2, 1.1);
-	glScalef(1.2, 1.2, 1.2);
-	glRotatef(-33, 0, 1, 0);
-	glTranslatef(0.95, 0.15, -0.45);
-
-	//glColor3ub(255, 255, 255); glutWireSphere(0.15, 10, 10);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.35, 10, 10);
-	//glTranslatef(0, 0, 0.35);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.15, 20, 20);
-	////glRotatef(20, 1, 0, 0);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.45, 10, 10);
-	//glTranslatef(0, 0, 0.45);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.15, 20, 20);
-	////glRotatef(20, 1, 0, 0);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.6, 10, 10);
-	//glTranslatef(0, 0, 0.6);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.2, 30, 30);
-	glTranslatef(0, 0, 0.35 + 0.45 + 0.6);
-	glScalef(1, 1, -1);
-
-	glRotatef(root[0], 1, 0, 0);
-	index == 0 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.6, 10, 10);
-	glTranslatef(0, 0, 0.6);
-
-	glRotatef(first[0], 1, 0, 0);
-	index == 1 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.15, 40, 40);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.45, 10, 10);
-	glTranslatef(0, 0, 0.45);
-
-	glRotatef(second[0], 1, 0, 0);
-	index == 2 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.15, 40, 40);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.35, 10, 10);
-	glTranslatef(0, 0, 0.35);
-
-	glColor3ub(255, 255, 255); glutWireSphere(0.15, 10, 10);
-	glPopMatrix();
-#pragma endregion
-
-#pragma region rightFinger 
-	//無名?
-	glPushMatrix();
-	glTranslatef(0.5, -0.1, 0.4);
-
-	glScalef(1.2, 1.2, 1.2);
-	glRotatef(-9, 0, 1, 0);
-	glTranslatef(0.4, 0.35, -0.5);
-
-	//glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.4, 10, 10);
-	//glTranslatef(0, 0, 0.4);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
-	////glRotatef(20, 1, 0, 0);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.7, 10, 10);
-	//glTranslatef(0, 0, 0.7);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
-	////glRotatef(20, 1, 0, 0);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.1, 10, 10);
-	//glTranslatef(0, 0, 1.1);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
-	glTranslatef(0, 0, 0.4 + 0.7 + 1.1);
-	glScalef(1, 1, -1);
-
-	glRotatef(root[1], 1, 0, 0);
-	index == 3 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.25, 40, 40);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.1, 10, 10);
-	glTranslatef(0, 0, 1.1);
-
-	glRotatef(first[1], 1, 0, 0);
-	index == 4 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.7, 10, 10);
-	glTranslatef(0, 0, 0.7);
-
-	glRotatef(second[1], 1, 0, 0);
-	index == 5 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.4, 10, 10);
-	glTranslatef(0, 0, 0.4);
-
-	glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
-	glPopMatrix();
-#pragma endregion
-
-#pragma region middleFinger
-	glPushMatrix();
-	glScalef(1.2, 1.2, 1.2);
-	glTranslatef(0.07, 0.35, -0.4);
-	//glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.5, 10, 10);
-	//glTranslatef(0, 0, 0.5);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
-	////glRotatef(20, 1, 0, 0);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.7, 10, 10);
-	//glTranslatef(0, 0, 0.7);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
-	////glRotatef(20, 1, 0, 0);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.3, 10, 10);
-	//glTranslatef(0, 0, 1.3);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
-	glTranslatef(0, 0, 2.5);
-	glScalef(1, 1, -1);
-
-	glRotatef(root[2], 1, 0, 0);
-	index == 6 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.3, 10, 10);
-	glTranslatef(0, 0, 1.3);
-
-	glRotatef(first[2], 1, 0, 0);
-	index == 7 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.7, 10, 10);
-	glTranslatef(0, 0, 0.7);
-
-	glRotatef(second[2], 1, 0, 0);
-	index == 8 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.5, 10, 10);
-	glTranslatef(0, 0, 0.5);
-
-	glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
-
-	glPopMatrix();
-#pragma endregion
-
-#pragma region foreFinger
-	glPushMatrix();
-	glTranslatef(-0.5, -0.1, 0.4);
-	glScalef(1.2, 1.2, 1.2);
-	glRotatef(12, 0, 1, 0);
-	glTranslatef(-0.4, 0.5, -0.4);
-
-
-	//glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.5, 10, 10);
-	//glTranslatef(0, 0, 0.5);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
-	////glRotatef(20, 1, 0, 0);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.55, 10, 10);
-	//glTranslatef(0, 0, 0.55);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
-	////glRotatef(20, 1, 0, 0);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.1, 10, 10);
-	//glTranslatef(0, 0, 1.1);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
-	glTranslatef(0, 0, 0.5 + 0.55 + 1.1);
-	glScalef(1, 1, -1);
-
-	glRotatef(root[3], 1, 0, 0);
-	index == 9 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.1, 10, 10);
-	glTranslatef(0, 0, 1.1);
-
-	glRotatef(first[3], 1, 0, 0);
-	index == 10 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 30, 30);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.55, 10, 10);
-	glTranslatef(0, 0, 0.55);
-
-	glRotatef(second[3], 1, 0, 0);
-	index == 11 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 30, 30);
-	glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.5, 10, 10);
-	glTranslatef(0, 0, 0.5);
-
-	glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
-	glPopMatrix();
-#pragma endregion
-
-#pragma region Thumb
-	glPushMatrix();
-	glTranslatef(-1.1, -0.1, 1.7);
-
-	glScalef(1.2, 1.2, 1.2);
-	glRotatef(60, 0, 1, 0);
-	glTranslatef(-1.35, -0.05, -0.6);
-
-	//glColor3ub(255, 255, 255); glutWireSphere(0.25, 10, 10);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.25, 0.5, 10, 10);
-	//glTranslatef(0, 0, 0.4);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.25, 20, 20);
-	////glRotatef(20, 1, 0, 0);
-	//glColor3ub(255, 255, 255); glutWireCylinder(0.25, 0.7, 10, 10);
-	//glTranslatef(0, 0, 0.7);
-
-	//glColor3ub(255, 0, 0); glutWireSphere(0.3, 30, 30);
-
-	glTranslatef(0, 0, 0.5 + 0.7);
-	glScalef(1, 1, -1);
-
-	glRotatef(first[4], 1, 0, 0);
-	index == 12 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
-	glutWireSphere(0.3, 30, 30);
-	glColor3ub(255, 255, 255);
-	glutWireCylinder(0.25, 0.7, 10, 10);
-	glTranslatef(0, 0, 0.7);
-
-	glRotatef(second[4], 1, 0, 0);
-	index == 13 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
-	glutWireSphere(0.25, 20, 20);
-	glColor3ub(255, 255, 255);
-	glutWireCylinder(0.25, 0.5, 10, 10);
-	glTranslatef(0, 0, 0.5);
-
-	glColor3ub(255, 255, 255);
-	glutWireSphere(0.25, 10, 10);
-	glPopMatrix();
-#pragma endregion
+	#pragma region Upper_arm_joint
+		glLineWidth(1);
+		glTranslatef(-0.85, 6.05, 9.55);
+
+		glRotatef(shoulder_FE, 1, 0, 0);
+		glRotatef(shoulder_IE, 0, 1, 0);
+		glRotatef(shoulder_AA, 0, 0, 1);
+
+		glTranslatef(0.85, -6.05, -9.55);
+	#pragma endregion
+
+	#pragma region Upper_arm
+		glLineWidth(1);
+		glScalef(3, 3, 3);
+		glTranslatef(-0.2, 1.2, 3.25);
+		glRotatef(180, 1, 0, 0);
+		glRotatef(90, 0, 0, 1);
+
+		glColor3ub(0, 200, 0); glmDraw(Upper_arm, GL_SMOOTH);
+
+		glRotatef(-90, 0, 0, 1);
+		glRotatef(-180, 1, 0, 0);
+		glTranslatef(0.2, -1.2, -3.25);
+		glScalef(0.33, 0.33, 0.33);
+
+		// glColor3ub(0, 200, 0); glmDraw(Upper_arm, GL_SMOOTH);
+	#pragma endregion
+
+		glTranslatef(-0.85, 6.05, 9.55);
+
+		(index == 17) || (index == 18) || (index == 19)
+			? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
+		glutWireSphere(0.9, 50, 50);
+
+		glTranslatef(0.85, -6.05, -9.55);
+		
+
+	#pragma region Lower_arm_joint
+		glLineWidth(1);
+		glTranslatef(-0.5, 1.05, 10.05);
+		glRotatef(elbow_FE, 1, 0, 0);
+
+		index == 16 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
+		glutWireSphere(0.9, 50, 50);
+
+		glTranslatef(0.5, -1.05, -10.05);
+	#pragma endregion
+
+	#pragma region Lower_arm
+		glLineWidth(1);
+		glScalef(12, 12, 12);
+		//glRotatef(-90, 0, 0, 1);
+		glTranslatef(-0.025, 0.09, 0.65);
+		glRotatef(30, 0, 1, 0);
+		glRotatef(90, 1, 0, 0);
+
+		glColor3ub(0, 200, 0); glmDraw(Lower_arm, GL_SMOOTH);
+
+		glRotatef(-90, 1, 0, 0);
+		glRotatef(-30, 0, 1, 0);
+		glTranslatef(0.025, -0.09, -0.65);
+		glScalef(0.084, 0.084, 0.084);
+	#pragma endregion
+
+		glTranslatef(0, 0.2, 0);
+		glRotatef(-90, 0, 0, 1);
+
+	#pragma region Palm
+		glLineWidth(1);
+		glScalef(1.5, 1.5, -1.5);
+		glTranslatef(0, 0, -3.2);
+		glRotatef(wrist_FE, 1, 0, 0);
+		index == 14 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.5, 50, 50);
+		glRotatef(wrist_RU, 0, -1, 0);
+		index == 15 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.5, 50, 50);
+
+		glTranslatef(0, 0, 0.5);
+		glColor3ub(0, 200, 0); glmDraw(palm, GL_SMOOTH);
+
+		glLineWidth(2);
+		glTranslatef(0.08, 0, -0.6);
+		glScalef(2.0 / 3.0, 2.0 / 3.0, -2.0 / 3.0);
+		glTranslatef(-0.1, 0, -4.5);
+
+	#pragma endregion
+
+	#pragma region litteFinger
+		glPushMatrix();
+		glTranslatef(1, -0.2, 1.1);
+		glScalef(1.2, 1.2, 1.2);
+		glRotatef(-33, 0, 1, 0);
+		glTranslatef(0.95, 0.15, -0.45);
+
+		//glColor3ub(255, 255, 255); glutWireSphere(0.15, 10, 10);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.35, 10, 10);
+		//glTranslatef(0, 0, 0.35);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.15, 20, 20);
+		////glRotatef(20, 1, 0, 0);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.45, 10, 10);
+		//glTranslatef(0, 0, 0.45);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.15, 20, 20);
+		////glRotatef(20, 1, 0, 0);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.6, 10, 10);
+		//glTranslatef(0, 0, 0.6);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.2, 30, 30);
+		glTranslatef(0, 0, 0.35 + 0.45 + 0.6);
+		glScalef(1, 1, -1);
+
+		glRotatef(root[0], 1, 0, 0);
+		index == 0 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.6, 10, 10);
+		glTranslatef(0, 0, 0.6);
+
+		glRotatef(first[0], 1, 0, 0);
+		index == 1 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.15, 40, 40);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.45, 10, 10);
+		glTranslatef(0, 0, 0.45);
+
+		glRotatef(second[0], 1, 0, 0);
+		index == 2 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.15, 40, 40);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.15, 0.35, 10, 10);
+		glTranslatef(0, 0, 0.35);
+
+		glColor3ub(255, 255, 255); glutWireSphere(0.15, 10, 10);
+		glPopMatrix();
+	#pragma endregion
+
+	#pragma region rightFinger 
+		//無名?
+		glPushMatrix();
+		glTranslatef(0.5, -0.1, 0.4);
+
+		glScalef(1.2, 1.2, 1.2);
+		glRotatef(-9, 0, 1, 0);
+		glTranslatef(0.4, 0.35, -0.5);
+
+		//glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.4, 10, 10);
+		//glTranslatef(0, 0, 0.4);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
+		////glRotatef(20, 1, 0, 0);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.7, 10, 10);
+		//glTranslatef(0, 0, 0.7);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
+		////glRotatef(20, 1, 0, 0);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.1, 10, 10);
+		//glTranslatef(0, 0, 1.1);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
+		glTranslatef(0, 0, 0.4 + 0.7 + 1.1);
+		glScalef(1, 1, -1);
+
+		glRotatef(root[1], 1, 0, 0);
+		index == 3 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.25, 40, 40);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.1, 10, 10);
+		glTranslatef(0, 0, 1.1);
+
+		glRotatef(first[1], 1, 0, 0);
+		index == 4 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.7, 10, 10);
+		glTranslatef(0, 0, 0.7);
+
+		glRotatef(second[1], 1, 0, 0);
+		index == 5 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.4, 10, 10);
+		glTranslatef(0, 0, 0.4);
+
+		glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
+		glPopMatrix();
+	#pragma endregion
+
+	#pragma region middleFinger
+		glPushMatrix();
+		glScalef(1.2, 1.2, 1.2);
+		glTranslatef(0.07, 0.35, -0.4);
+		//glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.5, 10, 10);
+		//glTranslatef(0, 0, 0.5);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
+		////glRotatef(20, 1, 0, 0);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.7, 10, 10);
+		//glTranslatef(0, 0, 0.7);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
+		////glRotatef(20, 1, 0, 0);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.3, 10, 10);
+		//glTranslatef(0, 0, 1.3);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
+		glTranslatef(0, 0, 2.5);
+		glScalef(1, 1, -1);
+
+		glRotatef(root[2], 1, 0, 0);
+		index == 6 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.3, 10, 10);
+		glTranslatef(0, 0, 1.3);
+
+		glRotatef(first[2], 1, 0, 0);
+		index == 7 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.7, 10, 10);
+		glTranslatef(0, 0, 0.7);
+
+		glRotatef(second[2], 1, 0, 0);
+		index == 8 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 40, 40);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.5, 10, 10);
+		glTranslatef(0, 0, 0.5);
+
+		glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
+
+		glPopMatrix();
+	#pragma endregion
+
+	#pragma region foreFinger
+		glPushMatrix();
+		glTranslatef(-0.5, -0.1, 0.4);
+		glScalef(1.2, 1.2, 1.2);
+		glRotatef(12, 0, 1, 0);
+		glTranslatef(-0.4, 0.5, -0.4);
+
+
+		//glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.5, 10, 10);
+		//glTranslatef(0, 0, 0.5);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
+		////glRotatef(20, 1, 0, 0);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.55, 10, 10);
+		//glTranslatef(0, 0, 0.55);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.2, 20, 20);
+		////glRotatef(20, 1, 0, 0);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.1, 10, 10);
+		//glTranslatef(0, 0, 1.1);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
+		glTranslatef(0, 0, 0.5 + 0.55 + 1.1);
+		glScalef(1, 1, -1);
+
+		glRotatef(root[3], 1, 0, 0);
+		index == 9 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.25, 30, 30);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.2, 1.1, 10, 10);
+		glTranslatef(0, 0, 1.1);
+
+		glRotatef(first[3], 1, 0, 0);
+		index == 10 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 30, 30);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.55, 10, 10);
+		glTranslatef(0, 0, 0.55);
+
+		glRotatef(second[3], 1, 0, 0);
+		index == 11 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0); glutWireSphere(0.2, 30, 30);
+		glColor3ub(255, 255, 255); glutWireCylinder(0.2, 0.5, 10, 10);
+		glTranslatef(0, 0, 0.5);
+
+		glColor3ub(255, 255, 255); glutWireSphere(0.2, 10, 10);
+		glPopMatrix();
+	#pragma endregion
+
+	#pragma region Thumb
+		glPushMatrix();
+		glTranslatef(-1.1, -0.1, 1.7);
+
+		glScalef(1.2, 1.2, 1.2);
+		glRotatef(60, 0, 1, 0);
+		glTranslatef(-1.35, -0.05, -0.6);
+
+		//glColor3ub(255, 255, 255); glutWireSphere(0.25, 10, 10);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.25, 0.5, 10, 10);
+		//glTranslatef(0, 0, 0.4);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.25, 20, 20);
+		////glRotatef(20, 1, 0, 0);
+		//glColor3ub(255, 255, 255); glutWireCylinder(0.25, 0.7, 10, 10);
+		//glTranslatef(0, 0, 0.7);
+
+		//glColor3ub(255, 0, 0); glutWireSphere(0.3, 30, 30);
+
+		glTranslatef(0, 0, 0.5 + 0.7);
+		glScalef(1, 1, -1);
+
+		glRotatef(first[4], 1, 0, 0);
+		index == 12 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
+		glutWireSphere(0.3, 30, 30);
+		glColor3ub(255, 255, 255);
+		glutWireCylinder(0.25, 0.7, 10, 10);
+		glTranslatef(0, 0, 0.7);
+
+		glRotatef(second[4], 1, 0, 0);
+		index == 13 ? glColor3ub(255, 255, 0) : glColor3ub(255, 0, 0);
+		glutWireSphere(0.25, 20, 20);
+		glColor3ub(255, 255, 255);
+		glutWireCylinder(0.25, 0.5, 10, 10);
+		glTranslatef(0, 0, 0.5);
+
+		glColor3ub(255, 255, 255);
+		glutWireSphere(0.25, 10, 10);
+		glPopMatrix();
+	#pragma endregion
 
 	glPopMatrix();
 }

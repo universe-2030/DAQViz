@@ -433,18 +433,29 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	memset(Finger_data, 0.0, 2 * sizeof(Finger_data) * Num_Finger_CH);
 	Finger_slope = new float64[Num_Finger_CH];
 	memset(Finger_slope, 0.0, 2 * sizeof(Finger_slope) * Num_Finger_CH);
+
 	Wrist_data = new float64[Num_Wrist_CH];
 	memset(Wrist_data, 0.0, 2 * sizeof(Wrist_data) * Num_Wrist_CH);
 	Wrist_slope = new float64[Num_Wrist_CH];
 	memset(Wrist_slope, 0.0, 2 * sizeof(Wrist_slope) * Num_Wrist_CH);
+
 	Elbow_data = new float64[Num_Elbow_CH];
 	memset(Elbow_data, 0.0, 2 * sizeof(Elbow_data) * Num_Elbow_CH);
+	Elbow_data_prev = new float64[Num_Elbow_CH];
+	memset(Elbow_data_prev, 0.0, 2 * sizeof(Elbow_data_prev) * Num_Elbow_CH);
 	Elbow_slope = new float64[Num_Elbow_CH];
 	memset(Elbow_slope, 0.0, 2 * sizeof(Elbow_slope) * Num_Elbow_CH);
+	Elbow_slope_prev = new float64[Num_Elbow_CH];
+	memset(Elbow_slope_prev, 0.0, 2 * sizeof(Elbow_slope_prev) * Num_Elbow_CH);
+
 	Shoulder_data = new float64[Num_Shoulder_CH];
 	memset(Shoulder_data, 0.0, 2 * sizeof(Shoulder_data) * Num_Shoulder_CH);
+	Shoulder_data_prev = new float64[Num_Shoulder_CH];
+	memset(Shoulder_data_prev, 0.0, 2 * sizeof(Shoulder_data_prev) * Num_Shoulder_CH);
 	Shoulder_slope = new float64[Num_Shoulder_CH];
 	memset(Shoulder_slope, 0.0, 2 * sizeof(Shoulder_slope) * Num_Shoulder_CH);
+	Shoulder_slope_prev = new float64[Num_Shoulder_CH];
+	memset(Shoulder_slope_prev, 0.0, 2 * sizeof(Shoulder_slope_prev) * Num_Shoulder_CH);
 
 	Label_Est = new double*[2];
 	for (int i = 0; i < 2; i++) {
@@ -1067,6 +1078,7 @@ int CDAQVizDlg::MainStart() {
 						sEMG_raw_plot, sEMG_abs_plot, sEMG_MAV_plot,
 						sEMG_MAV_stack_motionwise_mean, sEMG_MAV_stack_motionwise_std,
 						Finger_data, Finger_slope, Wrist_data, Wrist_slope,
+						Elbow_data, Elbow_slope, Shoulder_data, Shoulder_slope,
 						Label_Est[0], Label_Est[1], X_pos_ball, Y_pos_ball, Rad_ball);
 				}
 			}
@@ -1113,6 +1125,7 @@ error:
 }
 
 void CDAQVizDlg::DAQ_Online() {
+	////////////////////////////////// sEMG //////////////////////////////////
 	AI_sEMG->ReadOneStep();
 	sEMG_raw_NI = AI_sEMG->Get_m_ReadValue();
 
@@ -1126,6 +1139,7 @@ void CDAQVizDlg::DAQ_Online() {
 	}
 	Calculate_sEMG_MAV();
 
+	//////////////////////// Flex data (Finger + Wrist) ////////////////////////
 	AI_Flex->ReadOneStep();
 	Flex_data = AI_Flex->Get_m_ReadValue();
 
@@ -1207,7 +1221,78 @@ void CDAQVizDlg::DAQ_Online() {
 			Wrist_slope[i - Num_Finger_CH] = Flex_slope[i];
 	}
 
-	// Motion classification
+	//////////////////////// IMU data (Shoulder + Elbow) ////////////////////////
+	if (isMATCHconnected) {
+		MATCH_Dev->GetSensorData();
+
+		////////////////////////// Shoulder data //////////////////////////
+		UINT CH_idx_0 = 2;
+		UINT CH_idx_1 = 4;
+		Shoulder_data[0] = MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1)) -
+								MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1));
+		// Euler_shoulder[0] += 90;
+
+		if (Num_Shoulder_CH >= 2) {
+			Shoulder_data[1] = -(MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1) + 2) -
+				MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1) + 2));
+			// Euler_shoulder[1] -= 150;
+		}
+		else {
+			Shoulder_data[1] = 0.0;
+		}
+
+		if (Num_Shoulder_CH >= 3) {
+			Shoulder_data[2] = -(MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1) + 1) -
+				MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1) + 1));
+			// Euler_shoulder[2] -= 0;
+		}
+		else {
+			Shoulder_data[2] = 0.0;
+		}
+
+		//////////////////////////// Elbow data ////////////////////////////
+		UINT CH_idx_2 = 3;
+		Elbow_data[0] = MATCH_Dev->Get_aEuler(3 * (CH_idx_2 - 1)) -
+								MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1)) - 70;
+
+		////////////////////////// Shoulder slope //////////////////////////
+		if (m_count == 1) {
+			for (int i = 0; i < Num_Shoulder_CH; i++) {
+				Shoulder_slope[i] = SigProc->FilteredDerivative(Shoulder_data[i],
+					Shoulder_data[i], Shoulder_slope_prev[i]);
+				Shoulder_data_prev[i] = Shoulder_data[i];
+				Shoulder_slope_prev[i] = Shoulder_slope[i];
+			}
+		}
+		else {
+			for (int i = 0; i < Num_Shoulder_CH; i++) {
+				Shoulder_slope[i] = SigProc->FilteredDerivative(Shoulder_data_prev[i],
+					Shoulder_data[i], Shoulder_slope_prev[i]);
+				Shoulder_data_prev[i] = Shoulder_data[i];
+				Shoulder_slope_prev[i] = Shoulder_slope[i];
+			}
+		}
+
+		//////////////////////////// Elbow slope ////////////////////////////
+		if (m_count == 1) {
+			for (int i = 0; i < Num_Elbow_CH; i++) {
+				Elbow_slope[i] = SigProc->FilteredDerivative(Elbow_data[i],
+					Elbow_data[i], Elbow_slope_prev[i]);
+				Elbow_data_prev[i] = Elbow_data[i];
+				Elbow_slope_prev[i] = Elbow_slope[i];
+			}
+		}
+		else {
+			for (int i = 0; i < Num_Elbow_CH; i++) {
+				Elbow_slope[i] = SigProc->FilteredDerivative(Elbow_data_prev[i],
+					Elbow_data[i], Elbow_slope_prev[i]);
+				Elbow_data_prev[i] = Elbow_data[i];
+				Elbow_slope_prev[i] = Elbow_slope[i];
+			}
+		}
+	}
+
+	/////////////////////////// Motion classification ///////////////////////////
 	if (m_count > 0) {
 		Motion_Classification();
 	}
@@ -1711,6 +1796,22 @@ const std::vector<double>* CDAQVizDlg::Get_Wrist_slope_stack() {
 	return Wrist_slope_stack;
 }
 
+const std::vector<double>* CDAQVizDlg::Get_Elbow_raw_stack() {
+	return Elbow_raw_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_Elbow_slope_stack() {
+	return Elbow_slope_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_Shoulder_raw_stack() {
+	return Shoulder_raw_stack;
+}
+
+const std::vector<double>* CDAQVizDlg::Get_Shoulder_slope_stack() {
+	return Shoulder_slope_stack;
+}
+
 const std::vector<double>* CDAQVizDlg::Get_MotionLabel_stack() {
 	return MotionLabel;
 }
@@ -1752,9 +1853,17 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 		GetDlgItem(IDC_RADIO_USE_FINGER_FLEX_YES)->EnableWindow(_isAvailable);
 		GetDlgItem(IDC_RADIO_USE_FINGER_FLEX_NO)->EnableWindow(_isAvailable);
 
+		GetDlgItem(IDC_RADIO_USE_ELBOW_IMU_YES)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_USE_ELBOW_IMU_NO)->EnableWindow(_isAvailable);
+
+		GetDlgItem(IDC_RADIO_USE_SHOULDER_IMU_YES)->EnableWindow(_isAvailable);
+		GetDlgItem(IDC_RADIO_USE_SHOULDER_IMU_NO)->EnableWindow(_isAvailable);
+
 		m_editNumsEMGCH.EnableWindow(_isAvailable);
 		m_editNumFingerFlexCH.EnableWindow(_isAvailable);
 		m_editNumWristFlexCH.EnableWindow(_isAvailable);
+		m_editNumElbowIMUCH.EnableWindow(_isAvailable);
+		m_editNumShoulderIMUCH.EnableWindow(_isAvailable);
 	}
 
 	GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE)->EnableWindow(_isAvailable);
@@ -1778,6 +1887,10 @@ void CDAQVizDlg::StackData (double _m_time,
 							double* _Finger_slope,
 							double* _Wrist_raw,
 							double* _Wrist_slope,
+							double* _Elbow_raw,
+							double* _Elbow_slope,
+							double* _Shoulder_raw,
+							double* _Shoulder_slope,
 							double* _MotionLabel_current,
 							double* _MotionEstimation_current,
 							double _X_pos,
@@ -1809,6 +1922,16 @@ void CDAQVizDlg::StackData (double _m_time,
 	for (int i = 0; i < Num_Wrist_CH; i++) {
 		Wrist_raw_stack[i].push_back(_Wrist_raw[i]);
 		Wrist_slope_stack[i].push_back(_Wrist_slope[i]);
+	}
+
+	for (int i = 0; i < Num_Elbow_CH; i++) {
+		Elbow_raw_stack[i].push_back(_Elbow_raw[i]);
+		Elbow_slope_stack[i].push_back(_Elbow_slope[i]);
+	}
+
+	for (int i = 0; i < Num_Shoulder_CH; i++) {
+		Shoulder_raw_stack[i].push_back(_Shoulder_raw[i]);
+		Shoulder_slope_stack[i].push_back(_Shoulder_slope[i]);
 	}
 
 	for (int i = 0; i < MOTION_DOF; i++) {
@@ -1873,15 +1996,15 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 
 	f_sEMG_MAV.open(prefix + _T("sEMG_MAV.txt"));
 	f_Finger_raw.open(prefix + _T("Finger_flex_raw.txt"));
+	f_Finger_slope.open(prefix + _T("Finger_flex_slope.txt"));
 	f_Wrist_raw.open(prefix + _T("Wrist_flex_raw.txt"));
+	f_Wrist_slope.open(prefix + _T("Wrist_flex_slope.txt"));
 	f_MotionLabel.open(prefix + _T("Motion_label.txt"));
 
 	if (m_radioStreamingMode == 0) {
 		f_sEMG_raw.open(prefix + _T("sEMG_raw.txt"));
 		f_sEMG_abs.open(prefix + _T("sEMG_abs.txt"));
-		f_Finger_slope.open(prefix + _T("Finger_flex_slope.txt"));
-		f_Wrist_slope.open(prefix + _T("Wrist_flex_slope.txt"));
-
+		
 		f_sEMG_MAV_baseline.open(prefix + _T("sEMG_MAV_baseline.txt"));
 		for (int i = 0; i < Num_sEMG_CH; i++) {
 			if (i != Num_sEMG_CH - 1)
@@ -1918,14 +2041,10 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 	size_log << endl;
 
 	size_log << "The length of 'Finger_raw' : " << Finger_raw_stack[0].size() << endl;
+	size_log << "The length of 'Finger_slope' : " << Finger_slope_stack[0].size() << endl;
 	size_log << "The length of 'Wrist_raw' : " << Wrist_raw_stack[0].size() << endl;
+	size_log << "The length of 'Wrist_slope' : " << Wrist_slope_stack[0].size() << endl;
 	size_log << endl;
-
-	if (m_radioStreamingMode == 0) {
-		size_log << "The length of 'Finger_slope' : " << Finger_slope_stack[0].size() << endl;
-		size_log << "The length of 'Wrist_slope' : " << Wrist_slope_stack[0].size() << endl;
-		size_log << endl;
-	}
 
 	size_log << "The length of 'MotionLabel' : " << MotionLabel[0].size() << endl;
 	if (m_radioTrainingMode == 2)
@@ -1972,13 +2091,11 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 			else
 				f_Finger_raw << endl;
 
-			if (m_radioStreamingMode == 0) {
-				f_Finger_slope << Finger_slope_stack[j][i];
-				if (j != Num_Finger_CH - 1)
-					f_Finger_slope << " ";
-				else
-					f_Finger_slope << endl;
-			}
+			f_Finger_slope << Finger_slope_stack[j][i];
+			if (j != Num_Finger_CH - 1)
+				f_Finger_slope << " ";
+			else
+				f_Finger_slope << endl;
 		}
 
 		for (int j = 0; j < Num_Wrist_CH; j++) {
@@ -1988,13 +2105,11 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 			else
 				f_Wrist_raw << endl;
 
-			if (m_radioStreamingMode == 0) {
-				f_Wrist_slope << Wrist_slope_stack[j][i];
-				if (j != Num_Wrist_CH - 1)
-					f_Wrist_slope << " ";
-				else
-					f_Wrist_slope << endl;
-			}
+			f_Wrist_slope << Wrist_slope_stack[j][i];
+			if (j != Num_Wrist_CH - 1)
+				f_Wrist_slope << " ";
+			else
+				f_Wrist_slope << endl;
 		}
 		
 		for (int j = 0; j < MOTION_DOF; j++) {

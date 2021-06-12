@@ -183,9 +183,30 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 				rightHand.WristRURotatePos(wrist_RU_plot);
 			}
 			//////////////////////////////////////////// Elbow ////////////////////////////////////////////
+			if (pMainDlg->Get_Elbow_raw_stack()[0].size() > 0) {
+				UINT idx_temp = pMainDlg->Get_Elbow_raw_stack()[0].size();
 
+				elbow_FE_plot = pMainDlg->Get_Elbow_raw_stack()[0][idx_temp - 1];
+				rightHand.ElbowFERotatePos(elbow_FE_plot);
+			}
 
 			/////////////////////////////////////////// Shoulder ///////////////////////////////////////////
+			if (pMainDlg->Get_Shoulder_raw_stack()[0].size() > 0) {
+				UINT idx_temp = pMainDlg->Get_Shoulder_raw_stack()[0].size();
+
+				shoulder_FE_plot = pMainDlg->Get_Shoulder_raw_stack()[0][idx_temp - 1];
+				rightHand.ShoulderFERotatePos(shoulder_FE_plot);
+
+				idx_temp = pMainDlg->Get_Shoulder_raw_stack()[1].size();
+
+				shoulder_IE_plot = pMainDlg->Get_Shoulder_raw_stack()[1][idx_temp - 1];
+				rightHand.ShoulderIERotatePos(shoulder_IE_plot);
+
+				idx_temp = pMainDlg->Get_Shoulder_raw_stack()[2].size();
+
+				shoulder_AA_plot = pMainDlg->Get_Shoulder_raw_stack()[2][idx_temp - 1];
+				rightHand.ShoulderAARotatePos(shoulder_AA_plot);
+			}
 		}
 	}
 }
@@ -222,7 +243,7 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 					rightHand_2.PinkyRotatePos(root_animation, first_animation, second_animation);
 			}
 
-			////////////////////////////// Wrist Flexion & Extension //////////////////////////////
+			///////////////////////////////////// Wrist /////////////////////////////////////
 			wrist_FE_plot = pMainDlg->Get_Wrist_raw_stack()[0][idx_temp - 1];
 			wrist_FE_plot = rightHand_2.Get_wrist_FE_init() -
 				(rightHand_2.Get_wrist_FE_max() - rightHand_2.Get_wrist_FE_init()) * wrist_FE_plot / WRIST_FE_ANALOG_ABS_MAX;
@@ -234,6 +255,20 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 				(rightHand_2.Get_wrist_RU_max() - rightHand_2.Get_wrist_RU_init()) * wrist_RU_plot / WRIST_RU_ANALOG_ABS_MAX;
 
 			rightHand_2.WristRURotatePos(wrist_RU_plot);
+
+			///////////////////////////////////// Elbow /////////////////////////////////////
+			elbow_FE_plot = pMainDlg->Get_Elbow_raw_stack()[0][idx_temp - 1];
+			rightHand_2.ElbowFERotatePos(elbow_FE_plot);
+
+			//////////////////////////////////// Shoulder ////////////////////////////////////
+			shoulder_FE_plot = pMainDlg->Get_Shoulder_raw_stack()[0][idx_temp - 1];
+			rightHand_2.ShoulderFERotatePos(shoulder_FE_plot);
+
+			shoulder_IE_plot = pMainDlg->Get_Shoulder_raw_stack()[1][idx_temp - 1];
+			rightHand_2.ShoulderIERotatePos(shoulder_IE_plot);
+
+			shoulder_AA_plot = pMainDlg->Get_Shoulder_raw_stack()[2][idx_temp - 1];
+			rightHand_2.ShoulderAARotatePos(shoulder_AA_plot);
 		}
 	}
 }
