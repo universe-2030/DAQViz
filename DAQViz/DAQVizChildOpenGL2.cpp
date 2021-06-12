@@ -164,7 +164,7 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 						rightHand.PinkyRotatePos(root_plot, first_plot, second_plot);
 				}
 			}
-			////////////////////////////// Wrist Flexion & Extension //////////////////////////////
+			//////////////////////////////////////////// Wrist ////////////////////////////////////////////
 			if (pMainDlg->Get_Wrist_raw_stack()[0].size() > 0) {
 				UINT idx_temp = pMainDlg->Get_Wrist_raw_stack()[0].size();
 
@@ -182,6 +182,10 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 
 				rightHand.WristRURotatePos(wrist_RU_plot);
 			}
+			//////////////////////////////////////////// Elbow ////////////////////////////////////////////
+
+
+			/////////////////////////////////////////// Shoulder ///////////////////////////////////////////
 		}
 	}
 }
@@ -369,10 +373,9 @@ void DAQVizChildOpenGL2::SetupRC()
 	//	spheres[iSphere].SetOrigin(x, 0.0f, z);
 	//}
 
-	M3DVector3f up = { -0.614193, 0.690447, 0.382165 };
-	M3DVector3f origin = { 5.12, 7.09, -5.57 };
-	// M3DVector3f look = { -0.51938, -0.71827, 0.4629628 }; // Original look
-	M3DVector3f look = { -1.5, -0.81827, 0.4629628 };
+	M3DVector3f up = { -0.38, 0.86, -0.34 };
+	M3DVector3f origin = { 10.75, 9.81, 0.83 };
+	M3DVector3f look = { -0.49, -0.79, -0.72 };
 	frameCamera.SetForwardVector(look);
 	frameCamera.SetOrigin(origin);
 	frameCamera.SetUpVector(up);

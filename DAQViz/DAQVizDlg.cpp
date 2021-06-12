@@ -35,7 +35,7 @@ CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX) {
 
 }
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX) {
+void CAboutDlg::DoDataExchange(CDataExchange* pDX) { 
 	CDialogEx::DoDataExchange(pDX);
 }
 
@@ -48,7 +48,8 @@ CDAQVizDlg::CDAQVizDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG, pParent), 
 	m_radioTrainingMode(1), m_radioStreamingMode(0),
 	m_radioSaveMode(1), m_radiosEMGDAQDev(0),
-	m_radioUseFingerFlex(0), m_radioUseWristFlex(0) {
+	m_radioUseFingerFlex(0), m_radioUseWristFlex(0),
+	m_radioUseElbowIMU(0), m_radioUseShoulderIMU(0) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -62,18 +63,18 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_TEXT_COMBO, m_textSelectDlg);
 	DDX_Control(pDX, IDC_COMBO_DLG_SELECT, m_comboSelectDlg);
 
-	DDX_Control(pDX, IDC_TEXT_TRAINING_MODE, m_textTrainingMode);
+	DDX_Control(pDX, IDC_GROUP_TRAINING_MODE, m_groupTrainingMode);
 	DDX_Radio(pDX, IDC_RADIO_UNSUPERVISED, (int&)m_radioTrainingMode);
 	DDX_Control(pDX, IDC_BTN_PARAMETER_LOAD, m_btnParameterLoad);
 	DDX_Control(pDX, IDC_EDIT_PARAMETER_LOAD_NAME, m_editParameterLoadName);
 
-	DDX_Control(pDX, IDC_TEXT_DATA_STREAMING, m_textDataStreamingMode);
+	DDX_Control(pDX, IDC_GROUP_DATA_STREAMING, m_groupDataStreamingMode);
 	DDX_Radio(pDX, IDC_RADIO_DATA_STREAMING_RT, (int&)m_radioStreamingMode);
 
 	DDX_Control(pDX, IDC_BTN_LOAD, m_btnLoad);
 	DDX_Control(pDX, IDC_EDIT_LOAD_NAME, m_editLoadName);
 
-	DDX_Control(pDX, IDC_TEXT_SAVE_MODE, m_textSaveMode);
+	DDX_Control(pDX, IDC_GROUP_SAVE_MODE, m_groupSaveMode);
 	DDX_Radio(pDX, IDC_RADIO_SAVE_IMMEDIATE, (int&)m_radioSaveMode);
 
 	DDX_Control(pDX, IDC_TEXT_SEMG_DAQ_DEVICE, m_textsEMGDAQDev);
@@ -84,6 +85,12 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 
 	DDX_Control(pDX, IDC_TEXT_USE_WRIST_FLEX, m_textUseWristFlex);
 	DDX_Radio(pDX, IDC_RADIO_USE_WRIST_FLEX_YES, (int&)m_radioUseWristFlex);
+
+	DDX_Control(pDX, IDC_TEXT_USE_ELBOW_IMU, m_textUseElbowIMU);
+	DDX_Radio(pDX, IDC_RADIO_USE_ELBOW_IMU_YES, (int&)m_radioUseElbowIMU);
+
+	DDX_Control(pDX, IDC_TEXT_USE_SHOULDER_IMU, m_textUseShoulderIMU);
+	DDX_Radio(pDX, IDC_RADIO_USE_SHOULDER_IMU_YES, (int&)m_radioUseShoulderIMU);
 
 	DDX_Control(pDX, IDC_EDIT_STATUS_BAR, m_editStatusBar);
 
@@ -97,8 +104,12 @@ void CDAQVizDlg::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_EDIT_NUM_SEMG_CH, m_editNumsEMGCH);
 	DDX_Control(pDX, IDC_TEXT_NUM_FINGER_FLEX_CH, m_textNumFingerFlexCH);
 	DDX_Control(pDX, IDC_TEXT_NUM_WRIST_FLEX_CH, m_textNumWristFlexCH);
+	DDX_Control(pDX, IDC_TEXT_NUM_ELBOW_IMU_CH, m_textNumElbowIMUCH);
+	DDX_Control(pDX, IDC_TEXT_NUM_SHOULDER_IMU_CH, m_textNumShoulderIMUCH);
 	DDX_Control(pDX, IDC_EDIT_NUM_FINGER_FLEX_CH, m_editNumFingerFlexCH);
 	DDX_Control(pDX, IDC_EDIT_NUM_WRIST_FLEX_CH, m_editNumWristFlexCH);
+	DDX_Control(pDX, IDC_EDIT_NUM_ELBOW_IMU_CH, m_editNumElbowIMUCH);
+	DDX_Control(pDX, IDC_EDIT_NUM_SHOULDER_IMU_CH, m_editNumShoulderIMUCH);
 
 	DDX_Control(pDX, IDC_TEXT_MAV_WIN_SIZE, m_textMAVWinSize);
 	DDX_Control(pDX, IDC_EDIT_MAV_WIN_SIZE, m_editMAVWinSize);
@@ -118,6 +129,8 @@ BEGIN_MESSAGE_MAP(CDAQVizDlg, CDialogEx)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_DEVICE_DELSYS, IDC_RADIO_DEVICE_FRANKFURT, RadioCtrl)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_USE_WRIST_FLEX_YES, IDC_RADIO_USE_WRIST_FLEX_NO, RadioCtrl)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_USE_FINGER_FLEX_YES, IDC_RADIO_USE_FINGER_FLEX_NO, RadioCtrl)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_USE_ELBOW_IMU_YES, IDC_RADIO_USE_ELBOW_IMU_NO, RadioCtrl)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_USE_SHOULDER_IMU_YES, IDC_RADIO_USE_SHOULDER_IMU_NO, RadioCtrl)
 	ON_BN_CLICKED(IDC_BTN_LOAD, &CDAQVizDlg::OnBnClickedBtnLoad)
 	ON_CBN_SELCHANGE(IDC_COMBO_DLG_SELECT, &CDAQVizDlg::OnCbnSelchangeComboDlgSelect)
 //	ON_WM_SIZING()
@@ -130,6 +143,8 @@ ON_EN_CHANGE(IDC_EDIT_NUM_WRIST_FLEX_CH, &CDAQVizDlg::OnEnChangeEditNumImuCh)
 ON_BN_CLICKED(IDC_BTN_PARAMETER_LOAD, &CDAQVizDlg::OnBnClickedBtnParameterLoad)
 ON_EN_CHANGE(IDC_EDIT_MAV_WIN_SIZE, &CDAQVizDlg::OnEnChangeEditMavWinSize)
 ON_EN_CHANGE(IDC_EDIT_SEMG_POLYGON_SCALE, &CDAQVizDlg::OnEnChangeEditSemgPolygonScale)
+ON_EN_CHANGE(IDC_EDIT_NUM_ELBOW_IMU_CH, &CDAQVizDlg::OnEnChangeEditNumElbowImuCh)
+ON_EN_CHANGE(IDC_EDIT_NUM_SHOULDER_IMU_CH, &CDAQVizDlg::OnEnChangeEditNumShoulderImuCh)
 END_MESSAGE_MAP()
 
 // CDAQVizDlg 메시지 처리기
@@ -261,12 +276,16 @@ void CDAQVizDlg::Initialize_GUI() {
 	Set_Font(m_btnSwitch, 40, 15);
 	Set_Font(m_textSaveFolderPath, 20, 8);
 	Set_Font(m_textSelectDlg, 20, 8);
-	Set_Font(m_textTrainingMode, 20, 8);
-	Set_Font(m_textDataStreamingMode, 20, 8);
-	Set_Font(m_textSaveMode, 20, 8);
+	Set_Font(m_groupTrainingMode, 20, 8);
+	Set_Font(m_groupDataStreamingMode, 20, 8);
+	Set_Font(m_groupSaveMode, 20, 8);
+
 	Set_Font(m_textsEMGDAQDev, 20, 8);
 	Set_Font(m_textUseWristFlex, 20, 8);
 	Set_Font(m_textUseFingerFlex, 20, 8);
+	Set_Font(m_textUseElbowIMU, 20, 8);
+	Set_Font(m_textUseShoulderIMU, 20, 8);
+
 	Set_Font(m_textControlTime, 20, 8);
 	Set_Font(m_editControlTime, 20, 8);
 	Set_Font(m_textStartIdx, 20, 8);
@@ -279,6 +298,10 @@ void CDAQVizDlg::Initialize_GUI() {
 	Set_Font(m_editNumFingerFlexCH, 20, 8);
 	Set_Font(m_textNumWristFlexCH, 20, 8);
 	Set_Font(m_editNumWristFlexCH, 20, 8);
+	Set_Font(m_textNumElbowIMUCH, 20, 8);
+	Set_Font(m_editNumElbowIMUCH, 20, 8);
+	Set_Font(m_textNumShoulderIMUCH, 20, 8);
+	Set_Font(m_editNumShoulderIMUCH, 20, 8);
 	Set_Font(m_textMAVWinSize, 20, 8);
 	Set_Font(m_editMAVWinSize, 20, 8);
 	Set_Font(m_textsEMGPolygonScale, 20, 8);
@@ -300,6 +323,10 @@ void CDAQVizDlg::Initialize_GUI() {
 	m_editNumFingerFlexCH.SetWindowTextW(temp);
 	temp.Format(_T("%d"), WRIST_CH_INIT);
 	m_editNumWristFlexCH.SetWindowTextW(temp);
+	temp.Format(_T("%d"), ELBOW_CH_INIT);
+	m_editNumElbowIMUCH.SetWindowTextW(temp);
+	temp.Format(_T("%d"), SHOULDER_CH_INIT);
+	m_editNumShoulderIMUCH.SetWindowTextW(temp);
 	temp.Format(_T("%d"), sEMG_Win_size);
 	m_editMAVWinSize.SetWindowTextW(temp);
 	temp.Format(_T("%.1f"), Polygon_scale);
@@ -410,6 +437,14 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	memset(Wrist_data, 0.0, 2 * sizeof(Wrist_data) * Num_Wrist_CH);
 	Wrist_slope = new float64[Num_Wrist_CH];
 	memset(Wrist_slope, 0.0, 2 * sizeof(Wrist_slope) * Num_Wrist_CH);
+	Elbow_data = new float64[Num_Elbow_CH];
+	memset(Elbow_data, 0.0, 2 * sizeof(Elbow_data) * Num_Elbow_CH);
+	Elbow_slope = new float64[Num_Elbow_CH];
+	memset(Elbow_slope, 0.0, 2 * sizeof(Elbow_slope) * Num_Elbow_CH);
+	Shoulder_data = new float64[Num_Shoulder_CH];
+	memset(Shoulder_data, 0.0, 2 * sizeof(Shoulder_data) * Num_Shoulder_CH);
+	Shoulder_slope = new float64[Num_Shoulder_CH];
+	memset(Shoulder_slope, 0.0, 2 * sizeof(Shoulder_slope) * Num_Shoulder_CH);
 
 	Label_Est = new double*[2];
 	for (int i = 0; i < 2; i++) {
@@ -458,6 +493,10 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	Finger_slope_stack = new std::vector<double>[Num_Finger_CH];
 	Wrist_raw_stack = new std::vector<double>[Num_Wrist_CH];
 	Wrist_slope_stack = new std::vector<double>[Num_Wrist_CH];
+	Elbow_raw_stack = new std::vector<double>[Num_Elbow_CH];
+	Elbow_slope_stack = new std::vector<double>[Num_Elbow_CH];
+	Shoulder_raw_stack = new std::vector<double>[Num_Shoulder_CH];
+	Shoulder_slope_stack = new std::vector<double>[Num_Shoulder_CH];
 
 	MotionLabel = new std::vector<double>[MOTION_DOF];
 	MotionEstimation = new std::vector<double>[MOTION_DOF];
@@ -1483,6 +1522,71 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 		}
 		m_editNumWristFlexCH.SetWindowText(temp);
 	}
+	else if (IDC_RADIO_USE_WRIST_FLEX_YES <= ID && ID <= IDC_RADIO_USE_WRIST_FLEX_NO) {
+		if (TEST_FLAG) {
+			CString radio_val;
+			radio_val.Format(_T("%d"), m_radioUseWristFlex);
+			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
+		}
+		CString temp;
+		switch (m_radioUseWristFlex) {
+		case 0:
+			Num_Wrist_CH = WRIST_CH_INIT;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
+			m_editNumWristFlexCH.EnableWindow(TRUE);
+			temp.Format(_T("%d"), Num_Wrist_CH);
+			break;
+		case 1:
+			Num_Wrist_CH = WRIST_CH_INIT;
+			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
+			m_editNumWristFlexCH.EnableWindow(FALSE);
+			temp.Format(_T("%d"), 0);
+			break;
+		}
+		m_editNumWristFlexCH.SetWindowText(temp);
+	}
+	else if (IDC_RADIO_USE_ELBOW_IMU_YES <= ID && ID <= IDC_RADIO_USE_ELBOW_IMU_NO) {
+		if (TEST_FLAG) {
+			CString radio_val;
+			radio_val.Format(_T("%d"), m_radioUseElbowIMU);
+			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
+		}
+		CString temp;
+		switch (m_radioUseElbowIMU) {
+		case 0:
+			Num_Elbow_CH = ELBOW_CH_INIT;
+			m_editNumElbowIMUCH.EnableWindow(TRUE);
+			temp.Format(_T("%d"), Num_Elbow_CH);
+			break;
+		case 1:
+			Num_Elbow_CH = ELBOW_CH_INIT;
+			m_editNumElbowIMUCH.EnableWindow(FALSE);
+			temp.Format(_T("%d"), 0);
+			break;
+		}
+		m_editNumElbowIMUCH.SetWindowText(temp);
+	}
+	else if (IDC_RADIO_USE_SHOULDER_IMU_YES <= ID && ID <= IDC_RADIO_USE_SHOULDER_IMU_NO) {
+		if (TEST_FLAG) {
+			CString radio_val;
+			radio_val.Format(_T("%d"), m_radioUseShoulderIMU);
+			GetDlgItem(IDC_EDIT_TEST)->SetWindowText(radio_val);
+		}
+		CString temp;
+		switch (m_radioUseShoulderIMU) {
+		case 0:
+			Num_Shoulder_CH = SHOULDER_CH_INIT;
+			m_editNumShoulderIMUCH.EnableWindow(TRUE);
+			temp.Format(_T("%d"), Num_Shoulder_CH);
+			break;
+		case 1:
+			Num_Shoulder_CH = SHOULDER_CH_INIT;
+			m_editNumShoulderIMUCH.EnableWindow(FALSE);
+			temp.Format(_T("%d"), 0);
+			break;
+		}
+		m_editNumShoulderIMUCH.SetWindowText(temp);
+	}
 }
 
 void CDAQVizDlg::OnTimer(UINT_PTR nIDEvent) {
@@ -2073,7 +2177,7 @@ void CDAQVizDlg::OnEnChangeEditNumFlexCh() {
 	int Num_finger_CH = _ttoi(temp);
 	if (m_radioUseFingerFlex == 0) {
 		if (Num_finger_CH > FINGER_CH_MAX) {
-			MessageBox(_T("Finger flex sensor channel should be smaller than 5."),
+			MessageBox(_T("Finger flex sensor channel should be same or smaller than 5."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), FINGER_CH_MAX);
 			m_editNumFingerFlexCH.SetWindowText(temp);
@@ -2081,7 +2185,7 @@ void CDAQVizDlg::OnEnChangeEditNumFlexCh() {
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
 		else if (Num_finger_CH < 1) {
-			MessageBox(_T("Finger flex sensor channel should be larger than 1."),
+			MessageBox(_T("Finger flex sensor channel should be same or larger than 1."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), 1);
 			m_editNumFingerFlexCH.SetWindowText(temp);
@@ -2103,7 +2207,7 @@ void CDAQVizDlg::OnEnChangeEditNumImuCh() {
 	int Num_wrist_CH = _ttoi(temp);
 	if (m_radioUseWristFlex == 0) {
 		if (Num_wrist_CH > WRIST_CH_MAX) {
-			MessageBox(_T("Wrist flex sensor channel should be smaller than 2."),
+			MessageBox(_T("Wrist flex sensor channel should be same or smaller than 2."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), WRIST_CH_MAX);
 			m_editNumWristFlexCH.SetWindowText(temp);
@@ -2111,7 +2215,7 @@ void CDAQVizDlg::OnEnChangeEditNumImuCh() {
 			Num_Flex_CH = Num_Finger_CH + Num_Wrist_CH;
 		}
 		else if (Num_wrist_CH < 1) {
-			MessageBox(_T("Wrist flex sensor channel should be larger than 1."),
+			MessageBox(_T("Wrist flex sensor channel should be same or larger than 1."),
 						_T("Notice"), MB_OK | MB_ICONWARNING);
 			temp.Format(_T("%d"), 1);
 			m_editNumWristFlexCH.SetWindowText(temp);
@@ -2346,4 +2450,62 @@ void CDAQVizDlg::OnEnChangeEditSemgPolygonScale() {
 	else {
 		Polygon_scale = _Polygon_scale;
 	}
+}
+
+void CDAQVizDlg::OnEnChangeEditNumElbowImuCh() {
+	// TODO:  RICHEDIT 컨트롤인 경우, 이 컨트롤은
+	CString temp;
+
+	m_editNumElbowIMUCH.GetWindowText(temp);
+	int Num_elbow_CH = _ttoi(temp);
+	if (m_radioUseElbowIMU == 0) {
+		if (Num_elbow_CH > ELBOW_CH_MAX) {
+			MessageBox(_T("Elbow IMU sensor channel should be same or smaller than 1."),
+				_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), ELBOW_CH_MAX);
+			m_editNumElbowIMUCH.SetWindowText(temp);
+			Num_Elbow_CH = ELBOW_CH_MAX;
+		}
+		else if (Num_elbow_CH < 1) {
+			MessageBox(_T("Elbow IMU sensor channel should be same or larger than 1."),
+				_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), 1);
+			m_editNumElbowIMUCH.SetWindowText(temp);
+			Num_Elbow_CH = 1;
+		}
+		else {
+			Num_Elbow_CH = Num_elbow_CH;
+		}
+	}
+
+	std::cout << Num_Elbow_CH << std::endl;
+}
+
+void CDAQVizDlg::OnEnChangeEditNumShoulderImuCh() {
+	// TODO:  RICHEDIT 컨트롤인 경우, 이 컨트롤은
+	CString temp;
+
+	m_editNumShoulderIMUCH.GetWindowText(temp);
+	int Num_shoulder_CH = _ttoi(temp);
+	if (m_radioUseShoulderIMU == 0) {
+		if (Num_shoulder_CH > SHOULDER_CH_MAX) {
+			MessageBox(_T("Shoulder IMU sensor channel should be same or smaller than 3."),
+				_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), SHOULDER_CH_MAX);
+			m_editNumShoulderIMUCH.SetWindowText(temp);
+			Num_Shoulder_CH = SHOULDER_CH_MAX;
+		}
+		else if (Num_shoulder_CH < 1) {
+			MessageBox(_T("Shoulder IMU sensor channel should be same or larger than 1."),
+				_T("Notice"), MB_OK | MB_ICONWARNING);
+			temp.Format(_T("%d"), 1);
+			m_editNumShoulderIMUCH.SetWindowText(temp);
+			Num_Shoulder_CH = 1;
+		}
+		else {
+			Num_Shoulder_CH = Num_shoulder_CH;
+		}
+	}
+
+	std::cout << Num_Shoulder_CH << std::endl;
 }

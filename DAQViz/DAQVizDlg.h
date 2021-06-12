@@ -37,11 +37,15 @@
 #define FRANKFURT_CH_MAX 8
 #define FINGER_CH_MAX 5
 #define WRIST_CH_MAX 2
+#define ELBOW_CH_MAX 1
+#define SHOULDER_CH_MAX 3
 
 #define DELSYS_CH_INIT 15
 #define FRANKFURT_CH_INIT 8
 #define FINGER_CH_INIT 5
 #define WRIST_CH_INIT 2
+#define ELBOW_CH_INIT 1
+#define SHOULDER_CH_INIT 3
 
 #define FINGER_ANALOG_ABS_MAX 0.75
 #define WRIST_FE_ANALOG_ABS_MAX 0.3
@@ -107,6 +111,8 @@ private:
 	UINT Num_Flex_CH;
 	UINT Num_Finger_CH;
 	UINT Num_Wrist_CH;
+	UINT Num_Elbow_CH;
+	UINT Num_Shoulder_CH;
 
 	UINT sEMG_Win_size;
 	UINT sEMG_Win_size_prev;
@@ -123,18 +129,18 @@ private:
 	CStatic m_textSelectDlg;
 	CComboBox m_comboSelectDlg;
 
-	CStatic m_textTrainingMode;
+	CStatic m_groupTrainingMode;
 	UINT m_radioTrainingMode;
 	CButton m_btnParameterLoad;
 	CEdit m_editParameterLoadName;
 
-	CStatic m_textDataStreamingMode;
+	CStatic m_groupDataStreamingMode;
 	UINT m_radioStreamingMode;
 
 	CButton m_btnLoad;
 	CEdit m_editLoadName;
 
-	CStatic m_textSaveMode;
+	CStatic m_groupSaveMode;
 	UINT m_radioSaveMode;
 
 	CStatic m_textsEMGDAQDev;
@@ -145,6 +151,12 @@ private:
 	
 	CStatic m_textUseWristFlex;
 	UINT m_radioUseWristFlex;
+
+	CStatic m_textUseElbowIMU;
+	UINT    m_radioUseElbowIMU;
+
+	CStatic m_textUseShoulderIMU;
+	UINT    m_radioUseShoulderIMU;
 
 	CEdit m_editStatusBar;
 
@@ -162,6 +174,10 @@ private:
 	CEdit		m_editNumFingerFlexCH;
 	CStatic		m_textNumWristFlexCH;
 	CEdit		m_editNumWristFlexCH;
+	CStatic		m_textNumElbowIMUCH;
+	CEdit		m_editNumElbowIMUCH;
+	CStatic		m_textNumShoulderIMUCH;
+	CEdit		m_editNumShoulderIMUCH;
 
 	CStatic		m_textMAVWinSize;
 	CEdit		m_editMAVWinSize;
@@ -190,6 +206,10 @@ private:
 	std::vector<double>* Finger_slope_stack;
 	std::vector<double>* Wrist_raw_stack;
 	std::vector<double>* Wrist_slope_stack;
+	std::vector<double>* Elbow_raw_stack;
+	std::vector<double>* Elbow_slope_stack;
+	std::vector<double>* Shoulder_raw_stack;
+	std::vector<double>* Shoulder_slope_stack;
 
 	std::vector<double>* MotionLabel;
 	std::vector<double>* MotionEstimation;
@@ -288,6 +308,10 @@ private:
 	float64* Finger_slope;
 	float64* Wrist_data;
 	float64* Wrist_slope;
+	float64* Elbow_data;
+	float64* Elbow_slope;
+	float64* Shoulder_data;
+	float64* Shoulder_slope;
 
 	double** Label_Est;
 
@@ -445,4 +469,6 @@ public:
 	afx_msg void OnBnClickedBtnParameterLoad();
 	afx_msg void OnEnChangeEditMavWinSize();
 	afx_msg void OnEnChangeEditSemgPolygonScale();
+	afx_msg void OnEnChangeEditNumElbowImuCh();
+	afx_msg void OnEnChangeEditNumShoulderImuCh();
 };

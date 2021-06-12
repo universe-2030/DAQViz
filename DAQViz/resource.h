@@ -43,6 +43,12 @@
 #define IDC_RADIO_USE_FINGER_FLEX_YES   1025
 #define IDC_RADIO_USE_FINGER_FLEX_NO    1026
 #define IDC_EDIT_TEST                   1027
+#define IDC_TEXT_USE_SHOULDER_IMU       1028
+#define IDC_TEXT_USE_ELBOW_IMU          1029
+#define IDC_RADIO_USE_ELBOW_IMU_YES     1030
+#define IDC_RADIO_USE_ELBOW_IMU_NO      1031
+#define IDC_RADIO_USE_SHOULDER_IMU_YES  1032
+#define IDC_RADIO_USE_SHOULDER_IMU_NO   1033
 #define IDC_PLOT_OPENGL                 1039
 #define IDC_TEXT_CONTROL_TIME           1039
 #define IDC_EDIT_CONTROL_TIME           1040
@@ -90,9 +96,16 @@
 #define IDC_GRAPH_FINGER_FLEX           1074
 #define IDC_TEXT_SEMG_POLYGON_SCALE     1074
 #define IDC_GRAPH_FINGER_FLEX_SLOPE     1075
+#define IDC_TEXT_NUM_ELBOW_IMU_CH       1075
 #define IDC_GRAPH_WRIST_FLEX            1076
+#define IDC_TEXT_NUM_SHOULDER_IMU_CH    1076
 #define IDC_GRAPH_WRIST_FLEX_SLOPE      1077
+#define IDC_EDIT_NUM_ELBOW_IMU_CH       1077
 #define IDC_GRAPH_MOTION_LABEL_EST      1078
+#define IDC_EDIT_NUM_SHOULDER_IMU_CH    1078
+#define IDC_GROUP_TRAINING_MODE         1079
+#define IDC_GROUP_DATA_STREAMING        1080
+#define IDC_GROUP_SAVE_MODE             1081
 
 // Next default values for new objects
 // 
@@ -100,7 +113,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1075
+#define _APS_NEXT_CONTROL_VALUE         1080
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
