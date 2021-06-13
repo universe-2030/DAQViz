@@ -456,7 +456,7 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 			N_Y_interval = 1;
 			N_Y_len = 2;
 		}
-		else if (10 <= i && i < 15) { // CH 11 - 16
+		else if (10 <= i && i < 16) { // CH 11 - 16
 			N_Y_interval = 2;
 			N_Y_len = 3;
 		}
@@ -622,37 +622,37 @@ void ClippedGraph::GLRenderScene_Animation(void) {
 	Y_polygon = -1.35f;
 	Rad_max = 0.8;
 
-	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[0], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[0], 1, Num_CH, X_polygon, Y_polygon, Rad_max, TRUE);
 
 	X_polygon = 0.0f;
 	Y_polygon = -1.35f;
 	Rad_max = 0.8;
 
-	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[1], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[1], 1, Num_CH, X_polygon, Y_polygon, Rad_max, TRUE);
 
 	X_polygon = 2.4f;
 	Y_polygon = -1.35f;
 	Rad_max = 0.8;
 
-	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[2], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[2], 1, Num_CH, X_polygon, Y_polygon, Rad_max, TRUE);
 
 	X_polygon = -2.4f;
 	Y_polygon = -2.7f;
 	Rad_max = 0.8;
 
-	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[3], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[3], 1, Num_CH, X_polygon, Y_polygon, Rad_max, TRUE);
 
 	X_polygon = 0.0f;
 	Y_polygon = -2.7f;
 	Rad_max = 0.8;
 
-	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[4], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[4], 1, Num_CH, X_polygon, Y_polygon, Rad_max, TRUE);
 
 	X_polygon = 2.4f;
 	Y_polygon = -2.7f;
 	Rad_max = 0.8;
 
-	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[5], 1, 15, X_polygon, Y_polygon, Rad_max, TRUE);
+	Plot_polygon(sEMG_plot_temp, sEMG_plot_mean[5], 1, Num_CH, X_polygon, Y_polygon, Rad_max, TRUE);
 
 	delete sEMG_plot_temp;
 }

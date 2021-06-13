@@ -467,7 +467,7 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 				// Generate analysis dialog
 				// 1. Ask whether to generate the analysis window or not
 				if (Pt_forth >= 0 && Pt_back >= Pt_forth) {
-					if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {
+					if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {					
 						// 2. Generate new window
 						Clip_window = new GraphClipping(pMainDlg->Get_Num_sEMG_CH(),
 									Pt_forth, Pt_back, pMainDlg->Get_m_count(),
