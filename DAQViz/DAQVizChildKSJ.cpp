@@ -167,41 +167,35 @@ COScopeCtrl* DAQVizChildKSJ::Initialize_graph (int ID, int idx_start, int idx_en
 	ScreenToClient(_rtGraph);
 
 	int N_graph = idx_end - idx_start + 1;
-	if (idx_start == 11)
-		N_graph--;
 	rtGraph = new COScopeCtrl(N_graph);
 	rtGraph->Create(WS_VISIBLE | WS_CHILD, _rtGraph, this, ID);
 
 	CString temp_str;
 	for (int _idx = idx_start; _idx <= idx_end; _idx++) {
 		if (_class == SEMG_MAV) {
-			if (_idx != 13) {
-				temp_str.Format(_T("CH %d"), _idx);
-				rtGraph->SetRanges(SEMG_MAV_MIN, SEMG_MAV_MAX);
-				rtGraph->autofitYscale = true;
-				rtGraph->SetYUnits(_T("sEMG MAV"));
-				rtGraph->SetXUnits(_T("Time"));
+			temp_str.Format(_T("CH %d"), _idx);
+			rtGraph->SetRanges(SEMG_MAV_MIN, SEMG_MAV_MAX);
+			rtGraph->autofitYscale = true;
+			rtGraph->SetYUnits(_T("sEMG MAV"));
+			rtGraph->SetXUnits(_T("Time"));
 
-				int _idx_rev = _idx - idx_start;
-				if (idx_start == 11 && _idx_rev >= 3)
-					_idx_rev--;
-				rtGraph->SetLegendLabel(temp_str, _idx_rev);
+			int _idx_rev = _idx - idx_start;
+			rtGraph->SetLegendLabel(temp_str, _idx_rev);
 
-				if (_idx_rev == 0)
-					rtGraph->SetPlotColor(RGB(255, 0, 0), _idx_rev);
-				else if (_idx_rev == 1)
-					rtGraph->SetPlotColor(RGB(0, 255, 0), _idx_rev);
-				else if (_idx_rev == 2)
-					rtGraph->SetPlotColor(RGB(0, 0, 255), _idx_rev);
-				else if (_idx_rev == 3)
-					rtGraph->SetPlotColor(RGB(255, 255, 0), _idx_rev);
-				else if (_idx_rev == 4)
-					rtGraph->SetPlotColor(RGB(255, 0, 255), _idx_rev);
-				else if (_idx_rev == 5)
-					rtGraph->SetPlotColor(RGB(0, 255, 255), _idx_rev);
+			if (_idx_rev == 0)
+				rtGraph->SetPlotColor(RGB(255, 0, 0), _idx_rev);
+			else if (_idx_rev == 1)
+				rtGraph->SetPlotColor(RGB(0, 255, 0), _idx_rev);
+			else if (_idx_rev == 2)
+				rtGraph->SetPlotColor(RGB(0, 0, 255), _idx_rev);
+			else if (_idx_rev == 3)
+				rtGraph->SetPlotColor(RGB(255, 255, 0), _idx_rev);
+			else if (_idx_rev == 4)
+				rtGraph->SetPlotColor(RGB(255, 0, 255), _idx_rev);
+			else if (_idx_rev == 5)
+				rtGraph->SetPlotColor(RGB(0, 255, 255), _idx_rev);
 
-				rtGraph->InvalidateCtrl();
-			}
+			rtGraph->InvalidateCtrl();
 		}
 		else if (_class == FINGER) {
 			if (_idx == 1)

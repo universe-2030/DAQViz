@@ -2683,6 +2683,7 @@ void CDAQVizDlg::Visualize_Polygon_sEMG() {
 
 void CDAQVizDlg::Visualize_Graph_Data() {
 	double* sEMG_MAV_plot_temp = new double[5];
+	double* sEMG_MAV_plot_temp_2 = new double[6];
 	if (pShared_Data->count % N_GRAPH == 0) {
 		for (int i = 0; i < 5; i++)
 			sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i];
@@ -2694,9 +2695,9 @@ void CDAQVizDlg::Visualize_Graph_Data() {
 		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
 	}
 	else if (pShared_Data->count % N_GRAPH == 2) {
-		for (int i = 0; i < 5; i++)
-			sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i + 10];
-		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
+		for (int i = 0; i < 6; i++)
+			sEMG_MAV_plot_temp_2[i] = sEMG_MAV_plot[i + 10];
+		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp_2, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
 	}
 	else if (pShared_Data->count % N_GRAPH == 3) {
 		p_ChildDlg_KSJ->Plot_graph(Finger_data, p_ChildDlg_KSJ->Get_rtGraph_Finger()[0]);
@@ -2714,6 +2715,7 @@ void CDAQVizDlg::Visualize_Graph_Data() {
 		p_ChildDlg_KSJ->Plot_graph(Label_Est[0], p_ChildDlg_KSJ->Get_rtGraph_Label_Est()[0]);
 	}
 	delete sEMG_MAV_plot_temp;
+	delete sEMG_MAV_plot_temp_2;
 }
 
 void CDAQVizDlg::OnEnChangeEditSemgPolygonScale() {
