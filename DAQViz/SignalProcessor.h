@@ -6,14 +6,19 @@
 #define SCALE_FACTOR 10
 #define PI 3.14159265358
 
-#define FINGER_FLEX_THRES_ABS 0.2
-#define WRIST_FE_THRES_ABS 20.0
-#define WRIST_UR_THRES_ABS 20.0
+#define FINGER_FLEX_THRES_ABS 0.05
+#define WRIST_FE_THRES_ABS 0.05
+#define WRIST_RU_THRES_ABS 0.1
 
 #define LABEL_POWER_GRIP 1
 #define LABEL_HAND_OPEN 2
 #define LABEL_WRIST_FLEXION 3
 #define LABEL_WRIST_EXTENSION 4
+#define LABEL_WRIST_RADIAL 5
+#define LABEL_WRIST_ULNAR 6
+#define LABEL_OTHERS 0
+
+#define SEMG_BASE_SCALE 1.1
 
 class SignalProcessor {
 private:
@@ -21,10 +26,10 @@ private:
 	int N_sEMG_CH;
 
 	// The number of Flex sensors
-	int N_Flex_CH;
+	int N_Finger_CH;
 
 	// The number of IMU sensors
-	int N_IMU_CH;
+	int N_Wrist_CH;
 
 	// Sampling time & frequency
 	double T_S;
@@ -35,7 +40,7 @@ private:
 
 public:
 	SignalProcessor(); // Default constructors
-	SignalProcessor(int Num_sEMG, int Num_Flex, int Num_IMU,
+	SignalProcessor(int Num_sEMG, int Num_Finger, int Num_Wrist,
 					double time_step, double sampling_rate, double cutoff_LPF);
 	~SignalProcessor();
 
@@ -43,7 +48,13 @@ public:
 
 	double FilteredDerivative(double Prev_input, double Current_input, double Prev_output);
 
-	UINT MotionClassification(const double* _Flex_data, const double* _IMU_data);
+	UINT* MotionClassification (const double* _sEMG_MAV_base,
+								const double* _sEMG_MAV,
+								const double* _Finger_data,
+								const double* _Wrist_data);
+	UINT MotionClassification_Flex_Slope(const double* _Finger_slope, const double* _Wrist_slope);
+
+	UINT* MotionEstimation_sEMG(const double* _sEMG_data);
 
 	int Factorial(int n);
 

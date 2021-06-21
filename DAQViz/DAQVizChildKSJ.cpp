@@ -13,9 +13,9 @@ IMPLEMENT_DYNAMIC(DAQVizChildKSJ, CDialogEx)
 
 DAQVizChildKSJ::DAQVizChildKSJ(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_KSJ, pParent) {
-	N_sEMG = N_SEMG_CH;
-	N_Flex = N_FLEX_CH;
-	N_IMU = N_IMU_CH;
+	N_sEMG = DELSYS_CH_MAX;
+	N_Flex = FINGER_CH_MAX;
+	N_IMU = WRIST_CH_MAX;
 }
 
 DAQVizChildKSJ::DAQVizChildKSJ(int _N_sEMG_CH, int _N_Flex_CH, int _N_IMU_CH,
@@ -44,10 +44,11 @@ BEGIN_MESSAGE_MAP(DAQVizChildKSJ, CDialogEx)
 	ON_STN_CLICKED(IDC_GRAPH_SEMG_MAV_1, &DAQVizChildKSJ::OnClickedGraphSemgMav1)
 	ON_STN_CLICKED(IDC_GRAPH_SEMG_MAV_2, &DAQVizChildKSJ::OnClickedGraphSemgMav2)
 	ON_STN_CLICKED(IDC_GRAPH_SEMG_MAV_3, &DAQVizChildKSJ::OnClickedGraphSemgMav3)
-	ON_STN_CLICKED(IDC_GRAPH_SEMG_MAV_4, &DAQVizChildKSJ::OnClickedGraphSemgMav4)
-	ON_STN_CLICKED(IDC_GRAPH_FLEX_SENSOR, &DAQVizChildKSJ::OnClickedGraphFlexSensor)
-	ON_STN_CLICKED(IDC_GRAPH_LOGONU_IMU, &DAQVizChildKSJ::OnClickedGraphLogonuImu)
-	ON_STN_CLICKED(IDC_GRAPH_MOTION_LABEL_EST, &DAQVizChildKSJ::OnStnClickedGraphMotionLabelEst)
+	ON_STN_CLICKED(IDC_GRAPH_FINGER_FLEX, &DAQVizChildKSJ::OnClickedGraphFingerFlex)
+	ON_STN_CLICKED(IDC_GRAPH_FINGER_FLEX_SLOPE, &DAQVizChildKSJ::OnClickedGraphFingerFlexSlope)
+	ON_STN_CLICKED(IDC_GRAPH_WRIST_FLEX, &DAQVizChildKSJ::OnClickedGraphWristFlex)
+	ON_STN_CLICKED(IDC_GRAPH_WRIST_FLEX_SLOPE, &DAQVizChildKSJ::OnClickedGraphWristFlexSlope)
+	ON_STN_CLICKED(IDC_GRAPH_MOTION_LABEL_EST, &DAQVizChildKSJ::OnClickedGraphMotionLabelEst)
 END_MESSAGE_MAP()
 
 // DAQVizChildKSJ 메시지 처리기
@@ -70,9 +71,11 @@ void DAQVizChildKSJ::Initialize_Variable() {
 	m_NumClicked = new UINT[N_GRAPH];
 	memset(m_NumClicked, 0, sizeof(m_NumClicked) * N_GRAPH);
 
-	rtGraph_sEMG_MAV = new COScopeCtrl*[4];
-	rtGraph_Flex = new COScopeCtrl*;
-	rtGraph_IMU = new COScopeCtrl*;
+	rtGraph_sEMG_MAV = new COScopeCtrl*[3];
+	rtGraph_Finger = new COScopeCtrl*;
+	rtGraph_Finger_slope = new COScopeCtrl*;
+	rtGraph_Wrist = new COScopeCtrl*;
+	rtGraph_Wrist_slope = new COScopeCtrl*;
 	rtGraph_Label_Est = new COScopeCtrl*;
 
 	sEMG_MAV = new double[N_sEMG];
@@ -89,14 +92,17 @@ void DAQVizChildKSJ::Initialize_GUI() {
 	pMainDlg->Set_Font(m_textMotionRendering, 20, 8);
 	pMainDlg->Set_Font(m_textBallControl, 20, 8);
 
-	rtGraph_sEMG_MAV[0] = Initialize_graph(IDC_GRAPH_SEMG_MAV_1, 1, 4, rtGraph_sEMG_MAV[0], SEMG_MAV);
-	rtGraph_sEMG_MAV[1] = Initialize_graph(IDC_GRAPH_SEMG_MAV_2, 5, 8, rtGraph_sEMG_MAV[1], SEMG_MAV);
-	rtGraph_sEMG_MAV[2] = Initialize_graph(IDC_GRAPH_SEMG_MAV_3, 9, 12, rtGraph_sEMG_MAV[2], SEMG_MAV);
-	rtGraph_sEMG_MAV[3] = Initialize_graph(IDC_GRAPH_SEMG_MAV_4, 13, 16, rtGraph_sEMG_MAV[3], SEMG_MAV);
+	rtGraph_sEMG_MAV[0] = Initialize_graph(IDC_GRAPH_SEMG_MAV_1, 1, 5, rtGraph_sEMG_MAV[0], SEMG_MAV);
+	rtGraph_sEMG_MAV[1] = Initialize_graph(IDC_GRAPH_SEMG_MAV_2, 6, 10, rtGraph_sEMG_MAV[1], SEMG_MAV);
+	rtGraph_sEMG_MAV[2] = Initialize_graph(IDC_GRAPH_SEMG_MAV_3, 11, 16, rtGraph_sEMG_MAV[2], SEMG_MAV);
 
-	rtGraph_Flex[0] = Initialize_graph(IDC_GRAPH_FLEX_SENSOR, 1, 5, rtGraph_Flex[0], FLEX_SENSOR);
+	rtGraph_Finger[0] = Initialize_graph(IDC_GRAPH_FINGER_FLEX, 1, 5, rtGraph_Finger[0], FINGER);
 
-	rtGraph_IMU[0] = Initialize_graph(IDC_GRAPH_LOGONU_IMU, 1, 2, rtGraph_IMU[0], IMU);
+	rtGraph_Finger_slope[0] = Initialize_graph(IDC_GRAPH_FINGER_FLEX_SLOPE, 1, 5, rtGraph_Finger_slope[0], FINGER_SLOPE);
+
+	rtGraph_Wrist[0] = Initialize_graph(IDC_GRAPH_WRIST_FLEX, 1, 2, rtGraph_Wrist[0], WRIST);
+
+	rtGraph_Wrist_slope[0] = Initialize_graph(IDC_GRAPH_WRIST_FLEX_SLOPE, 1, 2, rtGraph_Wrist_slope[0], WRIST_SLOPE);
 
 	rtGraph_Label_Est[0] = Initialize_graph(IDC_GRAPH_MOTION_LABEL_EST, 1, 2, rtGraph_Label_Est[0], LABEL_EST);
 	
@@ -107,12 +113,18 @@ void DAQVizChildKSJ::Initialize_GUI() {
 		GetDlgItem(ID_Ctrl)->GetWindowRect(p_RectCtrl[i]);
 		ScreenToClient(p_RectCtrl[i]);
 
-		if (0 <= i && i < 4)
+		if (0 <= i && i < 3)
 			p_RectPlot[i] = rtGraph_sEMG_MAV[i]->Get_m_rectPlot();
+		else if (i == 3)
+			p_RectPlot[i] = rtGraph_Finger[0]->Get_m_rectPlot();
 		else if (i == 4)
-			p_RectPlot[i] = rtGraph_Flex[0]->Get_m_rectPlot();
+			p_RectPlot[i] = rtGraph_Finger_slope[0]->Get_m_rectPlot();
 		else if (i == 5)
-			p_RectPlot[i] = rtGraph_IMU[0]->Get_m_rectPlot();
+			p_RectPlot[i] = rtGraph_Wrist[0]->Get_m_rectPlot();
+		else if (i == 6)
+			p_RectPlot[i] = rtGraph_Wrist_slope[0]->Get_m_rectPlot();
+		else if (i == 7)
+			p_RectPlot[i] = rtGraph_Label_Est[0]->Get_m_rectPlot();
 
 		p_RectPlot_fin[i].left = p_RectCtrl[i].left + p_RectPlot[i].left;
 		p_RectPlot_fin[i].top = p_RectCtrl[i].top + p_RectPlot[i].top;
@@ -124,7 +136,7 @@ void DAQVizChildKSJ::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_OPENGL)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ChildOpenGL = new DAQVizChildOpenGL();
+	p_ChildOpenGL = new DAQVizChildOpenGL(N_sEMG, N_MOTIONS);
 	p_ChildOpenGL->Create(IDD_DAQVIZ_DIALOG_CHILD_OPENGL, this);
 	p_ChildOpenGL->ShowWindow(SW_SHOW);
 	p_ChildOpenGL->MoveWindow(rectofDialogArea);
@@ -178,10 +190,14 @@ COScopeCtrl* DAQVizChildKSJ::Initialize_graph (int ID, int idx_start, int idx_en
 				rtGraph->SetPlotColor(RGB(0, 0, 255), _idx_rev);
 			else if (_idx_rev == 3)
 				rtGraph->SetPlotColor(RGB(255, 255, 0), _idx_rev);
+			else if (_idx_rev == 4)
+				rtGraph->SetPlotColor(RGB(255, 0, 255), _idx_rev);
+			else if (_idx_rev == 5)
+				rtGraph->SetPlotColor(RGB(0, 255, 255), _idx_rev);
 
 			rtGraph->InvalidateCtrl();
 		}
-		else if (_class == FLEX_SENSOR) {
+		else if (_class == FINGER) {
 			if (_idx == 1)
 				temp_str = _T("Thumb");
 			else if (_idx == 2)
@@ -193,9 +209,9 @@ COScopeCtrl* DAQVizChildKSJ::Initialize_graph (int ID, int idx_start, int idx_en
 			else if (_idx == 5)
 				temp_str = _T("Pinky");
 
-			rtGraph->SetRanges(FLEX_SENSOR_MIN, FLEX_SENSOR_MAX);
+			rtGraph->SetRanges(FINGER_MIN, FINGER_MAX);
 			rtGraph->autofitYscale = true;
-			rtGraph->SetYUnits(_T("Flex sensor"));
+			rtGraph->SetYUnits(_T("Finger"));
 			rtGraph->SetXUnits(_T("Time"));
 
 			int _idx_rev = _idx - idx_start;
@@ -214,15 +230,69 @@ COScopeCtrl* DAQVizChildKSJ::Initialize_graph (int ID, int idx_start, int idx_en
 
 			rtGraph->InvalidateCtrl();
 		}
-		else if (_class == IMU) {
+		else if (_class == FINGER_SLOPE) {
+			if (_idx == 1)
+				temp_str = _T("Thumb");
+			else if (_idx == 2)
+				temp_str = _T("Index");
+			else if (_idx == 3)
+				temp_str = _T("Middle");
+			else if (_idx == 4)
+				temp_str = _T("Ring");
+			else if (_idx == 5)
+				temp_str = _T("Pinky");
+
+			rtGraph->SetRanges(FINGER_SLOPE_MIN, FINGER_SLOPE_MAX);
+			rtGraph->autofitYscale = true;
+			rtGraph->SetYUnits(_T("Finger slope"));
+			rtGraph->SetXUnits(_T("Time"));
+
+			int _idx_rev = _idx - idx_start;
+			rtGraph->SetLegendLabel(temp_str, _idx_rev);
+
+			if (_idx_rev == 0)
+				rtGraph->SetPlotColor(RGB(255, 0, 0), _idx_rev);
+			else if (_idx_rev == 1)
+				rtGraph->SetPlotColor(RGB(0, 255, 0), _idx_rev);
+			else if (_idx_rev == 2)
+				rtGraph->SetPlotColor(RGB(0, 0, 255), _idx_rev);
+			else if (_idx_rev == 3)
+				rtGraph->SetPlotColor(RGB(255, 255, 0), _idx_rev);
+			else if (_idx_rev == 4)
+				rtGraph->SetPlotColor(RGB(255, 0, 255), _idx_rev);
+
+			rtGraph->InvalidateCtrl();
+		}
+		else if (_class == WRIST) {
 			if (_idx == 1)
 				temp_str = _T("Flex / Ext");
 			else if (_idx == 2)
 				temp_str = _T("Radial / Ulnar");
 
-			rtGraph->SetRanges(IMU_MIN, IMU_MAX);
+			rtGraph->SetRanges(WRIST_MIN, WRIST_MAX);
 			rtGraph->autofitYscale = true;
-			rtGraph->SetYUnits(_T("Angle [Deg]"));
+			rtGraph->SetYUnits(_T("Wrist"));
+			rtGraph->SetXUnits(_T("Time"));
+
+			int _idx_rev = _idx - idx_start;
+			rtGraph->SetLegendLabel(temp_str, _idx_rev);
+
+			if (_idx_rev == 0)
+				rtGraph->SetPlotColor(RGB(255, 0, 0), _idx_rev);
+			else if (_idx_rev == 1)
+				rtGraph->SetPlotColor(RGB(0, 0, 255), _idx_rev);
+
+			rtGraph->InvalidateCtrl();
+		}
+		else if (_class == WRIST_SLOPE) {
+			if (_idx == 1)
+				temp_str = _T("Flex / Ext");
+			else if (_idx == 2)
+				temp_str = _T("Radial / Ulnar");
+
+			rtGraph->SetRanges(WRIST_SLOPE_MIN, WRIST_SLOPE_MAX);
+			rtGraph->autofitYscale = true;
+			rtGraph->SetYUnits(_T("Wrist slope"));
 			rtGraph->SetXUnits(_T("Time"));
 
 			int _idx_rev = _idx - idx_start;
@@ -269,12 +339,20 @@ COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_sEMG_MAV() {
 	return rtGraph_sEMG_MAV;
 }
 
-COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Flex() {
-	return rtGraph_Flex;
+COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Finger() {
+	return rtGraph_Finger;
 }
 
-COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_IMU() {
-	return rtGraph_IMU;
+COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Finger_slope() {
+	return rtGraph_Finger_slope;
+}
+
+COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Wrist() {
+	return rtGraph_Wrist;
+}
+
+COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Wrist_slope() {
+	return rtGraph_Wrist_slope;
 }
 
 COScopeCtrl** DAQVizChildKSJ::Get_rtGraph_Label_Est() {
@@ -297,16 +375,24 @@ void DAQVizChildKSJ::OnClickedGraphSemgMav3() {
 	Cursor_set(2);
 }
 
-void DAQVizChildKSJ::OnClickedGraphSemgMav4() {
+void DAQVizChildKSJ::OnClickedGraphFingerFlex() {
 	Cursor_set(3);
 }
 
-void DAQVizChildKSJ::OnClickedGraphFlexSensor() {
+void DAQVizChildKSJ::OnClickedGraphFingerFlexSlope() {
 	Cursor_set(4);
 }
 
-void DAQVizChildKSJ::OnClickedGraphLogonuImu() {
+void DAQVizChildKSJ::OnClickedGraphWristFlex() {
 	Cursor_set(5);
+}
+
+void DAQVizChildKSJ::OnClickedGraphWristFlexSlope() {
+	Cursor_set(6);
+}
+
+void DAQVizChildKSJ::OnClickedGraphMotionLabelEst() {
+	Cursor_set(7);
 }
 
 void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
@@ -375,11 +461,13 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 				// Generate analysis dialog
 				// 1. Ask whether to generate the analysis window or not
 				if (Pt_forth >= 0 && Pt_back >= Pt_forth) {
-					if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {
+					if (IDYES == AfxMessageBox(_T("Want to analyze the clipped data?"), MB_YESNO)) {					
 						// 2. Generate new window
-						Clip_window = new GraphClipping(Pt_forth, Pt_back, pMainDlg->Get_m_count(),
-									pMainDlg->Get_sEMG_MAV_stack(), pMainDlg->Get_Flex_raw_stack(),
-									pMainDlg->Get_IMU_raw_stack(),	pMainDlg->Get_MotionLabel_stack(),
+						Clip_window = new GraphClipping(pMainDlg->Get_Num_sEMG_CH(),
+									Pt_forth, Pt_back, pMainDlg->Get_m_count(),
+									pMainDlg->Get_sEMG_MAV_stack(), pMainDlg->Get_Finger_raw_stack(),
+									pMainDlg->Get_Finger_slope_stack(), pMainDlg->Get_Wrist_raw_stack(),
+									pMainDlg->Get_Wrist_slope_stack(), pMainDlg->Get_MotionLabel_stack(),
 									pMainDlg->Get_MotionEstimation_stack(), pMainDlg->Get_X_pos_ball_stack(),
 									pMainDlg->Get_Y_pos_ball_stack(), pMainDlg->Get_Rad_ball_stack());
 						Clip_window->Create(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, this);
@@ -415,9 +503,4 @@ void DAQVizChildKSJ::Cursor_set(UINT graph_idx) {
 					   _T("Notice"), MB_OK | MB_ICONWARNING);
 		}
 	}
-}
-
-void DAQVizChildKSJ::OnStnClickedGraphMotionLabelEst() {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-
 }

@@ -16,10 +16,12 @@ GraphClipping::GraphClipping(CWnd* pParent /*=nullptr*/)
 
 }
 
-GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
+GraphClipping::GraphClipping(UINT _Num_sEMG_CH, UINT start_idx, UINT end_idx, UINT _m_count,
 							const std::vector<double>* _sEMG_plot,
-							const std::vector<double>* _Flex_plot,
-							const std::vector<double>* _IMU_plot,
+							const std::vector<double>* _Finger_plot,
+							const std::vector<double>* _Finger_slope_plot,
+							const std::vector<double>* _Wrist_plot,
+							const std::vector<double>* _Wrist_slope_plot,
 							const std::vector<double>* _MotionLabel_plot,
 							const std::vector<double>* _MotionEstimation_plot,
 							const std::vector<double>* _X_ball_plot,
@@ -27,14 +29,18 @@ GraphClipping::GraphClipping(UINT start_idx, UINT end_idx, UINT _m_count,
 							const std::vector<double>* _Rad_ball_plot,
 							CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_GRAPH_CLIPPING, pParent) {
+	Num_sEMG_CH = _Num_sEMG_CH;
 	m_StartIdx = start_idx;
 	m_EndIdx = end_idx;
 	m_NumIdx = m_EndIdx - m_StartIdx + 1;
 	m_count = _m_count;
 
 	sEMG_plot = _sEMG_plot;
-	Flex_plot = _Flex_plot;
-	IMU_plot = _IMU_plot;
+
+	Finger_plot = _Finger_plot;
+	Finger_slope_plot = _Finger_slope_plot;
+	Wrist_plot = _Wrist_plot;
+	Wrist_slope_plot = _Wrist_slope_plot;
 
 	MotionLabel_plot = _MotionLabel_plot;
 	MotionEstimation_plot = _MotionEstimation_plot;
@@ -113,8 +119,9 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_CLIPPED_GRAPH)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx, NUM_CH,
-									sEMG_plot, Flex_plot, IMU_plot,
+	p_ClippedGraph = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx, Num_sEMG_CH,
+									sEMG_plot, Finger_plot, Finger_slope_plot, 
+									Wrist_plot, Wrist_slope_plot,
 									MotionLabel_plot, MotionEstimation_plot,
 									Render::TOTAL);
 	p_ClippedGraph->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
@@ -124,8 +131,9 @@ void GraphClipping::Initialize_GUI() {
 	GetDlgItem(IDC_PLOT_ANIMATION)->GetWindowRect(&rectofDialogArea);
 	ScreenToClient(&rectofDialogArea);
 
-	p_ClippedGraph_2 = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx, NUM_CH,
-									sEMG_plot, Flex_plot, IMU_plot,
+	p_ClippedGraph_2 = new ClippedGraph(m_StartIdx, m_EndIdx, m_NumIdx, Num_sEMG_CH,
+									sEMG_plot, Finger_plot, Finger_slope_plot,
+									Wrist_plot, Wrist_slope_plot,
 									MotionLabel_plot, MotionEstimation_plot,
 									Render::ANIMATION);
 	p_ClippedGraph_2->Create(IDD_DAQVIZ_DIALOG_CLIPPED_GRAPH, this);
@@ -136,7 +144,7 @@ void GraphClipping::Initialize_GUI() {
 	ScreenToClient(&rectofDialogArea);
 
 	p_HandMotion = new DAQVizChildOpenGL2(m_StartIdx, m_EndIdx, m_NumIdx,
-										Flex_plot, Render_Hand::RENDER_HAND, TRUE);
+										Finger_plot, Wrist_plot, Render_Hand::RENDER_HAND, TRUE);
 	p_HandMotion->Create(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, this);
 	p_HandMotion->ShowWindow(SW_SHOW);
 	p_HandMotion->MoveWindow(rectofDialogArea);

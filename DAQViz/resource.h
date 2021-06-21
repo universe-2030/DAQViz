@@ -31,27 +31,26 @@
 #define IDC_BTN_LOAD                    1013
 #define IDC_TEXT_SAVE_MODE              1014
 #define IDC_TEXT_SEMG_DAQ_DEVICE        1015
-#define IDC_TEXT_USE_LOGONU_IMU         1016
+#define IDC_TEXT_USE_WRIST_FLEX         1016
 #define IDC_RADIO_SAVE_IMMEDIATE        1017
 #define IDC_RADIO_STOP_AND_RUN_STACK_ON 1018
 #define IDC_RADIO_STOP_AND_RUN_STACK_OFF 1019
 #define IDC_RADIO_DEVICE_DELSYS         1020
 #define IDC_RADIO_DEVICE_FRANKFURT      1021
-#define IDC_TEXT_USE_FLEX_SENSOR        1022
-#define IDC_RADIO_USE_IMU_LOGONU_YES    1023
-#define IDC_RADIO_USE_IMU_LOGONU_NO     1024
-#define IDC_RADIO_USE_FLEX_SENSOR_YES   1025
-#define IDC_RADIO_USE_FLEX_SENSOR_NO    1026
+#define IDC_TEXT_USE_FINGER_FLEX        1022
+#define IDC_RADIO_USE_WRIST_FLEX_YES    1023
+#define IDC_RADIO_USE_WRIST_FLEX_NO     1024
+#define IDC_RADIO_USE_FINGER_FLEX_YES   1025
+#define IDC_RADIO_USE_FINGER_FLEX_NO    1026
 #define IDC_EDIT_TEST                   1027
-#define IDC_GRAPH_SEMG_MAV_1            1032
-#define IDC_GRAPH_SEMG_MAV_2            1033
-#define IDC_GRAPH_SEMG_MAV_3            1034
-#define IDC_GRAPH_SEMG_MAV_4            1035
-#define IDC_GRAPH_FLEX_SENSOR           1036
-#define IDC_GRAPH_LOGONU_IMU            1037
-#define IDC_PLOT_OPENGL                 1038
+#define IDC_TEXT_USE_SHOULDER_IMU       1028
+#define IDC_TEXT_USE_ELBOW_IMU          1029
+#define IDC_RADIO_USE_ELBOW_IMU_YES     1030
+#define IDC_RADIO_USE_ELBOW_IMU_NO      1031
+#define IDC_RADIO_USE_SHOULDER_IMU_YES  1032
+#define IDC_RADIO_USE_SHOULDER_IMU_NO   1033
+#define IDC_PLOT_OPENGL                 1039
 #define IDC_TEXT_CONTROL_TIME           1039
-#define IDC_GRAPH_MOTION_LABEL_EST      1039
 #define IDC_EDIT_CONTROL_TIME           1040
 #define IDC_PLOT_MOTION                 1040
 #define IDC_EDIT_LOAD_NAME              1041
@@ -77,10 +76,10 @@
 #define IDC_EDIT_TIMESTEP               1059
 #define IDC_EDIT_NUM_SEMG_CH            1060
 #define IDC_TEXT_NUM_SEMG_CH            1061
-#define IDC_EDIT_NUM_FLEX_CH            1062
-#define IDC_TEXT_NUM_FLEX_CH            1063
-#define IDC_EDIT_NUM_IMU_CH             1064
-#define IDC_TEXT_NUM_IMU_CH             1065
+#define IDC_EDIT_NUM_FINGER_FLEX_CH     1062
+#define IDC_TEXT_NUM_FINGER_FLEX_CH     1063
+#define IDC_EDIT_NUM_WRIST_FLEX_CH      1064
+#define IDC_TEXT_NUM_WRIST_FLEX_CH      1065
 #define IDC_RADIO_UNSUPERVISED          1066
 #define IDC_RADIO_TRAINING              1067
 #define IDC_RADIO_TEST                  1068
@@ -88,6 +87,26 @@
 #define IDC_PLOT_ANIMATION_HAND         1069
 #define IDC_EDIT_PARAMETER_LOAD_NAME    1070
 #define IDC_PLOT_ANIMATION_BALL_CONTROL 1070
+#define IDC_GRAPH_SEMG_MAV_1            1071
+#define IDC_EDIT_MAV_WIN_SIZE           1071
+#define IDC_GRAPH_SEMG_MAV_2            1072
+#define IDC_TEXT_MAV_WIN_SIZE           1072
+#define IDC_GRAPH_SEMG_MAV_3            1073
+#define IDC_EDIT_SEMG_POLYGON_SCALE     1073
+#define IDC_GRAPH_FINGER_FLEX           1074
+#define IDC_TEXT_SEMG_POLYGON_SCALE     1074
+#define IDC_GRAPH_FINGER_FLEX_SLOPE     1075
+#define IDC_TEXT_NUM_ELBOW_IMU_CH       1075
+#define IDC_GRAPH_WRIST_FLEX            1076
+#define IDC_TEXT_NUM_SHOULDER_IMU_CH    1076
+#define IDC_GRAPH_WRIST_FLEX_SLOPE      1077
+#define IDC_EDIT_NUM_ELBOW_IMU_CH       1077
+#define IDC_GRAPH_MOTION_LABEL_EST      1078
+#define IDC_EDIT_NUM_SHOULDER_IMU_CH    1078
+#define IDC_GROUP_TRAINING_MODE         1079
+#define IDC_GROUP_DATA_STREAMING        1080
+#define IDC_GROUP_SAVE_MODE             1081
+#define IDC_BUTTON1                     1082
 
 // Next default values for new objects
 // 
@@ -95,7 +114,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1071
+#define _APS_NEXT_CONTROL_VALUE         1083
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

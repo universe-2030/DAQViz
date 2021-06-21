@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <vector>
 #include <queue>
 #include <cstdlib>
@@ -25,38 +26,60 @@
 
 #define	TIMER_EDIT 1
 
-#define N_SEMG_CH 16
-#define N_FLEX_CH 5
-#define N_IMU_CH 2
-
 #define CALI_START 0.300
 #define CALI_END 1.500
 
-#define N_GRAPH 7
+#define N_GRAPH 8
+
+#define WIN_SIZE 250
 
 #define DELSYS_CH_MAX 16
 #define FRANKFURT_CH_MAX 8
-#define FLEX_CH_MAX 5
-#define IMU_CH_MAX 2
+#define FINGER_CH_MAX 5
+#define WRIST_CH_MAX 2
+#define ELBOW_CH_MAX 3
+#define SHOULDER_CH_MAX 3
 
-#define FLEX_ANALOG_ABS_MAX 0.75
+#define DELSYS_CH_INIT 16
+#define FRANKFURT_CH_INIT 8
+#define FINGER_CH_INIT 5
+#define WRIST_CH_INIT 2
+#define ELBOW_CH_INIT 3
+#define SHOULDER_CH_INIT 3
 
-#define SAVE_FOLDER_PATH_MACRO "D:/Training-free algorithm/"
+#define FINGER_ANALOG_ABS_MAX 0.75
+#define WRIST_FE_ANALOG_ABS_MAX 0.3
+#define WRIST_RU_ANALOG_ABS_MAX 0.3
+
+#define MOTION_DOF 3
+
+#define SAVE_FOLDER_PATH_MACRO _T("E:/OneDrive - postech.ac.kr/연구/### 데이터/DAQViz data/")
 
 #define X_POS_INIT 0.0
-#define X_POS_MIN -0.5
-#define X_POS_MAX 0.5
+#define X_POS_MIN -2.0
+#define X_POS_MAX 2.0
 #define X_POS_STEP_SIZE 0.001
 
 #define Y_POS_INIT 0.0
-#define Y_POS_MIN -0.5
-#define Y_POS_MAX 0.5
+#define Y_POS_MIN -2.0
+#define Y_POS_MAX 2.0
 #define Y_POS_STEP_SIZE 0.001
 
-#define RAD_INIT 0.3
+#define RAD_INIT 0.4
 #define RAD_MIN 0.1
-#define RAD_MAX 0.9
+#define RAD_MAX 1.2
 #define RAD_STEP_SIZE 0.001
+
+#define NUM_FILE_LOAD 10
+#define NUM_FILE_LOAD_PARAMETER 3
+#define MAX_FILES 1000
+#define MAX_PATH 150
+
+#define SEMG_CHANNEL_IDX { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }
+
+#define SCALE_INIT 1.0
+
+#define MAJOR_SEMG_THRES 0.3
 
 // CDAQVizDlg 대화 상자
 class CDAQVizDlg : public CDialogEx {
@@ -86,7 +109,15 @@ private:
 	// The number of channels
 	UINT Num_sEMG_CH;
 	UINT Num_Flex_CH;
-	UINT Num_IMU_CH;
+	UINT Num_Finger_CH;
+	UINT Num_Wrist_CH;
+	UINT Num_Elbow_CH;
+	UINT Num_Shoulder_CH;
+
+	UINT sEMG_Win_size;
+	UINT sEMG_Win_size_prev;
+	std::vector<UINT> sEMG_Win_size_history;
+	std::vector<double> sEMG_Win_size_time;
 
 	// MFC control variables
 	CButton m_btnSwitch;
@@ -98,28 +129,34 @@ private:
 	CStatic m_textSelectDlg;
 	CComboBox m_comboSelectDlg;
 
-	CStatic m_textTrainingMode;
+	CStatic m_groupTrainingMode;
 	UINT m_radioTrainingMode;
 	CButton m_btnParameterLoad;
 	CEdit m_editParameterLoadName;
 
-	CStatic m_textDataStreamingMode;
+	CStatic m_groupDataStreamingMode;
 	UINT m_radioStreamingMode;
 
 	CButton m_btnLoad;
 	CEdit m_editLoadName;
 
-	CStatic m_textSaveMode;
+	CStatic m_groupSaveMode;
 	UINT m_radioSaveMode;
 
 	CStatic m_textsEMGDAQDev;
 	UINT m_radiosEMGDAQDev;
 	
-	CStatic m_textUseFlexSensor;
-	UINT    m_radioUseFlexSensor;
+	CStatic m_textUseFingerFlex;
+	UINT    m_radioUseFingerFlex;
 	
-	CStatic m_textUseIMU;
-	UINT m_radioUseIMU;
+	CStatic m_textUseWristFlex;
+	UINT m_radioUseWristFlex;
+
+	CStatic m_textUseElbowIMU;
+	UINT    m_radioUseElbowIMU;
+
+	CStatic m_textUseShoulderIMU;
+	UINT    m_radioUseShoulderIMU;
 
 	CEdit m_editStatusBar;
 
@@ -133,19 +170,46 @@ private:
 
 	CStatic		m_textNumsEMGCH;
 	CEdit		m_editNumsEMGCH;
-	CStatic		m_textNumFlexCH;
-	CEdit		m_editNumFlexCH;
-	CStatic		m_textNumIMUCH;
-	CEdit		m_editNumIMUCH;
+	CStatic		m_textNumFingerFlexCH;
+	CEdit		m_editNumFingerFlexCH;
+	CStatic		m_textNumWristFlexCH;
+	CEdit		m_editNumWristFlexCH;
+	CStatic		m_textNumElbowIMUCH;
+	CEdit		m_editNumElbowIMUCH;
+	CStatic		m_textNumShoulderIMUCH;
+	CEdit		m_editNumShoulderIMUCH;
+
+	CStatic		m_textMAVWinSize;
+	CEdit		m_editMAVWinSize;
+
+	CStatic		m_textsEMGPolygonScale;
+	CEdit		m_editsEMGPolygonScale;
 
 	// Container variables
+	std::vector<double> Time_stack;
+	std::vector<double> Time_DAQ_elapse_stack;
+	std::vector<double> Time_RTGraph_elapse_stack;
+
+	std::vector<double>* sEMG_raw_baseline_stack;
+	std::vector<double>* sEMG_abs_baseline_stack;
 	std::vector<double>* sEMG_raw_stack;
 	std::vector<double>* sEMG_abs_stack;
 	std::vector<double>* sEMG_MAV_stack;
+	std::vector<double>** sEMG_MAV_stack_motionwise;
+	std::vector<double>** sEMG_MAV_stack_motionwise_mean_stack;
+	std::vector<double>** sEMG_MAV_stack_motionwise_std_stack;
+	double** sEMG_MAV_stack_motionwise_mean;
+	double** sEMG_MAV_stack_motionwise_square_mean;
+	double** sEMG_MAV_stack_motionwise_std;
 
-	std::vector<double>* Flex_raw_stack;
-
-	std::vector<double>* IMU_raw_stack;
+	std::vector<double>* Finger_raw_stack;
+	std::vector<double>* Finger_slope_stack;
+	std::vector<double>* Wrist_raw_stack;
+	std::vector<double>* Wrist_slope_stack;
+	std::vector<double>* Elbow_raw_stack;
+	std::vector<double>* Elbow_slope_stack;
+	std::vector<double>* Shoulder_raw_stack;
+	std::vector<double>* Shoulder_slope_stack;
 
 	std::vector<double>* MotionLabel;
 	std::vector<double>* MotionEstimation;
@@ -157,10 +221,7 @@ private:
 	std::vector<double>* X_pos_ball_stack;
 	std::vector<double>* Y_pos_ball_stack;
 	std::vector<double>* Rad_ball_stack;
-
-	std::vector<double> Time_DAQ_elapse_stack;
-	std::vector<double> Time_RTGraph_elapse_stack;
-
+	
 	// TwinCAT variables
 	HANDLE hMutex;
 	HANDLE hMemory;
@@ -188,22 +249,45 @@ private:
 
 	// Error & Status text
 	CString	error_text;
-	CString stat = L"";
+	CString stat = _T("");
 
 	// Elapsed time variables
 	double Time_DAQ_elapse;
 	double Time_RTGraph_elapse;
 
-	// Load the model parameter file
-	ifstream inFile_model_param;
-	bool isModelParamLoaded;
-
 	// Load the previously saved file
-	ifstream inFile_data;
+	UINT Offline_idx;
+	CString* m_filelist_dir_Data;
+	CString* m_filelist_name_Data;
+	char Data_getline[1000];
+	ifstream* inFile_data;
+	int* N_CH_each_data;
 	bool isDataLoaded;
 
+	std::vector<double>* sEMG_MAV_stack_loaded;
+	std::vector<double>* Finger_raw_stack_loaded;
+	std::vector<double>* Finger_slope_stack_loaded;
+	std::vector<double>* Wrist_raw_stack_loaded;
+	std::vector<double>* Wrist_slope_stack_loaded;
+	std::vector<double>* Elbow_raw_stack_loaded;
+	std::vector<double>* Elbow_slope_stack_loaded;
+	std::vector<double>* Shoulder_raw_stack_loaded;
+	std::vector<double>* Shoulder_slope_stack_loaded;
+	std::vector<double>* MotionLabel_loaded;
+
+	// Load the parameter file
+	CString* m_filelist_dir_Param;
+	CString* m_filelist_name_Param;
+	char Parameters_getline[1000];
+	ifstream* inFile_parameters;
+	int* N_CH_each_Param;
+	bool isParameterLoaded;
+
+	double* sEMG_boolean_Param;
+	double** sEMG_mean_Param;
+	double** sEMG_std_Param;
+
 	// DAQ device
-	DELSYSDAQ* DELSYS_Dev;
 	MatchDevice* MATCH_Dev;
 	bool isMATCHconnected;
 
@@ -212,16 +296,40 @@ private:
 	NI_AI_Flex* AI_Flex;
 
 	// Pointer variables
+	int sEMG_raw_plot_CH[DELSYS_CH_INIT] = SEMG_CHANNEL_IDX;
+
+	double* sEMG_raw_NI;
 	double* sEMG_raw_plot;
 	double* sEMG_abs_plot;
 	double* sEMG_MAV_plot;
+	double* sEMG_MAV_plot_baseline;
 
 	float64* Flex_data;
 	float64* Flex_data_calib;
+	float64* Flex_data_prev;
+	float64* Flex_slope;
+	float64* Flex_slope_prev;
 
-	double* IMU_data;
+	float64* Finger_data;
+	float64* Finger_slope;
 
-	double* Label_Est;
+	float64* Wrist_data;
+	float64* Wrist_slope;
+
+	float64* Elbow_data;
+	float64* Elbow_data_prev;
+	float64* Elbow_slope;
+	float64* Elbow_slope_prev;
+
+	float64* Shoulder_data;
+	float64* Shoulder_data_prev;
+	float64* Shoulder_slope;
+	float64* Shoulder_slope_prev;
+
+	double** Label_Est;
+
+	// Polygon scaling
+	double Polygon_scale;
 
 	// Calibration
 	int cali_count = 0;
@@ -232,10 +340,34 @@ private:
 	// Signal processor
 	SignalProcessor* SigProc;
 
+	// File streams
+	ofstream f_time, f_time_elapsed_DAQ, f_time_elapsed_RTGraph;
+	ofstream f_sEMG_raw, f_sEMG_abs, f_sEMG_MAV, f_sEMG_MAV_baseline;
+	ofstream f_Finger_raw, f_Finger_slope;
+	ofstream f_Wrist_raw, f_Wrist_slope;
+	ofstream f_Elbow_raw, f_Elbow_slope;
+	ofstream f_Shoulder_raw, f_Shoulder_slope;
+	ofstream f_MotionLabel, f_MotionEstimation;
+	ofstream f_X_pos_ball, f_Y_pos_ball, f_Rad_ball;
+	ofstream f_parameters;
+	ofstream f_model_sEMG_mean, f_model_sEMG_std, f_model_sEMG_boolean;
+
 public:
 	// Thread functions
 	static UINT MainThreadFunc(LPVOID IParam);
 	int MainStart();
+
+	// Unitizing functions
+	void DAQ_Online();
+	void DAQ_Offline();
+	void Motion_Classification();
+	void Calculate_Motionwise_Mean_Std(UINT _motion_idx);
+
+	void Calculate_sEMG_MAV();
+	void Estimate_Motion_sEMG();
+	void Set_BallControl_Pos();
+	void Visualize_Polygon_sEMG();
+	void Visualize_Graph_Data();
 
 	// Initialization
 	void Initialize_Variable();
@@ -248,6 +380,12 @@ public:
 	// Dynamic allocation
 	void Dynamic_Allocation();
 	void Dynamic_Free();
+
+	// Set variables for loaded data
+	void Set_Loaded_Data();
+
+	// Set variables for loaded parameters
+	void Set_Loaded_Model_Parameters();
 
 	// MFC Controls
 	afx_msg void RadioCtrl(UINT ID);
@@ -265,6 +403,9 @@ public:
 
 	void Set_MFC_Control_Availability(bool _isAvailable);
 
+	void Set_loaded_Data_stack();
+	void Set_loaded_Param_stack();
+
 	// Utilities
 	void Set_Font(CButton& Btn_, UINT Height_, UINT Width_);
 	void Set_Font(CEdit& Text_, UINT Height_, UINT Width_);
@@ -275,13 +416,31 @@ public:
 	UINT Get_m_count();
 	bool Get_TimerStarted();
 	
+	UINT Get_m_radioTrainingMode();
+
+	UINT Get_Num_sEMG_CH();
 	const std::vector<double>* Get_sEMG_raw_stack();
 	const std::vector<double>* Get_sEMG_abs_stack();
 	const std::vector<double>* Get_sEMG_MAV_stack();
+	std::vector<double>** Get_sEMG_MAV_stack_motionwise();
 
-	const std::vector<double>* Get_Flex_raw_stack();
+	double** Get_sEMG_MAV_stack_motionwise_mean();
+	double** Get_sEMG_MAV_stack_motionwise_std();
+	std::vector<double>** Get_sEMG_MAV_stack_motionwise_mean_stack();
+	std::vector<double>** Get_sEMG_MAV_stack_motionwise_std_stack();
 
-	const std::vector<double>* Get_IMU_raw_stack();
+	double* Get_sEMG_boolean_Param();
+	double** Get_sEMG_mean_Param();
+	double** Get_sEMG_std_Param();
+
+	const std::vector<double>* Get_Finger_raw_stack();
+	const std::vector<double>* Get_Finger_slope_stack();
+	const std::vector<double>* Get_Wrist_raw_stack();
+	const std::vector<double>* Get_Wrist_slope_stack();
+	const std::vector<double>* Get_Elbow_raw_stack();
+	const std::vector<double>* Get_Elbow_slope_stack();
+	const std::vector<double>* Get_Shoulder_raw_stack();
+	const std::vector<double>* Get_Shoulder_slope_stack();
 
 	const std::vector<double>* Get_MotionLabel_stack();
 	const std::vector<double>* Get_MotionEstimation_stack();
@@ -291,21 +450,56 @@ public:
 	const std::vector<double>* Get_Rad_ball_stack();
 
 	// Stack & Save
-	void StackData (double* _sEMG_raw,
+	void StackData (double _m_time,
+					double _Time_DAQ_elapse,
+					double _Time_RTGraph_elapse,
+					double* _sEMG_raw,
 					double* _sEMG_abs,
 					double* _sEMG_MAV,
-					double* _Flex_raw,
-					double* _IMU_raw,
-					double _MotionLabel_current,
-					double _MotionEstimation_current,
+					double** _sEMG_MAV_stack_motionwise_mean,
+					double** _sEMG_MAV_stack_motionwise_std,
+					double* _Finger_raw,
+					double* _Finger_slope,
+					double* _Wrist_raw,
+					double* _Wrist_slope,
+					double* _Elbow_raw,
+					double* _Elbow_slope,
+					double* _Shoulder_raw,
+					double* _Shoulder_slope,
+					double* _MotionLabel_current,
+					double* _MotionEstimation_current,
 					double _X_pos,
 					double _Y_pos,
-					double _Rad,
+					double _Rad);
+	void StackData (double _m_time,
 					double _Time_DAQ_elapse,
-					double _Time_RTGraph_elapse);
+					double _Time_RTGraph_elapse,
+					double* _sEMG_MAV,
+					double** _sEMG_MAV_stack_motionwise_mean,
+					double** _sEMG_MAV_stack_motionwise_std,
+					double* _Finger_raw,
+					double* _Finger_slope,
+					double* _Wrist_raw,
+					double* _Wrist_slope,
+					double* _Elbow_raw,
+					double* _Elbow_slope,
+					double* _Shoulder_raw,
+					double* _Shoulder_slope,
+					double* _MotionLabel_current,
+					double* _MotionEstimation_current,
+					double _X_pos,
+					double _Y_pos,
+					double _Rad);
 	void SaveData(CString SaveFolderName);
+	void SaveParameters(CString SaveFolderName);
+	void SaveModel(CString SaveFolderName);
+
 	afx_msg void OnEnChangeEditNumSemgCh();
 	afx_msg void OnEnChangeEditNumFlexCh();
 	afx_msg void OnEnChangeEditNumImuCh();
 	afx_msg void OnBnClickedBtnParameterLoad();
+	afx_msg void OnEnChangeEditMavWinSize();
+	afx_msg void OnEnChangeEditSemgPolygonScale();
+	afx_msg void OnEnChangeEditNumElbowImuCh();
+	afx_msg void OnEnChangeEditNumShoulderImuCh();
 };

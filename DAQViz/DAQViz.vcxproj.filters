@@ -48,9 +48,6 @@
     <ClInclude Include="DAQVizChildOpenGL.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="DELSYSDAQ.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="SignalProcessor.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -73,9 +70,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ClippedGraph.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Animation.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
@@ -104,9 +98,6 @@
     <ClCompile Include="DAQVizChildOpenGL.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="DELSYSDAQ.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="SignalProcessor.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -132,9 +123,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="ClippedGraph.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Hand.cpp">

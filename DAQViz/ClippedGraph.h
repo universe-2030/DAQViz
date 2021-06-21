@@ -12,16 +12,18 @@
 
 #define MOVE_SCALE 0.002
 
-#define NUM_GRAPH_ANALYSIS 6
+#define NUM_GRAPH_ANALYSIS 8
 
-#define GRAPH_Y_LEN_TOTAL 0.75
-#define GRAPH_Y_INTERVAL_TOTAL 0.2
-#define GRAPH_Y_LEN_ANI 0.5
-#define GRAPH_Y_INTERVAL_ANI 0.15
+#define GRAPH_Y_LEN_TOTAL 0.6
+#define GRAPH_Y_INTERVAL_TOTAL 0.1
+#define GRAPH_Y_LEN_ANI 0.35
+#define GRAPH_Y_INTERVAL_ANI 0.05
 
-#define SEMG_VAL_MAX 1.0
-#define FLEX_VAL_MAX 1.5
-#define IMU_VAL_MAX 90.0
+#define SEMG_VAL_MAX 0.6
+#define FINGER_VAL_MAX 0.7
+#define FINGER_SLOPE_MAX 6
+#define WRIST_VAL_MAX 0.7
+#define WRIST_SLOPE_MAX 6
 #define MOTION_IDX_MAX 5.0
 
 #define NUM_CH 16
@@ -45,8 +47,10 @@ public:
 	ClippedGraph(int _m_Start_idx, int _m_End_idx,
 				int _m_Num_idx, int _Num_CH,
 				const std::vector<double>* _sEMG_plot,
-				const std::vector<double>* _Flex_plot,
-				const std::vector<double>* _IMU_plot,
+				const std::vector<double>* _Finger_plot,
+				const std::vector<double>* _Finger_slope_plot,
+				const std::vector<double>* _Wrist_plot,
+				const std::vector<double>* _Wrist_slope_plot,
 				const std::vector<double>* _MotionLabel_plot,
 				const std::vector<double>* _MotionEstimation_plot,
 				Render _species, CWnd* pParent = nullptr);   // 표준 생성자입니다.
@@ -64,6 +68,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	double X_Axis_start = -3.6f;
+	double X_Axis_end = 3.6f;
+
 	int m_Start_idx;
 	int m_End_idx;
 	int m_Num_idx;
@@ -84,8 +91,11 @@ private:
 
 	// Vector
 	const std::vector<double>* sEMG_plot;
-	const std::vector<double>* Flex_plot;
-	const std::vector<double>* IMU_plot;
+
+	const std::vector<double>* Finger_plot;
+	const std::vector<double>* Finger_slope_plot;
+	const std::vector<double>* Wrist_plot;
+	const std::vector<double>* Wrist_slope_plot;
 
 	const std::vector<double>* MotionLabel_plot;
 	const std::vector<double>* MotionEstimation_plot;
@@ -106,8 +116,13 @@ public:
 	void GLResize(int cx, int cy);
 	void GLRenderScene_Total();
 	void GLRenderScene_Animation();
+	// Only draw the polygon from current sEMG
 	void Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
-					double _X_center, double _Y_center, double _Rad);
+					double _X_center, double _Y_center, double _Rad, bool _Normalization);
+
+	// Draw 1) polygon from current sEMG and 2) 
+	void Plot_polygon(const double* data, const double* data_mean, int _m_StartIdx, int _m_EndIdx,
+					double _X_center, double _Y_center, double _Rad, bool _Normalization);
 
 	void Set_Current_idx(UINT _Current_idx);
 	void Set_TimeStep(UINT _TimeStep);

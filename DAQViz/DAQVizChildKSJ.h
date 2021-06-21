@@ -11,25 +11,33 @@
 
 // DAQVizChildKSJ 대화 상자
 
-#define SEMG_RAW_MIN -1.2
-#define SEMG_RAW_MAX 1.2
+#define SEMG_RAW_MIN -0.001
+#define SEMG_RAW_MAX 0.001
 
-#define SEMG_MAV_MIN 0.0
-#define SEMG_MAV_MAX 1.2
+ #define SEMG_MAV_MIN 0.0
+ #define SEMG_MAV_MAX 0.1
 
-#define FLEX_SENSOR_MIN -1.5
-#define FLEX_SENSOR_MAX 0.5
+#define FINGER_MIN -1.5
+#define FINGER_MAX 0.5
 
-#define IMU_MIN -180
-#define IMU_MAX 180
+#define FINGER_SLOPE_MIN -10.0
+#define FINGER_SLOPE_MAX 10.0
+
+#define WRIST_MIN -0.3
+#define WRIST_MAX 0.3
+
+#define WRIST_SLOPE_MIN -5.0
+#define WRIST_SLOPE_MAX 5.0
 
 #define LABEL_EST_MIN 0
-#define LABEL_EST_MAX 5
+#define LABEL_EST_MAX 7
 
 enum Graph_class {
 	SEMG_MAV,
-	FLEX_SENSOR,
-	IMU,
+	FINGER,
+	FINGER_SLOPE,
+	WRIST,
+	WRIST_SLOPE,
 	LABEL_EST
 };
 
@@ -59,8 +67,10 @@ private:
 	UINT* m_NumClicked;
 
 	COScopeCtrl** rtGraph_sEMG_MAV;
-	COScopeCtrl** rtGraph_Flex;
-	COScopeCtrl** rtGraph_IMU;
+	COScopeCtrl** rtGraph_Finger;
+	COScopeCtrl** rtGraph_Finger_slope;
+	COScopeCtrl** rtGraph_Wrist;
+	COScopeCtrl** rtGraph_Wrist_slope;
 	COScopeCtrl** rtGraph_Label_Est;
 
 	DAQVizChildOpenGL* p_ChildOpenGL;
@@ -95,20 +105,21 @@ public:
 	void Plot_graph(double* data, COScopeCtrl* rtGraph);
 
 	COScopeCtrl** Get_rtGraph_sEMG_MAV();
-	COScopeCtrl** Get_rtGraph_Flex();
-	COScopeCtrl** Get_rtGraph_IMU();
+	COScopeCtrl** Get_rtGraph_Finger();
+	COScopeCtrl** Get_rtGraph_Finger_slope();
+	COScopeCtrl** Get_rtGraph_Wrist();
+	COScopeCtrl** Get_rtGraph_Wrist_slope();
 	COScopeCtrl** Get_rtGraph_Label_Est();
 	DAQVizChildOpenGL* Get_OpenGLPointer();
-
-	void Set_sEMG_MAV(double* _sEMG_MAV);
 	
 	void Cursor_set(UINT graph_idx);
 	afx_msg void OnClickedGraphSemgMav1();
 	afx_msg void OnClickedGraphSemgMav2();
 	afx_msg void OnClickedGraphSemgMav3();
-	afx_msg void OnClickedGraphSemgMav4();
-	afx_msg void OnClickedGraphFlexSensor();
-	afx_msg void OnClickedGraphLogonuImu();
-	afx_msg void OnStnClickedGraphMotionLabelEst();
+	afx_msg void OnClickedGraphFingerFlex();
+	afx_msg void OnClickedGraphFingerFlexSlope();
+	afx_msg void OnClickedGraphWristFlex();
 	CStatic m_textBallControl;
+	afx_msg void OnClickedGraphWristFlexSlope();
+	afx_msg void OnClickedGraphMotionLabelEst();
 };

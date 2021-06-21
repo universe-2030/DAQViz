@@ -13,11 +13,14 @@ IMPLEMENT_DYNAMIC(DAQVizChildOpenGL, CDialogEx)
 DAQVizChildOpenGL::DAQVizChildOpenGL(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL, pParent) {
 	N_sEMG_CH = N_SEMG_CH;
+	sEMG_polygon_scale = 1.0;
 }
 
-DAQVizChildOpenGL::DAQVizChildOpenGL(int N_sEMG, CWnd* pParent /*=nullptr*/)
+DAQVizChildOpenGL::DAQVizChildOpenGL(int N_sEMG, int N_motions, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL, pParent) {
 	N_sEMG_CH = N_sEMG;
+	this->N_motions = N_motions;
+	sEMG_polygon_scale = 1.0;
 }
 
 DAQVizChildOpenGL::~DAQVizChildOpenGL() {
@@ -67,7 +70,6 @@ void DAQVizChildOpenGL::OnTimer(UINT_PTR nIDEvent) {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 
 	CDialogEx::OnTimer(nIDEvent);
-	count++;
 	this->Invalidate(FALSE);
 }
 
@@ -179,15 +181,165 @@ void DAQVizChildOpenGL::GLRenderScene(void) {
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	Plot_polygon(sEMG_data, 1, 16, 0.0, 0.38, 0.85);
+	Plot_polygon(sEMG_data, 1, N_sEMG_CH, 0.0, 0.75, 0.4, TRUE, TRUE, TRUE);
 
-	Plot_polygon(sEMG_data, 1, 5, -0.9, -0.75, 0.45);
-	Plot_polygon(sEMG_data, 6, 10, 0.0, -0.75, 0.45);
-	Plot_polygon(sEMG_data, 11, 16, 0.9, -0.75, 0.45);
+	// 1. Power grip
+	Plot_polygon(sEMG_data, sEMG_data_mean[0], 1, N_sEMG_CH, -0.95, 0.0, 0.4, TRUE, TRUE, TRUE);
+
+	// 2. Hand open
+	Plot_polygon(sEMG_data, sEMG_data_mean[1], 1, N_sEMG_CH, 0.0, 0.0, 0.4, TRUE, TRUE, TRUE);
+
+	// 3. Wrist flexion
+	Plot_polygon(sEMG_data, sEMG_data_mean[2], 1, N_sEMG_CH, 0.95, 0.0, 0.4, TRUE, TRUE, TRUE);
+
+	// 4. Wrist extension
+	Plot_polygon(sEMG_data, sEMG_data_mean[3], 1, N_sEMG_CH, -0.95, -0.75, 0.4, TRUE, TRUE, TRUE);
+
+	// 5. Radial deviation
+	Plot_polygon(sEMG_data, sEMG_data_mean[4], 1, N_sEMG_CH, 0.0, -0.75, 0.4, TRUE, TRUE, TRUE);
+
+	// 6. Ulnar deviation
+	Plot_polygon(sEMG_data, sEMG_data_mean[5], 1, N_sEMG_CH, 0.95, -0.75, 0.4, TRUE, TRUE, TRUE);
+}
+
+void DAQVizChildOpenGL::renderBitmapCharacter(float x, float y, float z, void* font, char* string) {
+	char* c;
+	glRasterPos3f(x, y, z);
+	for (c = string; *c != '\0'; c++)
+		glutBitmapCharacter(font, *c);
 }
 
 void DAQVizChildOpenGL::Plot_polygon(const double* data, int _m_StartIdx, int _m_EndIdx,
-									double _X_center, double _Y_center, double _Rad) {
+									double _X_center, double _Y_center, double _Rad,
+									bool _Normalization, bool _No_Normalization, bool _VertexSphere) {
+	glPushMatrix();
+
+	glEnable(GL_DEPTH_TEST);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+
+	glShadeModel(GL_FLAT);
+	glLoadIdentity();
+
+	gluLookAt(0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+	int Num_vertex = _m_EndIdx - _m_StartIdx + 1;
+
+	// Draw polygon frames
+	X_polygon = _X_center;
+	Y_polygon = _Y_center;
+	Rad_max = _Rad;
+
+	for (int i = 0; i < N_GRID_STEP; i++) {
+		if (i == N_GRID_STEP - 1)
+			glLineWidth(2.0);
+		else
+			glLineWidth(1.0);
+
+		glColor3f(0.0f, 0.0f, 0.0f);
+		double rad = Rad_max / (double)N_GRID_STEP * (i + 1);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < Num_vertex; j++) {
+			glVertex3f(X_polygon + rad * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				Y_polygon + 1 / fAspect * rad * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
+		}
+		glVertex3f(X_polygon + rad * cos(PI / 2.0), Y_polygon + 1 / fAspect * rad * sin(PI / 2.0), 0);
+		glEnd();
+	}
+
+	// Draw center - vertex lines
+	glLineWidth(0.1);
+	for (int i = 0; i < Num_vertex; i++) {
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(X_polygon, Y_polygon, 0);
+		glVertex3f(X_polygon + Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * i),
+				Y_polygon + Rad_max / fAspect * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * i),
+				0);
+		glEnd();
+	}
+
+	double* data_normalized = new double[Num_vertex];
+	double max_data = data[_m_StartIdx];
+	if (_Normalization) {
+		// Draw sEMG data (Normalization with maximum value being 1)
+		for (int i = 0; i < Num_vertex; i++)
+			if (data[i + _m_StartIdx - 1] >= max_data)
+				max_data = data[i + _m_StartIdx - 1];
+
+		for (int i = 0; i < Num_vertex; i++)
+			data_normalized[i] = abs(data[i + _m_StartIdx - 1]) / max_data;
+
+		glLineWidth(5.0);
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < Num_vertex; j++) {
+			glVertex3f(X_polygon + Rad_max * data_normalized[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				Y_polygon + Rad_max / fAspect * data_normalized[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
+
+		}
+		glVertex3f(X_polygon + Rad_max * data_normalized[0] * cos(PI / 2.0),
+			Y_polygon + Rad_max / fAspect * data_normalized[0] * sin(PI / 2.0),
+			0);
+		glEnd();
+	}
+
+	if (_No_Normalization) {
+		// Draw sEMG data (Not normalized)
+		glLineWidth(5.0);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
+			glVertex3f(X_polygon + sEMG_polygon_scale * Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				Y_polygon + sEMG_polygon_scale * Rad_max / fAspect * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				0);
+
+		}
+		glVertex3f(X_polygon + sEMG_polygon_scale * Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
+			Y_polygon + sEMG_polygon_scale * Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
+			0);
+		glEnd();
+	}
+
+	if (_VertexSphere) {
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glScalef(1.0, 1 / fAspect, 1.0);
+		for (int j = 0; j < Num_vertex; j++) {
+			glTranslatef(X_polygon + Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+						Y_polygon * fAspect +  Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+						0);
+			glutSolidSphere(data_normalized[j] * 0.035, 50, 50);
+			glTranslatef(- X_polygon - Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				- Y_polygon * fAspect - Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
+		}
+	}
+	delete data_normalized;
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	CString temp;
+	CString temp_2;
+	for (int i = 0; i < N_sEMG_CH; i++) {
+		temp = _T("CH ");
+		temp_2.Format(_T("%02d"), i + 1);
+		temp += temp_2;
+		
+		CStringA temp_CStringA = CStringA(temp);
+		const char* temp_char_const = temp_CStringA;
+		char* temp_char = const_cast<char*>(temp_char_const);
+
+		renderBitmapCharacter(X_polygon + 1.3 * Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * i) - 0.085,
+							Y_polygon * fAspect + 1.15 * Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * i) - 0.01,
+							0, GLUT_BITMAP_HELVETICA_12, temp_char);
+	}
+
+	glPopMatrix();
+	glFlush();
+}
+
+void DAQVizChildOpenGL::Plot_polygon(const double* data, const double* data_mean, int _m_StartIdx, int _m_EndIdx,
+									double _X_center, double _Y_center, double _Rad,
+									bool _Normalization, bool _No_Normalization, bool _VertexSphere) {
 	glPushMatrix();
 
 	glEnable(GL_DEPTH_TEST);
@@ -234,67 +386,119 @@ void DAQVizChildOpenGL::Plot_polygon(const double* data, int _m_StartIdx, int _m
 		glEnd();
 	}
 
-	// Draw sEMG data (Not normalized)
-	glLineWidth(5.0);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glBegin(GL_LINE_STRIP);
-	for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
-		glVertex3f(X_polygon + Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
-			Y_polygon + 1 / fAspect * Rad_max * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
-			0);
-
-	}
-	glVertex3f(X_polygon + Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
-		Y_polygon + Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
-		0);
-	glEnd();
-
-	// Draw sEMG data (Normalized)
 	double* data_normalized = new double[Num_vertex];
-	double sum_data = 0.0;
-	
-	for (int i = 0; i < Num_vertex; i++)
-		sum_data += abs(data[i + _m_StartIdx - 1]);
+	memset(data_normalized, 0.0, 2 * sizeof(data_normalized) * Num_vertex);
+	double max_data = data[_m_StartIdx];
+	double* data_mean_normalized = new double[Num_vertex];
+	memset(data_mean_normalized, 0.0, 2 * sizeof(data_mean_normalized) * Num_vertex);
+	double max_data_mean = data_mean[_m_StartIdx];
 
-	for (int i = 0; i < Num_vertex; i++)
-		data_normalized[i] = abs(data[i + _m_StartIdx - 1]) / sum_data;
+	if (_Normalization) {
+		// Draw sEMG data (Normalization with maximum value being 1)
+		for (int i = 0; i < Num_vertex; i++) {
+			if (data[i + _m_StartIdx - 1] >= max_data)
+				max_data = data[i + _m_StartIdx - 1];
+			if (data_mean[i + _m_StartIdx - 1] >= max_data_mean)
+				max_data_mean = data_mean[i + _m_StartIdx - 1];
+		}
 
-	glLineWidth(5.0);
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glBegin(GL_LINE_STRIP);
-	for (int j = 0; j < Num_vertex; j++) {
-		glVertex3f(X_polygon + Rad_max * data_normalized[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+		for (int i = 0; i < Num_vertex; i++) {
+			data_normalized[i] = abs(data[i + _m_StartIdx - 1]) / max_data;
+			data_mean_normalized[i] = abs(data_mean[i + _m_StartIdx - 1]) / max_data_mean;
+		}
+
+		glLineWidth(5.0);
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < Num_vertex; j++) {
+			glVertex3f(X_polygon + Rad_max * data_normalized[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				Y_polygon + Rad_max / fAspect * data_normalized[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
 				0);
 
-	}
-	glVertex3f(X_polygon + Rad_max * data_normalized[0] * cos(PI / 2.0),
+		}
+		glVertex3f(X_polygon + Rad_max * data_normalized[0] * cos(PI / 2.0),
 			Y_polygon + Rad_max / fAspect * data_normalized[0] * sin(PI / 2.0),
 			0);
-	glEnd();
+		glEnd();
+
+		glLineWidth(5.0);
+		glColor3f(0.0f, 0.0f, 1.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < Num_vertex; j++) {
+			glVertex3f(X_polygon + Rad_max * data_mean_normalized[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				Y_polygon + Rad_max / fAspect * data_mean_normalized[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
+
+		}
+		glVertex3f(X_polygon + Rad_max * data_mean_normalized[0] * cos(PI / 2.0),
+			Y_polygon + Rad_max / fAspect * data_mean_normalized[0] * sin(PI / 2.0),
+			0);
+		glEnd();
+	}
+
+	if (_No_Normalization) {
+		// Draw sEMG data (Not normalized)
+		glLineWidth(5.0);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		for (int j = _m_StartIdx - 1; j < _m_EndIdx; j++) {
+			glVertex3f(X_polygon + sEMG_polygon_scale * Rad_max * data[j] * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				Y_polygon + 1 / fAspect * sEMG_polygon_scale * Rad_max * data[j] * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * (j - _m_StartIdx + 1)),
+				0);
+
+		}
+		glVertex3f(X_polygon + sEMG_polygon_scale * Rad_max * data[_m_StartIdx - 1] * cos(PI / 2.0),
+			Y_polygon + sEMG_polygon_scale * Rad_max / fAspect * data[_m_StartIdx - 1] * sin(PI / 2.0),
+			0);
+		glEnd();
+	}
+
+	if (_VertexSphere) {
+		glColor3f(0.0f, 0.0f, 1.0f);
+		glScalef(1.0, 1 / fAspect, 1.0);
+		for (int j = 0; j < Num_vertex; j++) {
+			glTranslatef(X_polygon + Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				Y_polygon * fAspect + Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
+			glutSolidSphere(data_mean_normalized[j] * 0.035, 50, 50);
+			glTranslatef(-X_polygon - Rad_max * cos(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				-Y_polygon * fAspect - Rad_max * sin(PI / 2.0 + 2 / (double)Num_vertex * PI * j),
+				0);
+		}
+	}
+	delete data_normalized;
+	delete data_mean_normalized;
 
 	glPopMatrix();
 	glFlush();
-
-	delete data_normalized;
 }
 
 void DAQVizChildOpenGL::initialize_Variable() {
 	sEMG_data = new double[N_sEMG_CH];
 	memset(sEMG_data, 0.0, 2 * sizeof(sEMG_data) * N_sEMG_CH);
 
-	sEMG_data_normalized = new double[N_sEMG_CH];
-	memset(sEMG_data_normalized, 0.0, 2 * sizeof(sEMG_data_normalized) * N_sEMG_CH);
+	sEMG_data_mean = new double*[N_motions];
+	for (int i = 0; i < N_motions; i++) {
+		sEMG_data_mean[i] = new double[N_sEMG_CH];
+		memset(sEMG_data_mean[i], 0.0, 2 * sizeof(sEMG_data_mean[i]) * N_sEMG_CH);
+	}
+}
+
+void DAQVizChildOpenGL::Set_sEMG_polygon_scale(double _Polygon_scale) {
+	sEMG_polygon_scale = _Polygon_scale;
+}
+
+void DAQVizChildOpenGL::Set_N_sEMG_CH(int _N_sEMG_CH) {
+	N_sEMG_CH = _N_sEMG_CH;
 }
 
 void DAQVizChildOpenGL::Set_sEMG_data(double* _sEMG_input) {
 	for (int i = 0; i < N_sEMG_CH; i++)
 		sEMG_data[i] = _sEMG_input[i];
+}
 
-	double sum_sEMG_data = 0.0;
-	for (int i = 0; i < N_sEMG_CH; i++)
-		sum_sEMG_data += abs(sEMG_data[i]);
-
-	for (int i = 0; i < N_sEMG_CH; i++)
-		sEMG_data_normalized[i] = sEMG_data[i] / sum_sEMG_data;
+void DAQVizChildOpenGL::Set_sEMG_data_mean(double** _sEMG_mean_input) {
+	for (int i = 0; i < N_motions; i++)
+		for (int j = 0; j < N_sEMG_CH; j++)
+			sEMG_data_mean[i][j] = _sEMG_mean_input[i][j];
 }

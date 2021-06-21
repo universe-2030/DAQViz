@@ -36,7 +36,8 @@ DAQVizChildOpenGL2::DAQVizChildOpenGL2(CWnd* pParent /*=nullptr*/)
 
 DAQVizChildOpenGL2::DAQVizChildOpenGL2(int _m_Start_idx,
 								int _m_End_idx, int _m_Num_idx,
-								const std::vector<double>* _Flex_plot,
+								const std::vector<double>* _Finger_plot,
+								const std::vector<double>* _Wrist_plot,
 								Render_Hand _species, bool _b_glutInit,
 								CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG_CHILD_OPENGL_2, pParent) {
@@ -45,7 +46,8 @@ DAQVizChildOpenGL2::DAQVizChildOpenGL2(int _m_Start_idx,
 	m_End_idx = _m_End_idx;
 	m_Num_idx = _m_Num_idx;
 
-	Flex_plot = _Flex_plot;
+	Finger_plot = _Finger_plot;
+	Wrist_plot = _Wrist_plot;
 
 	species = _species;
 
@@ -134,21 +136,21 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 		if (pMainDlg->Get_TimerStarted()) {
 			//////////////////////////////////// Fingers ////////////////////////////////////
 			for (int i = 0; i < 5; i++) {
-				if (pMainDlg->Get_Flex_raw_stack()[i].size() > 0) {
-					UINT idx_temp = pMainDlg->Get_Flex_raw_stack()[i].size();
+				if (pMainDlg->Get_Finger_raw_stack()[i].size() > 0) {
+					UINT idx_temp = pMainDlg->Get_Finger_raw_stack()[i].size();
 
 					if (i > 0) {
-						root_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+						root_plot = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 						root_plot = rightHand.Get_root_init()[4 - i] -
-							(rightHand.Get_root_max()[4 - i] - rightHand.Get_root_init()[4 - i]) * root_plot / FLEX_ANALOG_ABS_MAX;
+							(rightHand.Get_root_max()[4 - i] - rightHand.Get_root_init()[4 - i]) * root_plot / FINGER_ANALOG_ABS_MAX;
 					}
 
-					first_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+					first_plot = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 					first_plot = rightHand.Get_first_init()[4 - i] -
-						(rightHand.Get_first_max()[4 - i] - rightHand.Get_first_init()[4 - i]) * first_plot / FLEX_ANALOG_ABS_MAX;
-					second_plot = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+						(rightHand.Get_first_max()[4 - i] - rightHand.Get_first_init()[4 - i]) * first_plot / FINGER_ANALOG_ABS_MAX;
+					second_plot = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 					second_plot = rightHand.Get_second_init()[4 - i] -
-						(rightHand.Get_second_max()[4 - i] - rightHand.Get_second_init()[4 - i]) * second_plot / FLEX_ANALOG_ABS_MAX;
+						(rightHand.Get_second_max()[4 - i] - rightHand.Get_second_init()[4 - i]) * second_plot / FINGER_ANALOG_ABS_MAX;
 
 					if (i == 0)
 						rightHand.ThumbRotatePos(first_plot, second_plot);
@@ -162,12 +164,52 @@ void DAQVizChildOpenGL2::Convert_jointangle() {
 						rightHand.PinkyRotatePos(root_plot, first_plot, second_plot);
 				}
 			}
-			////////////////////////////// Wrist Flexion & Extension //////////////////////////////
-			if (pMainDlg->Get_IMU_raw_stack()[0].size() > 0) {
-				UINT idx_temp = pMainDlg->Get_IMU_raw_stack()[0].size();
-				wrist_FE_plot = pMainDlg->Get_IMU_raw_stack()[0][idx_temp - 1];
+			//////////////////////////////////////////// Wrist ////////////////////////////////////////////
+			if (pMainDlg->Get_Wrist_raw_stack()[0].size() > 0) {
+				UINT idx_temp = pMainDlg->Get_Wrist_raw_stack()[0].size();
 
-				rightHand.WristRotatePos(wrist_FE_plot);
+				wrist_FE_plot = pMainDlg->Get_Wrist_raw_stack()[0][idx_temp - 1];
+				wrist_FE_plot = rightHand.Get_wrist_FE_init() -
+					(rightHand.Get_wrist_FE_max() - rightHand.Get_wrist_FE_init()) * wrist_FE_plot / WRIST_FE_ANALOG_ABS_MAX;
+
+				rightHand.WristFERotatePos(wrist_FE_plot);
+
+				idx_temp = pMainDlg->Get_Wrist_raw_stack()[1].size();
+
+				wrist_RU_plot = pMainDlg->Get_Wrist_raw_stack()[1][idx_temp - 1];
+				wrist_RU_plot = rightHand.Get_wrist_RU_init() -
+					(rightHand.Get_wrist_RU_max() - rightHand.Get_wrist_RU_init()) * wrist_RU_plot / WRIST_RU_ANALOG_ABS_MAX;
+
+				rightHand.WristRURotatePos(wrist_RU_plot);
+			}
+			//////////////////////////////////////////// Elbow ////////////////////////////////////////////
+			if (pMainDlg->Get_Elbow_raw_stack()[0].size() > 0) {
+				UINT idx_temp = pMainDlg->Get_Elbow_raw_stack()[0].size();
+				elbow_FE_plot = pMainDlg->Get_Elbow_raw_stack()[0][idx_temp - 1];
+				rightHand.ElbowFERotatePos(elbow_FE_plot);
+
+				idx_temp = pMainDlg->Get_Elbow_raw_stack()[1].size();
+				elbow_IE_plot = pMainDlg->Get_Elbow_raw_stack()[1][idx_temp - 1];
+				rightHand.ElbowIERotatePos(elbow_IE_plot);
+
+				idx_temp = pMainDlg->Get_Elbow_raw_stack()[2].size();
+				elbow_AA_plot = pMainDlg->Get_Elbow_raw_stack()[2][idx_temp - 1];
+				rightHand.ElbowAARotatePos(elbow_AA_plot);
+			}
+
+			/////////////////////////////////////////// Shoulder ///////////////////////////////////////////
+			if (pMainDlg->Get_Shoulder_raw_stack()[0].size() > 0) {
+				UINT idx_temp = pMainDlg->Get_Shoulder_raw_stack()[0].size();
+				shoulder_FE_plot = pMainDlg->Get_Shoulder_raw_stack()[0][idx_temp - 1];
+				rightHand.ShoulderFERotatePos(shoulder_FE_plot);
+
+				idx_temp = pMainDlg->Get_Shoulder_raw_stack()[1].size();
+				shoulder_IE_plot = pMainDlg->Get_Shoulder_raw_stack()[1][idx_temp - 1];
+				rightHand.ShoulderIERotatePos(shoulder_IE_plot);
+
+				idx_temp = pMainDlg->Get_Shoulder_raw_stack()[2].size();
+				shoulder_AA_plot = pMainDlg->Get_Shoulder_raw_stack()[2][idx_temp - 1];
+				rightHand.ShoulderAARotatePos(shoulder_AA_plot);
 			}
 		}
 	}
@@ -181,17 +223,17 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 
 			for (int i = 0; i < 5; i++) {
 				if (i > 0) {
-					root_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+					root_animation = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 					root_animation = rightHand_2.Get_root_init()[4 - i] -
-						(rightHand_2.Get_root_max()[4 - i] - rightHand_2.Get_root_init()[4 - i]) * root_animation / FLEX_ANALOG_ABS_MAX;
+						(rightHand_2.Get_root_max()[4 - i] - rightHand_2.Get_root_init()[4 - i]) * root_animation / FINGER_ANALOG_ABS_MAX;
 				}
 
-				first_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+				first_animation = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 				first_animation = rightHand_2.Get_first_init()[4 - i] -
-					(rightHand_2.Get_first_max()[4 - i] - rightHand_2.Get_first_init()[4 - i]) * first_animation / FLEX_ANALOG_ABS_MAX;
-				second_animation = pMainDlg->Get_Flex_raw_stack()[i][idx_temp - 1];
+					(rightHand_2.Get_first_max()[4 - i] - rightHand_2.Get_first_init()[4 - i]) * first_animation / FINGER_ANALOG_ABS_MAX;
+				second_animation = pMainDlg->Get_Finger_raw_stack()[i][idx_temp - 1];
 				second_animation = rightHand_2.Get_second_init()[4 - i] -
-					(rightHand_2.Get_second_max()[4 - i] - rightHand_2.Get_second_init()[4 - i]) * second_animation / FLEX_ANALOG_ABS_MAX;
+					(rightHand_2.Get_second_max()[4 - i] - rightHand_2.Get_second_init()[4 - i]) * second_animation / FINGER_ANALOG_ABS_MAX;
 
 				if (i == 0)
 					rightHand_2.ThumbRotatePos(first_animation, second_animation);
@@ -205,10 +247,38 @@ void DAQVizChildOpenGL2::Convert_jointangle(int _Current_idx) {
 					rightHand_2.PinkyRotatePos(root_animation, first_animation, second_animation);
 			}
 
-			////////////////////////////// Wrist Flexion & Extension //////////////////////////////
-			wrist_FE_plot = pMainDlg->Get_IMU_raw_stack()[0][idx_temp - 1];
+			///////////////////////////////////// Wrist /////////////////////////////////////
+			wrist_FE_plot = pMainDlg->Get_Wrist_raw_stack()[0][idx_temp - 1];
+			wrist_FE_plot = rightHand_2.Get_wrist_FE_init() -
+				(rightHand_2.Get_wrist_FE_max() - rightHand_2.Get_wrist_FE_init()) * wrist_FE_plot / WRIST_FE_ANALOG_ABS_MAX;
 
-			rightHand_2.WristRotatePos(wrist_FE_plot);
+			rightHand_2.WristFERotatePos(wrist_FE_plot);
+
+			wrist_RU_plot = pMainDlg->Get_Wrist_raw_stack()[1][idx_temp - 1];
+			wrist_RU_plot = rightHand_2.Get_wrist_RU_init() -
+				(rightHand_2.Get_wrist_RU_max() - rightHand_2.Get_wrist_RU_init()) * wrist_RU_plot / WRIST_RU_ANALOG_ABS_MAX;
+
+			rightHand_2.WristRURotatePos(wrist_RU_plot);
+
+			///////////////////////////////////// Elbow /////////////////////////////////////
+			elbow_FE_plot = pMainDlg->Get_Elbow_raw_stack()[0][idx_temp - 1];
+			rightHand_2.ElbowFERotatePos(elbow_FE_plot);
+
+			elbow_IE_plot = pMainDlg->Get_Elbow_raw_stack()[1][idx_temp - 1];
+			rightHand_2.ElbowIERotatePos(elbow_IE_plot);
+
+			elbow_AA_plot = pMainDlg->Get_Elbow_raw_stack()[2][idx_temp - 1];
+			rightHand_2.ElbowAARotatePos(elbow_AA_plot);
+
+			//////////////////////////////////// Shoulder ////////////////////////////////////
+			shoulder_FE_plot = pMainDlg->Get_Shoulder_raw_stack()[0][idx_temp - 1];
+			rightHand_2.ShoulderFERotatePos(shoulder_FE_plot);
+
+			shoulder_IE_plot = pMainDlg->Get_Shoulder_raw_stack()[1][idx_temp - 1];
+			rightHand_2.ShoulderIERotatePos(shoulder_IE_plot);
+
+			shoulder_AA_plot = pMainDlg->Get_Shoulder_raw_stack()[2][idx_temp - 1];
+			rightHand_2.ShoulderAARotatePos(shoulder_AA_plot);
 		}
 	}
 }
@@ -348,10 +418,9 @@ void DAQVizChildOpenGL2::SetupRC()
 	//	spheres[iSphere].SetOrigin(x, 0.0f, z);
 	//}
 
-	M3DVector3f up = { -0.614193, 0.690447, 0.382165 };
-	M3DVector3f origin = { 5.12, 7.09, -5.57 };
-	// M3DVector3f look = { -0.51938, -0.71827, 0.4629628 }; // Original look
-	M3DVector3f look = { -1.5, -0.81827, 0.4629628 };
+	M3DVector3f up = { -0.38, 0.86, -0.34 };
+	M3DVector3f origin = { 7.75, 13.81, 5.83 };
+	M3DVector3f look = { -0.49, -0.79, -0.72 };
 	frameCamera.SetForwardVector(look);
 	frameCamera.SetOrigin(origin);
 	frameCamera.SetUpVector(up);
