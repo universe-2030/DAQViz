@@ -2738,18 +2738,14 @@ void CDAQVizDlg::Visualize_Graph_Data() {
 	}
 	else if (pShared_Data->count % N_GRAPH == 1) {
 		for (int i = 0; i < 5; i++) {
-			// sEMG_MAV_plot_temp_2[i] = sEMG_MAV_plot[i + 5];
-			if (i <= 0 && i <= 2)
-				sEMG_MAV_plot_temp_2[i] = Elbow_data[i];
+			sEMG_MAV_plot_temp_2[i] = sEMG_MAV_plot[i + 5];
 		}
 
 		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp_2, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
 	}
 	else if (pShared_Data->count % N_GRAPH == 2) {
 		for (int i = 0; i < 6; i++) {
-			// sEMG_MAV_plot_temp_3[i] = sEMG_MAV_plot[i + 10];
-			if (i <= 0 && i <= 2)
-				sEMG_MAV_plot_temp_3[i] = Shoulder_data[i];
+			sEMG_MAV_plot_temp_3[i] = sEMG_MAV_plot[i + 10];
 		}
 		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp_3, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
 	}

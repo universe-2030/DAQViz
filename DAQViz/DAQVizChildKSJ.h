@@ -14,10 +14,8 @@
 #define SEMG_RAW_MIN -0.001
 #define SEMG_RAW_MAX 0.001
 
-//#define SEMG_MAV_MIN 0.0
-//#define SEMG_MAV_MAX 0.2
-#define SEMG_MAV_MIN -360.0
-#define SEMG_MAV_MAX 360.0
+#define SEMG_MAV_MIN 0.0
+#define SEMG_MAV_MAX 0.2
 
 #define FINGER_MIN -1.5
 #define FINGER_MAX 0.5
