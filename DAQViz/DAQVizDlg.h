@@ -40,7 +40,7 @@
 #define ELBOW_CH_MAX 3
 #define SHOULDER_CH_MAX 3
 
-#define DELSYS_CH_INIT 16
+#define DELSYS_CH_INIT 12
 #define FRANKFURT_CH_INIT 8
 #define FINGER_CH_INIT 5
 #define WRIST_CH_INIT 2
@@ -53,7 +53,7 @@
 
 #define MOTION_DOF 3
 
-#define SAVE_FOLDER_PATH_MACRO _T("E:/OneDrive - postech.ac.kr/연구/### 데이터/DAQViz data/")
+#define SAVE_FOLDER_PATH_MACRO _T("D:/DAQViz data/")
 
 #define X_POS_INIT 0.0
 #define X_POS_MIN -2.0
@@ -75,7 +75,8 @@
 #define MAX_FILES 1000
 #define MAX_PATH 150
 
-#define SEMG_CHANNEL_IDX { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }
+// #define SEMG_CHANNEL_IDX { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }
+#define SEMG_CHANNEL_IDX { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }
 
 #define SCALE_INIT 1.0
 
@@ -318,11 +319,13 @@ private:
 
 	float64* Elbow_data;
 	float64* Elbow_data_prev;
+	float64* Elbow_data_calib;
 	float64* Elbow_slope;
 	float64* Elbow_slope_prev;
 
 	float64* Shoulder_data;
 	float64* Shoulder_data_prev;
+	float64* Shoulder_data_calib;
 	float64* Shoulder_slope;
 	float64* Shoulder_slope_prev;
 

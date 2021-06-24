@@ -47,7 +47,7 @@ END_MESSAGE_MAP()
 CDAQVizDlg::CDAQVizDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG, pParent), 
 	m_radioTrainingMode(1), m_radioStreamingMode(0),
-	m_radioSaveMode(1), m_radiosEMGDAQDev(0),
+	m_radioSaveMode(0), m_radiosEMGDAQDev(0),
 	m_radioUseFingerFlex(0), m_radioUseWristFlex(0),
 	m_radioUseElbowIMU(0), m_radioUseShoulderIMU(0) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -351,7 +351,7 @@ void CDAQVizDlg::Initialize_GUI() {
 	p_ChildDlg_KSJ->ShowWindow(SW_SHOW);
 	p_ChildDlg_KSJ->MoveWindow(rectofDialogArea);
 
-	SetWindowPos(NULL, -1920, -1080, 0, 0, SWP_NOSIZE);
+	SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOSIZE);
 }
 
 void CDAQVizDlg::Initialize_SaveFolder() {
@@ -370,19 +370,19 @@ void CDAQVizDlg::Initialize_SaveFolder() {
 	strftime(timeDateBuf, sizeof(timeDateBuf), "%H%M%S", &tstruct);
 	SaveFolderName += timeDateBuf;
 
-	if (m_radioSaveMode == 0) {
+	if (m_radioTrainingMode == 0) {
 		if (m_radioStreamingMode == 0)
 			SaveFolderPath = SaveFolderPath_Main + SaveFolderName + _T("_Unsupervised_Online");
 		else if (m_radioStreamingMode == 1)
 			SaveFolderPath = SaveFolderPath_Main + SaveFolderName + _T("_Unsupervised_Offline");
 	}
-	else if (m_radioSaveMode == 1) {
+	else if (m_radioTrainingMode == 1) {
 		if (m_radioStreamingMode == 0)
 			SaveFolderPath = SaveFolderPath_Main + SaveFolderName + _T("_Training_Online");
 		else if (m_radioStreamingMode == 1)
 			SaveFolderPath = SaveFolderPath_Main + SaveFolderName + _T("_Training_Offline");
 	}
-	else if (m_radioSaveMode == 2) {
+	else if (m_radioTrainingMode == 2) {
 		if (m_radioStreamingMode == 0)
 			SaveFolderPath = SaveFolderPath_Main + SaveFolderName + _T("_Test_Online");
 		else if (m_radioStreamingMode == 1)
@@ -443,6 +443,8 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	memset(Elbow_data, 0.0, 2 * sizeof(Elbow_data) * Num_Elbow_CH);
 	Elbow_data_prev = new float64[Num_Elbow_CH];
 	memset(Elbow_data_prev, 0.0, 2 * sizeof(Elbow_data_prev) * Num_Elbow_CH);
+	Elbow_data_calib = new float64[Num_Elbow_CH];
+	memset(Elbow_data_calib, 0.0, 2 * sizeof(Elbow_data_calib) * Num_Elbow_CH);
 	Elbow_slope = new float64[Num_Elbow_CH];
 	memset(Elbow_slope, 0.0, 2 * sizeof(Elbow_slope) * Num_Elbow_CH);
 	Elbow_slope_prev = new float64[Num_Elbow_CH];
@@ -452,6 +454,8 @@ void CDAQVizDlg::Dynamic_Allocation() {
 	memset(Shoulder_data, 0.0, 2 * sizeof(Shoulder_data) * Num_Shoulder_CH);
 	Shoulder_data_prev = new float64[Num_Shoulder_CH];
 	memset(Shoulder_data_prev, 0.0, 2 * sizeof(Shoulder_data_prev) * Num_Shoulder_CH);
+	Shoulder_data_calib = new float64[Num_Shoulder_CH];
+	memset(Shoulder_data_calib, 0.0, 2 * sizeof(Shoulder_data_calib) * Num_Shoulder_CH);
 	Shoulder_slope = new float64[Num_Shoulder_CH];
 	memset(Shoulder_slope, 0.0, 2 * sizeof(Shoulder_slope) * Num_Shoulder_CH);
 	Shoulder_slope_prev = new float64[Num_Shoulder_CH];
@@ -533,6 +537,18 @@ void CDAQVizDlg::Dynamic_Free() {
 	delete Finger_slope;
 	delete Wrist_data;
 	delete Wrist_slope;
+
+	delete Elbow_data;
+	delete Elbow_data_prev;
+	delete Elbow_data_calib;
+	delete Elbow_slope;
+	delete Elbow_slope_prev;
+
+	delete Shoulder_data;
+	delete Shoulder_data_prev;
+	delete Shoulder_data_calib;
+	delete Shoulder_slope;
+	delete Shoulder_slope_prev;
 }
 
 void CDAQVizDlg::Set_Font(CButton& Btn_, UINT Height_, UINT Width_) {
@@ -1199,97 +1215,19 @@ void CDAQVizDlg::DAQ_Online() {
 	AI_Flex->ReadOneStep();
 	Flex_data = AI_Flex->Get_m_ReadValue();
 
-	if (pShared_Data->time < CALI_START) {
-		m_time = 0.0;
-		m_count = 0;
-	}
-	else if (CALI_START <= pShared_Data->time && pShared_Data->time <= CALI_END) {
-		if (pShared_Data->count == CALI_START * 1000) {
-			m_editStatusBar.SetWindowText(stat += "[USER] Calibration start \r\n");
-			m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
-		}
-
-		cali_count++;
-		// Calibration DAQ - sEMG baseline
-		for (int i = 0; i < Num_sEMG_CH; i++)
-			sEMG_MAV_plot_baseline[i] += sEMG_MAV_plot[i];
-
-		// Calibration DAQ - Flex
-		for (int i = 0; i < Num_Flex_CH; i++)
-			Flex_data_calib[i] += Flex_data[i];
-
-		if (pShared_Data->count == CALI_END * 1000) {
-			for (int i = 0; i < Num_sEMG_CH; i++)
-				sEMG_MAV_plot_baseline[i] /= (double)cali_count;
-
-			for (int i = 0; i < Num_Flex_CH; i++)
-				Flex_data_calib[i] /= (double)cali_count;
-
-			m_editStatusBar.SetWindowText(stat += "[USER] Calibration end \r\n");
-			m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
-		}
-
-		m_time = 0.0;
-		m_count = 0;
-	}
-	else {
-		for (int i = 0; i < Num_sEMG_CH; i++)
-			sEMG_MAV_plot[i] = abs(sEMG_MAV_plot[i] - sEMG_MAV_plot_baseline[i]);
-
-		for (int i = 0; i < Num_Flex_CH; i++)
-			Flex_data[i] -= Flex_data_calib[i];
-
-		m_time = pShared_Data->time - CALI_END;
-		m_count = pShared_Data->count - CALI_END * 1000;
-	}
-
-	// Flex slope data
-	if (m_count == 1) {
-		for (int i = 0; i < Num_Flex_CH; i++) {
-			Flex_slope[i] = SigProc->FilteredDerivative(Flex_data[i],
-				Flex_data[i], Flex_slope_prev[i]);
-			Flex_data_prev[i] = Flex_data[i];
-			Flex_slope_prev[i] = Flex_slope[i];
-		}
-	}
-	else {
-		for (int i = 0; i < Num_Flex_CH; i++) {
-			Flex_slope[i] = SigProc->FilteredDerivative(Flex_data_prev[i],
-				Flex_data[i], Flex_slope_prev[i]);
-			Flex_data_prev[i] = Flex_data[i];
-			Flex_slope_prev[i] = Flex_slope[i];
-		}
-	}
-
-	// Finger & wrist data
-	for (int i = 0; i < Num_Flex_CH; i++) {
-		if (0 <= i && i < Num_Finger_CH)
-			Finger_data[i] = Flex_data[i];
-		else if (Num_Finger_CH <= i && i < Num_Flex_CH)
-			Wrist_data[i - Num_Finger_CH] = Flex_data[i];
-	}
-
-	// Finger & wrist slope
-	for (int i = 0; i < Num_Flex_CH; i++) {
-		if (0 <= i && i < Num_Finger_CH)
-			Finger_slope[i] = Flex_slope[i];
-		else if (Num_Finger_CH <= i && i < Num_Flex_CH)
-			Wrist_slope[i - Num_Finger_CH] = Flex_slope[i];
-	}
-
 	//////////////////////// IMU data (Shoulder + Elbow) ////////////////////////
 	if (isMATCHconnected) {
 		MATCH_Dev->GetSensorData();
 
 		////////////////////////// Shoulder data //////////////////////////
-		UINT CH_idx_0 = 2;
-		UINT CH_idx_1 = 4;
+		UINT CH_idx_0 = 3;
+		UINT CH_idx_1 = 7;
 		Shoulder_data[0] = MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1))
-								- MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1));
+			- MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1)); //어깨관절과 윗팔 각도(0)
 
 		if (Num_Shoulder_CH >= 2) {
 			Shoulder_data[1] = -(MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1) + 2)
-								- MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1) + 2));
+				- MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1) + 2)); //어깨의 y축 각도
 		}
 		else {
 			Shoulder_data[1] = 0.0;
@@ -1297,20 +1235,20 @@ void CDAQVizDlg::DAQ_Online() {
 
 		if (Num_Shoulder_CH >= 3) {
 			Shoulder_data[2] = -(MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1) + 1)
-								- MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1) + 1));
+				- MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1) + 1)); //??? (0)
 		}
 		else {
 			Shoulder_data[2] = 0.0;
 		}
 
 		//////////////////////////// Elbow data ////////////////////////////
-		UINT CH_idx_2 = 3;
+		UINT CH_idx_2 = 5;
 		Elbow_data[0] = MATCH_Dev->Get_aEuler(3 * (CH_idx_2 - 1))
-								- MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1)) - 70;
+			- MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1)) - 90; //팔의 긴축 회전 담당
 
 		if (Num_Shoulder_CH >= 2) {
 			Elbow_data[1] = -(MATCH_Dev->Get_aEuler(3 * (CH_idx_2 - 1) + 2)
-								- MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1) + 2));
+				- MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1) + 2)); //+90도면 팔이 뒤로감
 		}
 		else {
 			Elbow_data[1] = 0.0;
@@ -1318,7 +1256,7 @@ void CDAQVizDlg::DAQ_Online() {
 
 		if (Num_Shoulder_CH >= 3) {
 			Elbow_data[2] = -(MATCH_Dev->Get_aEuler(3 * (CH_idx_2 - 1) + 1)
-								- MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1) + 1));
+				- MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1) + 1));
 		}
 		else {
 			Elbow_data[2] = 0.0;
@@ -1359,6 +1297,110 @@ void CDAQVizDlg::DAQ_Online() {
 				Elbow_slope_prev[i] = Elbow_slope[i];
 			}
 		}
+	}
+
+	if (pShared_Data->time < CALI_START) {
+		m_time = 0.0;
+		m_count = 0;
+	}
+	else if (CALI_START <= pShared_Data->time && pShared_Data->time <= CALI_END) {
+		if (pShared_Data->count == CALI_START * 1000) {
+			m_editStatusBar.SetWindowText(stat += "[USER] Calibration start \r\n");
+			m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+		}
+
+		cali_count++;
+		// Calibration DAQ - sEMG baseline
+		for (int i = 0; i < Num_sEMG_CH; i++)
+			sEMG_MAV_plot_baseline[i] += sEMG_MAV_plot[i];
+
+		// Calibration DAQ - Flex
+		for (int i = 0; i < Num_Flex_CH; i++)
+			Flex_data_calib[i] += Flex_data[i];
+
+		// Calibration DAQ - Elbow (IMU)
+		for (int i = 0; i < Num_Elbow_CH; i++) {
+			Elbow_data_calib[i] += Elbow_data[i];
+		}
+
+		// Calibration DAQ - Shoulder (IMU)
+		for (int i = 0; i < Num_Elbow_CH; i++) {
+			Shoulder_data_calib[i] += Shoulder_data[i];
+		}
+
+		if (pShared_Data->count == CALI_END * 1000) {
+			for (int i = 0; i < Num_sEMG_CH; i++)
+				sEMG_MAV_plot_baseline[i] /= (double)cali_count;
+
+			for (int i = 0; i < Num_Flex_CH; i++)
+				Flex_data_calib[i] /= (double)cali_count;
+
+			for (int i = 0; i < Num_Elbow_CH; i++)
+				Elbow_data_calib[i] /= (double)cali_count;
+
+			for (int i = 0; i < Num_Shoulder_CH; i++)
+				Shoulder_data_calib[i] /= (double)cali_count;
+
+			m_editStatusBar.SetWindowText(stat += "[USER] Calibration end \r\n");
+			m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
+		}
+
+		m_time = 0.0;
+		m_count = 0;
+	}
+	else {
+		for (int i = 0; i < Num_sEMG_CH; i++)
+			sEMG_MAV_plot[i] = abs(sEMG_MAV_plot[i] - sEMG_MAV_plot_baseline[i]);
+
+		for (int i = 0; i < Num_Flex_CH; i++)
+			Flex_data[i] -= Flex_data_calib[i];
+
+		for (int i = 0; i < Num_Elbow_CH; i++) {
+			if (i == 0)
+				Elbow_data[i] -= Elbow_data_calib[i] + 70;
+			else
+				Elbow_data[i] -= Elbow_data_calib[i];
+		};
+
+		for (int i = 0; i < Num_Shoulder_CH; i++)
+			Shoulder_data[i] -= Shoulder_data_calib[i];
+
+		m_time = pShared_Data->time - CALI_END;
+		m_count = pShared_Data->count - CALI_END * 1000;
+	}
+
+	// Flex slope data
+	if (m_count == 1) {
+		for (int i = 0; i < Num_Flex_CH; i++) {
+			Flex_slope[i] = SigProc->FilteredDerivative(Flex_data[i],
+				Flex_data[i], Flex_slope_prev[i]);
+			Flex_data_prev[i] = Flex_data[i];
+			Flex_slope_prev[i] = Flex_slope[i];
+		}
+	}
+	else {
+		for (int i = 0; i < Num_Flex_CH; i++) {
+			Flex_slope[i] = SigProc->FilteredDerivative(Flex_data_prev[i],
+				Flex_data[i], Flex_slope_prev[i]);
+			Flex_data_prev[i] = Flex_data[i];
+			Flex_slope_prev[i] = Flex_slope[i];
+		}
+	}
+
+	// Finger & wrist data
+	for (int i = 0; i < Num_Flex_CH; i++) {
+		if (0 <= i && i < Num_Finger_CH)
+			Finger_data[i] = Flex_data[i];
+		else if (Num_Finger_CH <= i && i < Num_Flex_CH)
+			Wrist_data[i - Num_Finger_CH] = Flex_data[i];
+	}
+
+	// Finger & wrist slope
+	for (int i = 0; i < Num_Flex_CH; i++) {
+		if (0 <= i && i < Num_Finger_CH)
+			Finger_slope[i] = Flex_slope[i];
+		else if (Num_Finger_CH <= i && i < Num_Flex_CH)
+			Wrist_slope[i - Num_Finger_CH] = Flex_slope[i];
 	}
 
 	/////////////////////////// Motion classification ///////////////////////////
@@ -2683,21 +2725,33 @@ void CDAQVizDlg::Visualize_Polygon_sEMG() {
 
 void CDAQVizDlg::Visualize_Graph_Data() {
 	double* sEMG_MAV_plot_temp = new double[5];
-	double* sEMG_MAV_plot_temp_2 = new double[6];
+	memset(sEMG_MAV_plot_temp, 0.0, 2 * sizeof(sEMG_MAV_plot_temp) * 5);
+	double* sEMG_MAV_plot_temp_2 = new double[5];
+	memset(sEMG_MAV_plot_temp_2, 0.0, 2 * sizeof(sEMG_MAV_plot_temp_2) * 5);
+	double* sEMG_MAV_plot_temp_3 = new double[6];
+	memset(sEMG_MAV_plot_temp_3, 0.0, 2 * sizeof(sEMG_MAV_plot_temp_3) * 6);
 	if (pShared_Data->count % N_GRAPH == 0) {
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 5; i++) {
 			sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i];
+		}
 		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[0]);
 	}
 	else if (pShared_Data->count % N_GRAPH == 1) {
-		for (int i = 0; i < 5; i++)
-			sEMG_MAV_plot_temp[i] = sEMG_MAV_plot[i + 5];
-		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
+		for (int i = 0; i < 5; i++) {
+			// sEMG_MAV_plot_temp_2[i] = sEMG_MAV_plot[i + 5];
+			if (i <= 0 && i <= 2)
+				sEMG_MAV_plot_temp_2[i] = Elbow_data[i];
+		}
+
+		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp_2, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[1]);
 	}
 	else if (pShared_Data->count % N_GRAPH == 2) {
-		for (int i = 0; i < 6; i++)
-			sEMG_MAV_plot_temp_2[i] = sEMG_MAV_plot[i + 10];
-		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp_2, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
+		for (int i = 0; i < 6; i++) {
+			// sEMG_MAV_plot_temp_3[i] = sEMG_MAV_plot[i + 10];
+			if (i <= 0 && i <= 2)
+				sEMG_MAV_plot_temp_3[i] = Shoulder_data[i];
+		}
+		p_ChildDlg_KSJ->Plot_graph(sEMG_MAV_plot_temp_3, p_ChildDlg_KSJ->Get_rtGraph_sEMG_MAV()[2]);
 	}
 	else if (pShared_Data->count % N_GRAPH == 3) {
 		p_ChildDlg_KSJ->Plot_graph(Finger_data, p_ChildDlg_KSJ->Get_rtGraph_Finger()[0]);
@@ -2716,6 +2770,7 @@ void CDAQVizDlg::Visualize_Graph_Data() {
 	}
 	delete sEMG_MAV_plot_temp;
 	delete sEMG_MAV_plot_temp_2;
+	delete sEMG_MAV_plot_temp_3;
 }
 
 void CDAQVizDlg::OnEnChangeEditSemgPolygonScale() {

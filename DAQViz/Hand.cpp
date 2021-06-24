@@ -127,12 +127,12 @@ Hand::Hand(GLFrame* obj) {
 	elbow_AA_init = 0;
 
 	elbow_FE_min = -60;
-	elbow_IE_min = -60;
-	elbow_AA_min = -60;
+	elbow_IE_min = -90;
+	elbow_AA_min = -90;
 
-	elbow_FE_max = 55;
-	elbow_IE_max = 55;
-	elbow_AA_max = 55;
+	elbow_FE_max = 60;
+	elbow_IE_max = 90;
+	elbow_AA_max = 90;
 
 	//////////////////////////////////////////////////////////////////////////
 	shoulder_FE = 0;
@@ -147,7 +147,7 @@ Hand::Hand(GLFrame* obj) {
 	shoulder_IE_min = -45;
 	shoulder_AA_min = 0;
 
-	shoulder_FE_max = 90;
+	shoulder_FE_max = 180;
 	shoulder_IE_max = 90;
 	shoulder_AA_max = 80;
 }
@@ -164,68 +164,68 @@ void Hand::WristFERotatePos(float pos) {
 	index = 14;
 	setJointIndex(index); // Wrist index
 	wrist_FE = pos;
-	if (wrist_FE >= wrist_FE_max)
+	/*if (wrist_FE >= wrist_FE_max)
 		wrist_FE = wrist_FE_max;
 	else if (wrist_FE <= wrist_FE_min)
-		wrist_FE = wrist_FE_min;
+		wrist_FE = wrist_FE_min;*/
 }
 
 void Hand::WristRURotatePos(float pos) {
 	index = 15;
 	setJointIndex(index); // Wrist index
 	wrist_RU = pos;
-	if (wrist_RU >= wrist_RU_max)
+	/*if (wrist_RU >= wrist_RU_max)
 		wrist_RU = wrist_RU_max;
 	else if (wrist_RU <= wrist_RU_min)
-		wrist_RU = wrist_RU_min;
+		wrist_RU = wrist_RU_min;*/
 }
 
 void Hand::ElbowFERotatePos(float pos) {
 	elbow_FE = pos;
-	if (elbow_FE >= elbow_FE_max)
+	/*if (elbow_FE >= elbow_FE_max)
 		elbow_FE = elbow_FE_max;
 	else if (elbow_FE <= elbow_FE_min)
-		elbow_FE = elbow_FE_min;
+		elbow_FE = elbow_FE_min;*/
 }
 
 void Hand::ElbowIERotatePos(float pos) {
 	elbow_IE = pos;
-	if (elbow_IE >= elbow_IE_max)
+	/*if (elbow_IE >= elbow_IE_max)
 		elbow_IE = elbow_IE_max;
 	else if (elbow_IE <= elbow_IE_min)
-		elbow_IE = elbow_IE_min;
+		elbow_IE = elbow_IE_min;*/
 }
 
 void Hand::ElbowAARotatePos(float pos) {
 	elbow_AA = pos;
-	if (elbow_AA >= elbow_AA_max)
+	/*if (elbow_AA >= elbow_AA_max)
 		elbow_AA = elbow_AA_max;
 	else if (elbow_AA <= elbow_AA_min)
-		elbow_AA = elbow_AA_min;
+		elbow_AA = elbow_AA_min;*/
 }
 
 void Hand::ShoulderFERotatePos(float pos) {
 	shoulder_FE = pos;
-	if (shoulder_FE >= shoulder_FE_max)
+	/*if (shoulder_FE >= shoulder_FE_max)
 		shoulder_FE = shoulder_FE_max;
 	else if (shoulder_FE <= shoulder_FE_min)
-		shoulder_FE = shoulder_FE_min;
+		shoulder_FE = shoulder_FE_min;*/
 }
 
 void Hand::ShoulderIERotatePos(float pos) {
 	shoulder_IE = pos;
-	if (shoulder_IE >= shoulder_IE_max)
+	/*if (shoulder_IE >= shoulder_IE_max)
 		shoulder_IE = shoulder_IE_max;
 	else if (shoulder_IE <= shoulder_IE_min)
-		shoulder_IE = shoulder_IE_min;
+		shoulder_IE = shoulder_IE_min;*/
 }
 
 void Hand::ShoulderAARotatePos(float pos) {
 	shoulder_AA = pos;
-	if (shoulder_AA >= shoulder_AA_max)
+	/*if (shoulder_AA >= shoulder_AA_max)
 		shoulder_AA = shoulder_AA_max;
 	else if (shoulder_AA <= shoulder_AA_min)
-		shoulder_AA = shoulder_AA_min;
+		shoulder_AA = shoulder_AA_min;*/
 }
 
 void Hand::ThumbRotatePos(float pos1, float pos2) {
