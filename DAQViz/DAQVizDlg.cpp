@@ -1220,8 +1220,8 @@ void CDAQVizDlg::DAQ_Online() {
 		MATCH_Dev->GetSensorData();
 
 		////////////////////////// Shoulder data //////////////////////////
-		UINT CH_idx_0 = 3;
-		UINT CH_idx_1 = 7;
+		UINT CH_idx_0 = 6; //허리
+		UINT CH_idx_1 = 8; // 어깨
 		Shoulder_data[0] = MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1))
 			- MATCH_Dev->Get_aEuler(3 * (CH_idx_0 - 1)); //어깨관절과 윗팔 각도(0)
 
@@ -1242,7 +1242,7 @@ void CDAQVizDlg::DAQ_Online() {
 		}
 
 		//////////////////////////// Elbow data ////////////////////////////
-		UINT CH_idx_2 = 5;
+		UINT CH_idx_2 = 5; // 손목
 		Elbow_data[0] = MATCH_Dev->Get_aEuler(3 * (CH_idx_2 - 1))
 			- MATCH_Dev->Get_aEuler(3 * (CH_idx_1 - 1)) - 90; //팔의 긴축 회전 담당
 
@@ -1357,7 +1357,7 @@ void CDAQVizDlg::DAQ_Online() {
 
 		for (int i = 0; i < Num_Elbow_CH; i++) {
 			if (i == 0)
-				Elbow_data[i] -= Elbow_data_calib[i] + 70;
+				Elbow_data[i] -= Elbow_data_calib[i] + 75;
 			else
 				Elbow_data[i] -= Elbow_data_calib[i];
 		};
