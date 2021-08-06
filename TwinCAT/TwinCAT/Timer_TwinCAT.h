@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define ENDTIME		300
+#define ENDTIME		30000
 #define TIMESTEP	0.001
 
 #define THREAD_MAIN		0

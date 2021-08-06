@@ -47,7 +47,7 @@ END_MESSAGE_MAP()
 CDAQVizDlg::CDAQVizDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DAQVIZ_DIALOG, pParent), 
 	m_radioTrainingMode(1), m_radioStreamingMode(0),
-	m_radioSaveMode(0), m_radiosEMGDAQDev(0),
+	m_radioSaveMode(1), m_radiosEMGDAQDev(0),
 	m_radioUseFingerFlex(0), m_radioUseWristFlex(0),
 	m_radioUseElbowIMU(0), m_radioUseShoulderIMU(0) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -183,8 +183,9 @@ BOOL CDAQVizDlg::OnInitDialog()
 	Initialize_NI();
 	Initialize_GUI();
 	Initialize_MFC();
-	Initialize_SaveFolder();
 	Initialize_LogonU();
+
+	m_editSaveFolderPath.SetWindowText(SAVE_FOLDER_PATH_MACRO);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -551,6 +552,53 @@ void CDAQVizDlg::Dynamic_Free() {
 	delete Shoulder_slope_prev;
 }
 
+void CDAQVizDlg::Vector_Free() {
+	Time_stack.clear();
+	Time_DAQ_elapse_stack.clear();
+	Time_RTGraph_elapse_stack.clear();
+
+	for (int i = 0; i < Num_sEMG_CH; i++) {
+		sEMG_raw_stack[i].clear();
+		sEMG_abs_stack[i].clear();
+		sEMG_MAV_stack[i].clear();
+	}
+
+	for (int i = 0; i < N_MOTIONS; i++)
+		for (int j = 0; j < Num_sEMG_CH; j++) {
+			sEMG_MAV_stack_motionwise_mean_stack[i][j].clear();
+			sEMG_MAV_stack_motionwise_std_stack[i][j].clear();
+		}
+
+	for (int i = 0; i < Num_Finger_CH; i++) {
+		Finger_raw_stack[i].clear();
+		Finger_slope_stack[i].clear();
+	}
+
+	for (int i = 0; i < Num_Wrist_CH; i++) {
+		Wrist_raw_stack[i].clear();
+		Wrist_slope_stack[i].clear();
+	}
+
+	for (int i = 0; i < Num_Elbow_CH; i++) {
+		Elbow_raw_stack[i].clear();
+		Elbow_slope_stack[i].clear();
+	}
+
+	for (int i = 0; i < Num_Shoulder_CH; i++) {
+		Shoulder_raw_stack[i].clear();
+		Shoulder_slope_stack[i].clear();
+	}
+
+	for (int i = 0; i < MOTION_DOF; i++) {
+		MotionLabel[i].clear();
+		MotionEstimation[i].clear();
+	}
+
+	X_pos_ball_stack[0].clear();
+	Y_pos_ball_stack[0].clear();
+	Rad_ball_stack[0].clear();
+}
+
 void CDAQVizDlg::Set_Font(CButton& Btn_, UINT Height_, UINT Width_) {
 	CFont Font_;
 	Font_.CreateFont(Height_, Width_,
@@ -588,10 +636,13 @@ void CDAQVizDlg::Set_Font(CStatic& Text_, UINT Height_, UINT Width_) {
 
 void CDAQVizDlg::OnBnClickedBtnSwitch() {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	if (!m_flag_Switch) { // Turned OFF -> ON
-		if (!TimerStarted) {
+	if (!m_flag_Switch) { // Turn OFF -> Turn ON
+		if (!TimerStarted) { // 처음 시작하는 경우
 			TimerStarted = TRUE;
-			
+
+			// Set save folder path
+			Initialize_SaveFolder();
+
 			// Dynamic allocation of variables
 			Dynamic_Allocation();
 
@@ -609,7 +660,24 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 
 			AfxBeginThread(MainThreadFunc, this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 		}
-		else {
+		else if (TimerStarted && m_radioSaveMode == 1) { // 중간에 정지했다가 다시 시작하는 경우 (저장 ㅇ)
+			g_csExitThread.Lock();
+			pShared_Data->bContinue = TRUE;
+			g_csExitThread.Unlock();
+
+			// Set save folder path
+			Initialize_SaveFolder();
+
+			// Clear the vectors
+			Vector_Free();
+
+			if (sEMG_Win_size != sEMG_Win_size_prev) {
+				sEMG_Win_size_history.push_back(sEMG_Win_size);
+				sEMG_Win_size_time.push_back(m_time);
+			}
+			sEMG_Win_size_prev = sEMG_Win_size;
+		}
+		else { // 중간에 정지했다가 다시 시작하는 경우 (저장 X)
 			g_csExitThread.Lock();
 			pShared_Data->bContinue = TRUE;
 			g_csExitThread.Unlock();
@@ -635,6 +703,11 @@ void CDAQVizDlg::OnBnClickedBtnSwitch() {
 		pShared_Data->bContinue = FALSE;
 		g_csExitThread.Unlock();
 		m_flag_Switch = FALSE;
+
+		if (m_radioSaveMode == 0 || m_radioSaveMode == 1) {
+			// Save the data
+			SaveData(SaveFolderPath);
+		}
 	}
 }
 
@@ -1181,9 +1254,6 @@ int CDAQVizDlg::MainStart() {
 
 	Set_MFC_Control_Availability(FALSE);
 
-	// Save the data
-	SaveData(SaveFolderPath);
-
 	m_btnSwitch.SetWindowText(_T("End"));
 	m_btnSwitch.EnableWindow(FALSE);
 
@@ -1666,6 +1736,7 @@ void CDAQVizDlg::RadioCtrl(UINT ID) {
 			break;
 		case 1:
 		case 2:
+		case 3:
 			if (TimerStarted) {
 				g_csExitThread.Lock();
 				pShared_Data->bSaveImmediate = FALSE;
@@ -2002,6 +2073,7 @@ void CDAQVizDlg::Set_MFC_Control_Availability(bool _isAvailable) {
 	}
 
 	GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE)->EnableWindow(_isAvailable);
+	GetDlgItem(IDC_RADIO_SAVE_IMMEDIATE_CONTINUOUS)->EnableWindow(_isAvailable);
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_ON)->EnableWindow(_isAvailable);
 	GetDlgItem(IDC_RADIO_STOP_AND_RUN_STACK_OFF)->EnableWindow(_isAvailable);
 
@@ -2161,23 +2233,23 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 
 	f_sEMG_MAV.open(prefix + _T("sEMG_MAV.txt"));
 
-	f_Finger_raw.open(prefix + _T("Finger_flex_raw.txt"));
+	/*f_Finger_raw.open(prefix + _T("Finger_flex_raw.txt"));
 	f_Finger_slope.open(prefix + _T("Finger_flex_slope.txt"));
 
 	f_Wrist_raw.open(prefix + _T("Wrist_flex_raw.txt"));
-	f_Wrist_slope.open(prefix + _T("Wrist_flex_slope.txt"));
+	f_Wrist_slope.open(prefix + _T("Wrist_flex_slope.txt"));*/
 
 	f_Elbow_raw.open(prefix + _T("Elbow_IMU_raw.txt"));
-	f_Elbow_slope.open(prefix + _T("Elbow_IMU_slope.txt"));
+	// f_Elbow_slope.open(prefix + _T("Elbow_IMU_slope.txt"));
 
 	f_Shoulder_raw.open(prefix + _T("Shoulder_IMU_raw.txt"));
-	f_Shoulder_slope.open(prefix + _T("Shoulder_IMU_slope.txt"));
+	// f_Shoulder_slope.open(prefix + _T("Shoulder_IMU_slope.txt"));
 
 	f_MotionLabel.open(prefix + _T("Motion_label.txt"));
 
 	if (m_radioStreamingMode == 0) {
 		f_sEMG_raw.open(prefix + _T("sEMG_raw.txt"));
-		f_sEMG_abs.open(prefix + _T("sEMG_abs.txt"));
+		// f_sEMG_abs.open(prefix + _T("sEMG_abs.txt"));
 		
 		f_sEMG_MAV_baseline.open(prefix + _T("sEMG_MAV_baseline.txt"));
 		for (int i = 0; i < Num_sEMG_CH; i++) {
@@ -2191,9 +2263,9 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 	if (m_radioTrainingMode == 2)
 		f_MotionEstimation.open(prefix + _T("Motion_estimation.txt"));
 
-	f_X_pos_ball.open(prefix + _T("X_pos_ball.txt"));
+	/*f_X_pos_ball.open(prefix + _T("X_pos_ball.txt"));
 	f_Y_pos_ball.open(prefix + _T("Y_pos_ball.txt"));
-	f_Rad_ball.open(prefix + _T("Rad_ball.txt"));
+	f_Rad_ball.open(prefix + _T("Rad_ball.txt"));*/
 
 	m_editStatusBar.SetWindowText(stat += _T("[USER] Saving... \r\n"));
 	m_editStatusBar.LineScroll(m_editStatusBar.GetLineCount());
@@ -2210,21 +2282,21 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 	size_log << "The length of 'sEMG_MAV' : " << sEMG_MAV_stack[0].size() << endl;
 	if (m_radioStreamingMode == 0) {
 		size_log << "The length of 'sEMG_raw' : " << sEMG_raw_stack[0].size() << endl;
-		size_log << "The length of 'sEMG_abs' : " << sEMG_abs_stack[0].size() << endl;
+		// size_log << "The length of 'sEMG_abs' : " << sEMG_abs_stack[0].size() << endl;
 	}
 	size_log << endl;
 
-	size_log << "The length of 'Finger_raw' : " << Finger_raw_stack[0].size() << endl;
-	size_log << "The length of 'Finger_slope' : " << Finger_slope_stack[0].size() << endl;
+	// size_log << "The length of 'Finger_raw' : " << Finger_raw_stack[0].size() << endl;
+	// size_log << "The length of 'Finger_slope' : " << Finger_slope_stack[0].size() << endl;
 
-	size_log << "The length of 'Wrist_raw' : " << Wrist_raw_stack[0].size() << endl;
-	size_log << "The length of 'Wrist_slope' : " << Wrist_slope_stack[0].size() << endl;
+	// size_log << "The length of 'Wrist_raw' : " << Wrist_raw_stack[0].size() << endl;
+	// size_log << "The length of 'Wrist_slope' : " << Wrist_slope_stack[0].size() << endl;
 
 	size_log << "The length of 'Elbow_raw' : " << Elbow_raw_stack[0].size() << endl;
-	size_log << "The length of 'Elbow_slope' : " << Elbow_slope_stack[0].size() << endl;
+	// size_log << "The length of 'Elbow_slope' : " << Elbow_slope_stack[0].size() << endl;
 
 	size_log << "The length of 'Shoulder_raw' : " << Shoulder_raw_stack[0].size() << endl;
-	size_log << "The length of 'Shoulder_slope' : " << Shoulder_slope_stack[0].size() << endl;
+	// size_log << "The length of 'Shoulder_slope' : " << Shoulder_slope_stack[0].size() << endl;
 	size_log << endl;
 
 	size_log << "The length of 'MotionLabel' : " << MotionLabel[0].size() << endl;
@@ -2232,9 +2304,9 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 		size_log << "The length of 'MotionEstimation' : " << MotionEstimation[0].size() << endl;
 	size_log << endl;
 
-	size_log << "The length of 'X_pos_ball_stack' : " << X_pos_ball_stack[0].size() << endl;
-	size_log << "The length of 'Y_pos_ball_stack' : " << Y_pos_ball_stack[0].size() << endl;
-	size_log << "The length of 'Rad_ball_stack' : " << Rad_ball_stack[0].size() << endl;
+	// size_log << "The length of 'X_pos_ball_stack' : " << X_pos_ball_stack[0].size() << endl;
+	// size_log << "The length of 'Y_pos_ball_stack' : " << Y_pos_ball_stack[0].size() << endl;
+	// size_log << "The length of 'Rad_ball_stack' : " << Rad_ball_stack[0].size() << endl;
 	size_log << endl;
 
 	// Saving...
@@ -2251,11 +2323,11 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 				else
 					f_sEMG_raw << endl;
 
-				f_sEMG_abs << sEMG_abs_stack[j][i];
+				/*f_sEMG_abs << sEMG_abs_stack[j][i];
 				if (j != Num_sEMG_CH - 1)
 					f_sEMG_abs << " ";
 				else
-					f_sEMG_abs << endl;
+					f_sEMG_abs << endl;*/
 			}
 
 			f_sEMG_MAV << sEMG_MAV_stack[j][i];
@@ -2265,7 +2337,7 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 				f_sEMG_MAV << endl;
 		}
 
-		for (int j = 0; j < Num_Finger_CH; j++) {
+		/*for (int j = 0; j < Num_Finger_CH; j++) {
 			f_Finger_raw << Finger_raw_stack[j][i];
 			if (j != Num_Finger_CH - 1)
 				f_Finger_raw << " ";
@@ -2291,7 +2363,7 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 				f_Wrist_slope << " ";
 			else
 				f_Wrist_slope << endl;
-		}
+		}*/
 
 		for (int j = 0; j < Num_Elbow_CH; j++) {
 			f_Elbow_raw << Elbow_raw_stack[j][i];
@@ -2300,11 +2372,11 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 			else
 				f_Elbow_raw << endl;
 
-			f_Elbow_slope << Elbow_slope_stack[j][i];
+			/*f_Elbow_slope << Elbow_slope_stack[j][i];
 			if (j != Num_Elbow_CH - 1)
 				f_Elbow_slope << " ";
 			else
-				f_Elbow_slope << endl;
+				f_Elbow_slope << endl;*/
 		}
 
 		for (int j = 0; j < Num_Shoulder_CH; j++) {
@@ -2314,11 +2386,11 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 			else
 				f_Shoulder_raw << endl;
 
-			f_Shoulder_slope << Shoulder_slope_stack[j][i];
+			/*f_Shoulder_slope << Shoulder_slope_stack[j][i];
 			if (j != Num_Shoulder_CH - 1)
 				f_Shoulder_slope << " ";
 			else
-				f_Shoulder_slope << endl;
+				f_Shoulder_slope << endl;*/
 		}
 		
 		for (int j = 0; j < MOTION_DOF; j++) {
@@ -2337,14 +2409,54 @@ void CDAQVizDlg::SaveData(CString SaveFolderName) {
 			}
 		}
 
-		f_X_pos_ball << X_pos_ball_stack[0][i] << endl;
+		/*f_X_pos_ball << X_pos_ball_stack[0][i] << endl;
 		f_Y_pos_ball << Y_pos_ball_stack[0][i] << endl;
-		f_Rad_ball << Rad_ball_stack[0][i] << endl;
+		f_Rad_ball << Rad_ball_stack[0][i] << endl;*/
 	}
 
 	SaveParameters(SaveFolderName);
 	if (m_radioTrainingMode == 1) // Corresponding to training mode
 		SaveModel(SaveFolderName);
+
+	f_time.close();
+	f_time_elapsed_DAQ.close();
+	f_time_elapsed_RTGraph.close();
+
+	f_sEMG_MAV.close();
+
+	// f_Finger_raw.close();
+	// f_Finger_slope.close();
+
+	// f_Wrist_raw.close();
+	// f_Wrist_slope.close();
+
+	f_Elbow_raw.close();
+	// f_Elbow_slope.close();
+
+	f_Shoulder_raw.close();
+	// f_Shoulder_slope.close();
+
+	f_MotionLabel.close();
+
+	if (m_radioStreamingMode == 0) {
+		f_sEMG_raw.close();
+		// f_sEMG_abs.close();
+
+		f_sEMG_MAV_baseline.close();
+		for (int i = 0; i < Num_sEMG_CH; i++) {
+			if (i != Num_sEMG_CH - 1)
+				f_sEMG_MAV_baseline << sEMG_MAV_plot_baseline[i] << " ";
+			else
+				f_sEMG_MAV_baseline << sEMG_MAV_plot_baseline[i];
+		}
+	}
+
+	if (m_radioTrainingMode == 2)
+		f_MotionEstimation.close();
+
+	// f_X_pos_ball.close();
+	// f_Y_pos_ball.close();
+	// f_Rad_ball.close();
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	m_editStatusBar.SetWindowText(stat += "[USER] Save End!");
@@ -2418,6 +2530,8 @@ void CDAQVizDlg::SaveParameters(CString SaveFolderName) {
 
 	f_parameters << "Scale factor to classify baseline and activated sEMG : " << SEMG_BASE_SCALE;
 	f_parameters << endl;
+
+	f_parameters.close();
 }
 
 void CDAQVizDlg::SaveModel(CString SaveFolderName) {
@@ -2445,6 +2559,10 @@ void CDAQVizDlg::SaveModel(CString SaveFolderName) {
 		else
 			f_model_sEMG_boolean << 1 << endl;
 	}
+
+	f_model_sEMG_mean.close();
+	f_model_sEMG_std.close();
+	f_model_sEMG_boolean.close();
 }
 
 void CDAQVizDlg::OnEnChangeEditNumSemgCh() {
@@ -2640,30 +2758,45 @@ void CDAQVizDlg::Calculate_sEMG_MAV() {
 			if (pShared_Data->count < sEMG_Win_size) {
 				for (int j = 0; j < pShared_Data->count; j++)
 					sEMG_MAV_temp += sEMG_abs_baseline_stack[i][j];
+				sEMG_MAV_temp /= (double)(sEMG_Win_size);
 			}
 			else {
 				for (int j = 1; j <= sEMG_Win_size; j++)
-					sEMG_MAV_temp += sEMG_abs_baseline_stack
-										[i][sEMG_abs_baseline_stack[i].size() - j];
+					sEMG_MAV_temp += sEMG_abs_baseline_stack[i][sEMG_abs_baseline_stack[i].size() - j];
+				sEMG_MAV_temp /= (double)(sEMG_Win_size);
 			}
 		}
 		else {
 			if (pShared_Data->count - CALI_END * 1000 < sEMG_Win_size) {
 				int N_temp = pShared_Data->count - CALI_END * 1000;
-				for (int j = 1; j <= sEMG_Win_size - N_temp; j++)
+				for (int j = 1; j <= sEMG_Win_size - N_temp; j++) {
 					sEMG_MAV_temp += sEMG_abs_baseline_stack
-										[i][sEMG_abs_baseline_stack[i].size() - j];
-				for (int j = 0; j < N_temp - 1; j++)
+						[i][sEMG_abs_baseline_stack[i].size() - j];
+				}
+				for (int j = 0; j < N_temp - 1; j++) {
 					sEMG_MAV_temp += sEMG_abs_stack[i][j];
+				}
 				sEMG_MAV_temp += sEMG_abs_plot[i];
+				sEMG_MAV_temp /= (double)(sEMG_Win_size);
 			}
 			else {
-				for (int j = 1; j <= sEMG_Win_size - 1; j++)
-					sEMG_MAV_temp += sEMG_abs_stack[i][sEMG_abs_stack[i].size() - j];
-				sEMG_MAV_temp += sEMG_abs_plot[i];
+				if (sEMG_abs_stack[0].size()  < sEMG_Win_size) {
+					if (sEMG_abs_stack[i].size() > 0) {
+						for (int j = 0; j <= sEMG_abs_stack[i].size() - 1; j++)
+							sEMG_MAV_temp += sEMG_abs_stack[i][j];
+					}
+					sEMG_MAV_temp += sEMG_abs_plot[i];
+					sEMG_MAV_temp /= (double)(sEMG_abs_stack[i].size() + 1);
+				}
+				else {
+					for (int j = 1; j <= sEMG_Win_size - 1; j++)
+						sEMG_MAV_temp += sEMG_abs_stack[i][sEMG_abs_stack[i].size() - j];
+					sEMG_MAV_temp += sEMG_abs_plot[i];
+					sEMG_MAV_temp /= (double)(sEMG_Win_size);
+				}
 			}
 		}
-		sEMG_MAV_temp /= sEMG_Win_size;
+		
 		sEMG_MAV_plot[i] = sEMG_MAV_temp;
 	}
 }

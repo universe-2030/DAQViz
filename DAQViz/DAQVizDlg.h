@@ -40,7 +40,7 @@
 #define ELBOW_CH_MAX 3
 #define SHOULDER_CH_MAX 3
 
-#define DELSYS_CH_INIT 15
+#define DELSYS_CH_INIT 12
 #define FRANKFURT_CH_INIT 8
 #define FINGER_CH_INIT 5
 #define WRIST_CH_INIT 2
@@ -76,7 +76,7 @@
 #define MAX_PATH 150
 
 // #define SEMG_CHANNEL_IDX { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }
-#define SEMG_CHANNEL_IDX { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
+#define SEMG_CHANNEL_IDX { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }
 
 #define SCALE_INIT 1.0
 
@@ -132,6 +132,7 @@ private:
 
 	CStatic m_groupTrainingMode;
 	UINT m_radioTrainingMode;
+
 	CButton m_btnParameterLoad;
 	CEdit m_editParameterLoadName;
 
@@ -383,12 +384,9 @@ public:
 	// Dynamic allocation
 	void Dynamic_Allocation();
 	void Dynamic_Free();
-
-	// Set variables for loaded data
-	void Set_Loaded_Data();
-
-	// Set variables for loaded parameters
-	void Set_Loaded_Model_Parameters();
+	
+	// Empty the previous vectors
+	void Vector_Free();
 
 	// MFC Controls
 	afx_msg void RadioCtrl(UINT ID);

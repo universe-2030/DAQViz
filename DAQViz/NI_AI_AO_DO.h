@@ -8,7 +8,7 @@
 #define ALPHA_FD ( ( 2 * CUTOFF_FD * TS ) / (2 + CUTOFF_FD* TS ) )	//LPF와 filtered에서 쓰이는 weight값.
 #define TS 0.001
 #define PI 3.14159265
-#define SAMP_FREQ 1000
+#define SAMP_FREQ 2000
 
 class IO {
 public:
